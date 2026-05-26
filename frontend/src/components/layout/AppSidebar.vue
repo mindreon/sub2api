@@ -7,7 +7,7 @@
     ]"
   >
     <!-- Logo/Brand -->
-    <div class="sidebar-header" :class="{ 'sidebar-header-collapsed': sidebarCollapsed }">
+    <a href="/" class="sidebar-header" :class="{ 'sidebar-header-collapsed': sidebarCollapsed }">
       <!-- Custom Logo or Default Logo -->
       <div class="sidebar-logo flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-glow">
         <img v-if="settingsLoaded" :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
@@ -19,7 +19,7 @@
         <!-- Version Badge -->
         <VersionBadge :version="siteVersion" />
       </div>
-    </div>
+    </a>
 
     <!-- Navigation -->
     <nav class="sidebar-nav scrollbar-hide">
@@ -34,7 +34,7 @@
                 type="button"
                 class="sidebar-link mb-1 w-full"
                 :class="{
-                  'sidebar-link-active': isGroupActive(item) && !isGroupExpanded(item),
+                  'sidebar-link-active': route.path === item.path || (sidebarCollapsed && isGroupActive(item)),
                   'sidebar-link-collapsed': sidebarCollapsed
                 }"
                 :title="sidebarCollapsed ? item.label : undefined"
@@ -55,17 +55,34 @@
               </button>
               <!-- Children -->
               <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
-                <router-link
-                  v-for="child in item.children"
-                  :key="child.path"
-                  :to="child.path"
-                  class="sidebar-link mb-0.5 py-1.5 text-sm"
-                  :class="{ 'sidebar-link-active': route.path === child.path }"
-                  @click="handleMenuItemClick(child.path)"
-                >
-                  <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
-                  <span>{{ child.label }}</span>
-                </router-link>
+                <template v-for="child in item.children" :key="child.path">
+                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
+                    <div class="sidebar-subsection-title">
+                      {{ child.label }}
+                    </div>
+                    <router-link
+                      v-for="grandchild in child.children"
+                      :key="grandchild.path"
+                      :to="grandchild.path"
+                      class="sidebar-link mb-0.5 py-1.5 text-sm"
+                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
+                      @click="handleMenuItemClick(grandchild.path)"
+                    >
+                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
+                      <span>{{ grandchild.label }}</span>
+                    </router-link>
+                  </div>
+                  <router-link
+                    v-else
+                    :to="child.path"
+                    class="sidebar-link mb-0.5 py-1.5 text-sm"
+                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                    @click="handleMenuItemClick(child.path)"
+                  >
+                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                    <span>{{ child.label }}</span>
+                  </router-link>
+                </template>
               </div>
             </template>
             <!-- Normal item (no children) -->
@@ -121,20 +138,76 @@
       <!-- Regular User View -->
       <template v-else-if="!appStore.backendModeEnabled">
         <div class="sidebar-section">
-          <router-link
-            v-for="item in userNavItems"
-            :key="item.path"
-            :to="item.path"
-            class="sidebar-link mb-1"
-            :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
-            :title="sidebarCollapsed ? item.label : undefined"
-            :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
-            @click="handleMenuItemClick(item.path)"
-          >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-            <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
-          </router-link>
+          <template v-for="item in userNavItems" :key="item.path">
+            <template v-if="item.children?.length">
+              <button
+                type="button"
+                class="sidebar-link mb-1 w-full"
+                :class="{
+                  'sidebar-link-active': isGroupActive(item) && !isGroupExpanded(item),
+                  'sidebar-link-collapsed': sidebarCollapsed
+                }"
+                :title="sidebarCollapsed ? item.label : undefined"
+                @click="handleGroupClick(item)"
+              >
+                <component :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+                <span
+                  class="sidebar-label sidebar-label-flex"
+                  :class="{ 'sidebar-label-collapsed': sidebarCollapsed }"
+                  :aria-hidden="sidebarCollapsed ? 'true' : 'false'"
+                >
+                  <span class="min-w-0 truncate">{{ item.label }}</span>
+                  <ChevronDownIcon
+                    class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+                    :class="isGroupExpanded(item) ? 'rotate-180' : ''"
+                  />
+                </span>
+              </button>
+              <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
+                <template v-for="child in item.children" :key="child.path">
+                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
+                    <div class="sidebar-subsection-title">
+                      {{ child.label }}
+                    </div>
+                    <router-link
+                      v-for="grandchild in child.children"
+                      :key="grandchild.path"
+                      :to="grandchild.path"
+                      class="sidebar-link mb-0.5 py-1.5 text-sm"
+                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
+                      @click="handleMenuItemClick(grandchild.path)"
+                    >
+                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
+                      <span>{{ grandchild.label }}</span>
+                    </router-link>
+                  </div>
+                  <router-link
+                    v-else
+                    :to="child.path"
+                    class="sidebar-link mb-0.5 py-1.5 text-sm"
+                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                    @click="handleMenuItemClick(child.path)"
+                  >
+                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                    <span>{{ child.label }}</span>
+                  </router-link>
+                </template>
+              </div>
+            </template>
+            <router-link
+              v-else
+              :to="item.path"
+              class="sidebar-link mb-1"
+              :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
+              :title="sidebarCollapsed ? item.label : undefined"
+              :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
+              @click="handleMenuItemClick(item.path)"
+            >
+              <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+              <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+              <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
+            </router-link>
+          </template>
         </div>
       </template>
     </nav>
@@ -184,6 +257,7 @@ import { computed, h, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
+import { getDistributionOverview } from '@/api/distribution'
 import VersionBadge from '@/components/common/VersionBadge.vue'
 import { sanitizeSvg } from '@/utils/sanitize'
 import { FeatureFlags, makeSidebarFlag } from '@/utils/featureFlags'
@@ -191,7 +265,7 @@ import { FeatureFlags, makeSidebarFlag } from '@/utils/featureFlags'
 interface NavItem {
   path: string
   label: string
-  icon: unknown
+  icon?: unknown
   iconSvg?: string
   hideInSimpleMode?: boolean
   children?: NavItem[]
@@ -237,6 +311,7 @@ const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const mobileOpen = computed(() => appStore.mobileOpen)
 const isAdmin = computed(() => authStore.isAdmin)
 const isDark = ref(document.documentElement.classList.contains('dark'))
+const canManageDistributionChannel = ref(false)
 
 // Track which parent nav groups are expanded
 const expandedGroups = ref<Set<string>>(new Set())
@@ -674,6 +749,9 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
     { path: '/orders', label: t('nav.myOrders'), icon: OrderListIcon, hideInSimpleMode: true, featureFlag: flagPayment },
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
     { path: '/affiliate', label: t('nav.affiliate'), icon: UsersIcon, hideInSimpleMode: true, featureFlag: flagAffiliate },
+    withDashboard
+      ? buildUserDistributionNavItem()
+      : { path: '/distribution', label: t('nav.distribution'), icon: ChannelIcon, hideInSimpleMode: true },
     { path: '/profile', label: t('nav.profile'), icon: UserIcon },
     ...customMenuItemsForUser.value.map((item): NavItem => ({
       path: `/custom/${item.id}`,
@@ -683,6 +761,51 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
     })),
   )
   return items
+}
+
+function buildUserDistributionNavItem(): NavItem {
+  return {
+    path: '/distribution',
+    label: t('nav.distribution'),
+    icon: ChannelIcon,
+    hideInSimpleMode: true,
+    expandOnly: true,
+    children: [
+      {
+        path: '/distribution/group/organization-management',
+        label: t('distribution.groups.organizationManagement'),
+        children: [
+          { path: '/distribution/overview', label: t('distribution.overview.title'), icon: ChartIcon, featureFlag: () => canManageDistributionChannel.value },
+          { path: '/distribution#members', label: t('distribution.tabs.members'), icon: UsersIcon },
+        ],
+      },
+      {
+        path: '/distribution/group/promotion-management',
+        label: t('distribution.groups.promotionManagement'),
+        children: [
+          { path: '/distribution#promotion-links', label: t('distribution.tabs.promotionLinks'), icon: GlobeIcon },
+          { path: '/distribution#attributions', label: t('distribution.tabs.attributions'), icon: UserIcon },
+        ],
+      },
+      {
+        path: '/distribution/group/commission-settlement',
+        label: t('distribution.groups.commissionSettlement'),
+        children: [
+          { path: '/distribution#wallet', label: t('distribution.tabs.wallet'), icon: CreditCardIcon },
+          { path: '/distribution#wallet-requests', label: t('distribution.tabs.walletRequests'), icon: OrderIcon },
+          { path: '/distribution#wholesale-pricing', label: t('distribution.tabs.wholesalePricing'), icon: PriceTagIcon },
+          { path: '/distribution#commissions', label: t('distribution.tabs.commissions'), icon: ChartIcon },
+        ],
+      },
+      {
+        path: '/distribution/group/risk-alerts',
+        label: t('distribution.groups.riskAlerts'),
+        children: [
+          { path: '/distribution#alert-events', label: t('distribution.tabs.alertEvents'), icon: BellIcon },
+        ],
+      },
+    ],
+  }
 }
 
 // finalizeNav 合并三重过滤：featureFlag 过滤 + simple 模式过滤。
@@ -738,6 +861,48 @@ const adminNavItems = computed((): NavItem[] => {
     { path: '/admin/risk-control', label: t('nav.riskControl'), icon: ShieldIcon, hideInSimpleMode: true, featureFlag: flagRiskControl },
     { path: '/admin/redeem', label: t('nav.redeemCodes'), icon: TicketIcon, hideInSimpleMode: true },
     { path: '/admin/promo-codes', label: t('nav.promoCodes'), icon: GiftIcon, hideInSimpleMode: true },
+    {
+      path: '/admin/distribution',
+      label: t('nav.distributionManagement'),
+      icon: ChannelIcon,
+      hideInSimpleMode: true,
+      expandOnly: true,
+      children: [
+        {
+          path: '/admin/distribution/group/organization-management',
+          label: t('admin.distribution.groups.organizationManagement'),
+          children: [
+            { path: '/admin/distribution/organizations', label: t('admin.distribution.tabs.organizations'), icon: ChannelIcon },
+            { path: '/admin/distribution/members', label: t('admin.distribution.tabs.members'), icon: UsersIcon },
+          ],
+        },
+        {
+          path: '/admin/distribution/group/promotion-management',
+          label: t('admin.distribution.groups.promotionManagement'),
+          children: [
+            { path: '/admin/distribution/promotion-links', label: t('admin.distribution.tabs.promotionLinks'), icon: GlobeIcon },
+            { path: '/admin/distribution/attributions', label: t('admin.distribution.tabs.attributions'), icon: UserIcon },
+          ],
+        },
+        {
+          path: '/admin/distribution/group/commission-settlement',
+          label: t('admin.distribution.groups.commissionSettlement'),
+          children: [
+            { path: '/admin/distribution/wallets', label: t('admin.distribution.tabs.wallets'), icon: CreditCardIcon },
+            { path: '/admin/distribution/wallet-requests', label: t('admin.distribution.tabs.walletRequests'), icon: OrderIcon },
+            { path: '/admin/distribution/wallet-transactions', label: t('admin.distribution.tabs.walletTransactions'), icon: OrderListIcon },
+            { path: '/admin/distribution/commissions', label: t('admin.distribution.tabs.commissions'), icon: ChartIcon },
+          ],
+        },
+        {
+          path: '/admin/distribution/group/risk-alerts',
+          label: t('admin.distribution.groups.riskAlerts'),
+          children: [
+            { path: '/admin/distribution/alert-events', label: t('admin.distribution.tabs.alertEvents'), icon: BellIcon },
+          ],
+        },
+      ],
+    },
     {
       path: '/admin/affiliates',
       label: t('nav.affiliateManagement'),
@@ -822,12 +987,31 @@ function handleMenuItemClick(itemPath: string) {
 }
 
 function isActive(path: string): boolean {
-  return route.path === path || route.path.startsWith(path + '/')
+  return isTargetActive(path) || route.path.startsWith(path + '/')
+}
+
+function splitSidebarTarget(target: string): { path: string, hash: string } {
+  const [path, hash = ''] = target.split('#')
+  return {
+    path: path || '/',
+    hash: hash ? `#${hash}` : '',
+  }
+}
+
+function isTargetActive(target: string): boolean {
+  const { path, hash } = splitSidebarTarget(target)
+  if (route.path !== path) {
+    return false
+  }
+  if (!hash) {
+    return true
+  }
+  return route.hash === hash
 }
 
 function isGroupActive(item: NavItem): boolean {
   if (!item.children) return false
-  return item.children.some(child => route.path === child.path)
+  return item.children.some(child => isTargetActive(child.path) || isGroupActive(child))
 }
 
 function isGroupExpanded(item: NavItem): boolean {
@@ -885,11 +1069,34 @@ watch(
   { immediate: true }
 )
 
+watch(
+  [() => authStore.isAuthenticated, isAdmin],
+  ([isAuthenticated, isAdminUser]) => {
+    if (!isAuthenticated || isAdminUser) {
+      canManageDistributionChannel.value = false
+      return
+    }
+
+    void syncDistributionNavState()
+  },
+  { immediate: true }
+)
+
 onMounted(() => {
   if (isAdmin.value) {
     adminSettingsStore.fetch()
   }
 })
+
+async function syncDistributionNavState() {
+  try {
+    const overview = await getDistributionOverview()
+    canManageDistributionChannel.value = overview.can_manage_channel
+  } catch (error) {
+    canManageDistributionChannel.value = false
+    console.error('Failed to load distribution navigation state:', error)
+  }
+}
 </script>
 
 <style scoped>
@@ -1007,6 +1214,20 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(-4px);
   pointer-events: none;
+}
+
+.sidebar-subsection-title {
+  padding: 0.5rem 1rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(107 114 128);
+}
+
+.dark .sidebar-subsection-title {
+  color: rgb(156 163 175);
 }
 
 /* Custom SVG icon in sidebar: constrain size without overriding uploaded SVG colors */
