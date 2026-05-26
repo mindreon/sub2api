@@ -32,6 +32,7 @@ import adminPaymentAPI from './payment'
 import affiliatesAPI from './affiliates'
 import riskControlAPI from './riskControl'
 import adminDistributionAPI from './distribution'
+import catalogModelsAPI from './catalogModels'
 
 /**
  * Unified admin API object for convenient access
@@ -65,7 +66,8 @@ export const adminAPI = {
   payment: adminPaymentAPI,
   affiliates: affiliatesAPI,
   distribution: adminDistributionAPI,
-  riskControl: riskControlAPI
+  riskControl: riskControlAPI,
+  catalogModels: catalogModelsAPI
 }
 
 export {
@@ -97,7 +99,8 @@ export {
   adminPaymentAPI,
   affiliatesAPI,
   adminDistributionAPI,
-  riskControlAPI
+  riskControlAPI,
+  catalogModelsAPI
 }
 
 export default adminAPI
@@ -108,3 +111,5 @@ export type { ErrorPassthroughRule, CreateRuleRequest, UpdateRuleRequest } from 
 export type { BackupAgentHealth, DataManagementConfig } from './dataManagement'
 export type { TLSFingerprintProfile, CreateProfileRequest, UpdateProfileRequest } from './tlsFingerprintProfile'
 export type { ContentModerationConfig, ContentModerationLog, ModerationMode } from './riskControl'
+export { default as catalogModels } from './catalogModels'
+export type { CatalogModel, UpdateCatalogModelRequest, CatalogModelListFilters } from './catalogModels'
