@@ -12,6 +12,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
 	"github.com/Wei-Shaw/sub2api/ent/authidentity"
 	"github.com/Wei-Shaw/sub2api/ent/authidentitychannel"
+	"github.com/Wei-Shaw/sub2api/ent/catalogmodel"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitor"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitordailyrollup"
 	"github.com/Wei-Shaw/sub2api/ent/channelmonitorhistory"
@@ -431,6 +432,104 @@ func init() {
 	authidentitychannelDescMetadata := authidentitychannelFields[6].Descriptor()
 	// authidentitychannel.DefaultMetadata holds the default value on creation for the metadata field.
 	authidentitychannel.DefaultMetadata = authidentitychannelDescMetadata.Default.(func() map[string]interface{})
+	catalogmodelFields := schema.CatalogModel{}.Fields()
+	_ = catalogmodelFields
+	// catalogmodelDescModelID is the schema descriptor for model_id field.
+	catalogmodelDescModelID := catalogmodelFields[0].Descriptor()
+	// catalogmodel.ModelIDValidator is a validator for the "model_id" field. It is called by the builders before save.
+	catalogmodel.ModelIDValidator = func() func(string) error {
+		validators := catalogmodelDescModelID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(model_id string) error {
+			for _, fn := range fns {
+				if err := fn(model_id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// catalogmodelDescName is the schema descriptor for name field.
+	catalogmodelDescName := catalogmodelFields[1].Descriptor()
+	// catalogmodel.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	catalogmodel.NameValidator = func() func(string) error {
+		validators := catalogmodelDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// catalogmodelDescVendor is the schema descriptor for vendor field.
+	catalogmodelDescVendor := catalogmodelFields[2].Descriptor()
+	// catalogmodel.DefaultVendor holds the default value on creation for the vendor field.
+	catalogmodel.DefaultVendor = catalogmodelDescVendor.Default.(string)
+	// catalogmodel.VendorValidator is a validator for the "vendor" field. It is called by the builders before save.
+	catalogmodel.VendorValidator = catalogmodelDescVendor.Validators[0].(func(string) error)
+	// catalogmodelDescCategory is the schema descriptor for category field.
+	catalogmodelDescCategory := catalogmodelFields[3].Descriptor()
+	// catalogmodel.DefaultCategory holds the default value on creation for the category field.
+	catalogmodel.DefaultCategory = catalogmodelDescCategory.Default.(string)
+	// catalogmodel.CategoryValidator is a validator for the "category" field. It is called by the builders before save.
+	catalogmodel.CategoryValidator = catalogmodelDescCategory.Validators[0].(func(string) error)
+	// catalogmodelDescDescription is the schema descriptor for description field.
+	catalogmodelDescDescription := catalogmodelFields[4].Descriptor()
+	// catalogmodel.DefaultDescription holds the default value on creation for the description field.
+	catalogmodel.DefaultDescription = catalogmodelDescDescription.Default.(string)
+	// catalogmodelDescDocURL is the schema descriptor for doc_url field.
+	catalogmodelDescDocURL := catalogmodelFields[6].Descriptor()
+	// catalogmodel.DefaultDocURL holds the default value on creation for the doc_url field.
+	catalogmodel.DefaultDocURL = catalogmodelDescDocURL.Default.(string)
+	// catalogmodelDescIconURL is the schema descriptor for icon_url field.
+	catalogmodelDescIconURL := catalogmodelFields[7].Descriptor()
+	// catalogmodel.DefaultIconURL holds the default value on creation for the icon_url field.
+	catalogmodel.DefaultIconURL = catalogmodelDescIconURL.Default.(string)
+	// catalogmodelDescContextWindow is the schema descriptor for context_window field.
+	catalogmodelDescContextWindow := catalogmodelFields[8].Descriptor()
+	// catalogmodel.DefaultContextWindow holds the default value on creation for the context_window field.
+	catalogmodel.DefaultContextWindow = catalogmodelDescContextWindow.Default.(int64)
+	// catalogmodelDescMaxOutputTokens is the schema descriptor for max_output_tokens field.
+	catalogmodelDescMaxOutputTokens := catalogmodelFields[9].Descriptor()
+	// catalogmodel.DefaultMaxOutputTokens holds the default value on creation for the max_output_tokens field.
+	catalogmodel.DefaultMaxOutputTokens = catalogmodelDescMaxOutputTokens.Default.(int64)
+	// catalogmodelDescInputPrice is the schema descriptor for input_price field.
+	catalogmodelDescInputPrice := catalogmodelFields[13].Descriptor()
+	// catalogmodel.DefaultInputPrice holds the default value on creation for the input_price field.
+	catalogmodel.DefaultInputPrice = catalogmodelDescInputPrice.Default.(float64)
+	// catalogmodelDescOutputPrice is the schema descriptor for output_price field.
+	catalogmodelDescOutputPrice := catalogmodelFields[14].Descriptor()
+	// catalogmodel.DefaultOutputPrice holds the default value on creation for the output_price field.
+	catalogmodel.DefaultOutputPrice = catalogmodelDescOutputPrice.Default.(float64)
+	// catalogmodelDescCurrency is the schema descriptor for currency field.
+	catalogmodelDescCurrency := catalogmodelFields[17].Descriptor()
+	// catalogmodel.DefaultCurrency holds the default value on creation for the currency field.
+	catalogmodel.DefaultCurrency = catalogmodelDescCurrency.Default.(string)
+	// catalogmodel.CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
+	catalogmodel.CurrencyValidator = catalogmodelDescCurrency.Validators[0].(func(string) error)
+	// catalogmodelDescIsEnabled is the schema descriptor for is_enabled field.
+	catalogmodelDescIsEnabled := catalogmodelFields[18].Descriptor()
+	// catalogmodel.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	catalogmodel.DefaultIsEnabled = catalogmodelDescIsEnabled.Default.(bool)
+	// catalogmodelDescCreatedAt is the schema descriptor for created_at field.
+	catalogmodelDescCreatedAt := catalogmodelFields[19].Descriptor()
+	// catalogmodel.DefaultCreatedAt holds the default value on creation for the created_at field.
+	catalogmodel.DefaultCreatedAt = catalogmodelDescCreatedAt.Default.(func() time.Time)
+	// catalogmodelDescUpdatedAt is the schema descriptor for updated_at field.
+	catalogmodelDescUpdatedAt := catalogmodelFields[20].Descriptor()
+	// catalogmodel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	catalogmodel.DefaultUpdatedAt = catalogmodelDescUpdatedAt.Default.(func() time.Time)
+	// catalogmodel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	catalogmodel.UpdateDefaultUpdatedAt = catalogmodelDescUpdatedAt.UpdateDefault.(func() time.Time)
 	channelmonitorMixin := schema.ChannelMonitor{}.Mixin()
 	channelmonitorMixinFields0 := channelmonitorMixin[0].Fields()
 	_ = channelmonitorMixinFields0

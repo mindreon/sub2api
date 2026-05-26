@@ -421,6 +421,59 @@ var (
 			},
 		},
 	}
+	// CatalogModelsColumns holds the columns for the "catalog_models" table.
+	CatalogModelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "model_id", Type: field.TypeString, Unique: true, Size: 200},
+		{Name: "name", Type: field.TypeString, Size: 200},
+		{Name: "vendor", Type: field.TypeString, Size: 100, Default: ""},
+		{Name: "category", Type: field.TypeString, Size: 50, Default: "chat"},
+		{Name: "description", Type: field.TypeString, Default: "", SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "tags", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "doc_url", Type: field.TypeString, Default: ""},
+		{Name: "icon_url", Type: field.TypeString, Default: ""},
+		{Name: "context_window", Type: field.TypeInt64, Default: 0},
+		{Name: "max_output_tokens", Type: field.TypeInt64, Default: 0},
+		{Name: "input_modalities", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "output_modalities", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "features", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "input_price", Type: field.TypeFloat64, Default: 0},
+		{Name: "output_price", Type: field.TypeFloat64, Default: 0},
+		{Name: "cache_write_price", Type: field.TypeFloat64, Nullable: true},
+		{Name: "cache_read_price", Type: field.TypeFloat64, Nullable: true},
+		{Name: "currency", Type: field.TypeString, Size: 10, Default: "USD"},
+		{Name: "is_enabled", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// CatalogModelsTable holds the schema information for the "catalog_models" table.
+	CatalogModelsTable = &schema.Table{
+		Name:       "catalog_models",
+		Columns:    CatalogModelsColumns,
+		PrimaryKey: []*schema.Column{CatalogModelsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "catalogmodel_model_id",
+				Unique:  true,
+				Columns: []*schema.Column{CatalogModelsColumns[1]},
+			},
+			{
+				Name:    "catalogmodel_is_enabled",
+				Unique:  false,
+				Columns: []*schema.Column{CatalogModelsColumns[19]},
+			},
+			{
+				Name:    "catalogmodel_vendor",
+				Unique:  false,
+				Columns: []*schema.Column{CatalogModelsColumns[3]},
+			},
+			{
+				Name:    "catalogmodel_category",
+				Unique:  false,
+				Columns: []*schema.Column{CatalogModelsColumns[4]},
+			},
+		},
+	}
 	// ChannelMonitorsColumns holds the columns for the "channel_monitors" table.
 	ChannelMonitorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -1710,6 +1763,7 @@ var (
 		AnnouncementReadsTable,
 		AuthIdentitiesTable,
 		AuthIdentityChannelsTable,
+		CatalogModelsTable,
 		ChannelMonitorsTable,
 		ChannelMonitorDailyRollupsTable,
 		ChannelMonitorHistoriesTable,
@@ -1770,6 +1824,9 @@ func init() {
 	AuthIdentityChannelsTable.ForeignKeys[0].RefTable = AuthIdentitiesTable
 	AuthIdentityChannelsTable.Annotation = &entsql.Annotation{
 		Table: "auth_identity_channels",
+	}
+	CatalogModelsTable.Annotation = &entsql.Annotation{
+		Table: "catalog_models",
 	}
 	ChannelMonitorsTable.ForeignKeys[0].RefTable = ChannelMonitorRequestTemplatesTable
 	ChannelMonitorsTable.Annotation = &entsql.Annotation{
