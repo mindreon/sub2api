@@ -100,6 +100,9 @@ func RegisterAdminRoutes(
 
 		// 分销体系
 		registerDistributionRoutes(admin, h)
+
+		// 模型目录管理
+		registerCatalogModelRoutes(admin, h)
 	}
 }
 
@@ -671,5 +674,15 @@ func registerAffiliateRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 			users.PUT("/:user_id", h.Admin.Affiliate.UpdateUserSettings)
 			users.DELETE("/:user_id", h.Admin.Affiliate.ClearUserSettings)
 		}
+	}
+}
+
+func registerCatalogModelRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	catalog := admin.Group("/catalog/models")
+	{
+		catalog.GET("", h.Admin.CatalogModel.List)
+		catalog.PUT("/:id", h.Admin.CatalogModel.Update)
+		catalog.PATCH("/:id/toggle", h.Admin.CatalogModel.Toggle)
+		catalog.POST("/seed", h.Admin.CatalogModel.Seed)
 	}
 }
