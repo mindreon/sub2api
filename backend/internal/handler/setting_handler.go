@@ -36,7 +36,8 @@ func (h *SettingHandler) SetNotificationEmailService(notificationEmailService *s
 // GetPublicSettings 获取公开设置
 // GET /api/v1/settings/public
 func (h *SettingHandler) GetPublicSettings(c *gin.Context) {
-	settings, err := h.settingService.GetPublicSettings(c.Request.Context())
+	ctx := service.WithPublicSettingsRequestMeta(c.Request.Context(), requestHostForPublicSettings(c), requestSchemeForPublicSettings(c))
+	settings, err := h.settingService.GetPublicSettings(ctx)
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return
@@ -132,4 +133,30 @@ func publicLoginAgreementDocumentsToDTO(items []service.LoginAgreementDocument) 
 		})
 	}
 	return result
+}
+
+func requestHostForPublicSettings(c *gin.Context) string {
+	if c == nil || c.Request == nil {
+		return ""
+	}
+	if forwardedHost := strings.TrimSpace(c.GetHeader("X-Forwarded-Host")); forwardedHost != "" {
+		return forwardedHost
+	}
+	return c.Request.Host
+}
+
+func requestSchemeForPublicSettings(c *gin.Context) string {
+	if c == nil || c.Request == nil {
+		return "https"
+	}
+	if forwardedProto := strings.TrimSpace(c.GetHeader("X-Forwarded-Proto")); forwardedProto != "" {
+		return forwardedProto
+	}
+	if c.Request.TLS != nil {
+		return "https"
+	}
+	if strings.TrimSpace(c.Request.URL.Scheme) != "" {
+		return c.Request.URL.Scheme
+	}
+	return "http"
 }

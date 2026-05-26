@@ -19,6 +19,17 @@ type settingHandlerPublicRepoStub struct {
 	values map[string]string
 }
 
+type settingHandlerBrandingResolverStub struct {
+	orgByHost map[string]*service.DistributionOrganization
+}
+
+func (s *settingHandlerBrandingResolverStub) GetByBrandHost(ctx context.Context, host string) (*service.DistributionOrganization, error) {
+	if s == nil {
+		return nil, nil
+	}
+	return s.orgByHost[service.NormalizeDistributionBrandHost(host)], nil
+}
+
 func (s *settingHandlerPublicRepoStub) Get(ctx context.Context, key string) (*service.Setting, error) {
 	panic("unexpected Get call")
 }
@@ -119,4 +130,49 @@ func TestSettingHandler_GetPublicSettings_ExposesWeChatOAuthModeCapabilities(t *
 	require.True(t, resp.Data.WeChatOAuthEnabled)
 	require.True(t, resp.Data.WeChatOAuthOpenEnabled)
 	require.True(t, resp.Data.WeChatOAuthMPEnabled)
+}
+
+func TestSettingHandler_GetPublicSettings_AppliesBrandingForRequestHost(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	svc := service.NewSettingService(&settingHandlerPublicRepoStub{
+		values: map[string]string{
+			service.SettingKeySiteName: "Sub2API",
+		},
+	}, &config.Config{})
+	svc.SetDistributionBrandingResolver(&settingHandlerBrandingResolverStub{
+		orgByHost: map[string]*service.DistributionOrganization{
+			"brand.example.com": {
+				ID:   8,
+				Type: "oem",
+				Name: "BrandHub",
+				BrandConfig: map[string]any{
+					"logo_url": "https://cdn.example.com/logo.png",
+				},
+			},
+		},
+	})
+	h := NewSettingHandler(svc, "test-version")
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/settings/public", nil)
+	req.Host = "brand.example.com"
+	c.Request = req
+
+	h.GetPublicSettings(c)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	var resp struct {
+		Code int `json:"code"`
+		Data struct {
+			SiteName string `json:"site_name"`
+			SiteLogo string `json:"site_logo"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &resp))
+	require.Equal(t, 0, resp.Code)
+	require.Equal(t, "BrandHub", resp.Data.SiteName)
+	require.Equal(t, "https://cdn.example.com/logo.png", resp.Data.SiteLogo)
 }

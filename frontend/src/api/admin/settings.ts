@@ -16,6 +16,15 @@ export interface DefaultSubscriptionSetting {
   validity_days: number;
 }
 
+export interface DistributionLevelConfig {
+  code: string;
+  name: string;
+  commission_rate: number;
+  active: boolean;
+  sort_order: number;
+  note: string;
+}
+
 export type AuthSourceType =
   | "email"
   | "linuxdo"
@@ -331,6 +340,10 @@ export interface SystemSettings {
   affiliate_rebate_freeze_hours: number;
   affiliate_rebate_duration_days: number;
   affiliate_rebate_per_invitee_cap: number;
+  distribution_freeze_hours: number;
+  distribution_kol2_rate: number;
+  distribution_commission_upper_ratio: number;
+  distribution_global_levels?: DistributionLevelConfig[];
   default_concurrency: number;
   default_user_rpm_limit: number;
   default_subscriptions: DefaultSubscriptionSetting[];
@@ -577,6 +590,10 @@ export interface UpdateSettingsRequest {
   affiliate_rebate_freeze_hours?: number;
   affiliate_rebate_duration_days?: number;
   affiliate_rebate_per_invitee_cap?: number;
+  distribution_freeze_hours?: number;
+  distribution_kol2_rate?: number;
+  distribution_commission_upper_ratio?: number;
+  distribution_global_levels?: DistributionLevelConfig[];
   default_concurrency?: number;
   default_user_rpm_limit?: number;
   default_subscriptions?: DefaultSubscriptionSetting[];

@@ -155,6 +155,7 @@ type SettingService struct {
 	settingRepo               SettingRepository
 	defaultSubGroupReader     DefaultSubscriptionGroupReader
 	proxyRepo                 ProxyRepository // for resolving websearch provider proxy URLs
+	brandingResolver          DistributionBrandingResolver
 	cfg                       *config.Config
 	onUpdate                  func() // Callback when settings are updated (for cache invalidation)
 	version                   string // Application version
@@ -614,6 +615,10 @@ func (s *SettingService) LoadAPIKeyACLTrustForwardedIPSetting(ctx context.Contex
 	return nil
 }
 
+func (s *SettingService) SetDistributionBrandingResolver(resolver DistributionBrandingResolver) {
+	s.brandingResolver = resolver
+}
+
 // GetAllSettings 获取所有系统设置
 func (s *SettingService) GetAllSettings(ctx context.Context) (*SystemSettings, error) {
 	settings, err := s.settingRepo.GetAll(ctx)
@@ -759,7 +764,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		balanceLowNotifyThreshold = v
 	}
 
-	return &PublicSettings{
+	out := &PublicSettings{
 		RegistrationEnabled:              settings[SettingKeyRegistrationEnabled] == "true",
 		EmailVerifyEnabled:               emailVerifyEnabled,
 		ForceEmailOnThirdPartySignup:     settings[SettingKeyForceEmailOnThirdPartySignup] == "true",
@@ -814,7 +819,11 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		AffiliateEnabled: settings[SettingKeyAffiliateEnabled] == "true",
 
 		RiskControlEnabled: settings[SettingKeyRiskControlEnabled] == "true",
-	}, nil
+	}
+	if err := s.applyDistributionBrandingOverride(ctx, out); err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // channelMonitorIntervalMin / channelMonitorIntervalMax bound the default interval
@@ -1131,6 +1140,38 @@ func (s *SettingService) GetPublicSettingsForInjection(ctx context.Context) (any
 		AffiliateEnabled:                     settings.AffiliateEnabled,
 		RiskControlEnabled:                   settings.RiskControlEnabled,
 	}, nil
+}
+
+func (s *SettingService) applyDistributionBrandingOverride(ctx context.Context, settings *PublicSettings) error {
+	if s == nil || settings == nil || s.brandingResolver == nil {
+		return nil
+	}
+
+	requestMeta := publicSettingsRequestMetaFromContext(ctx)
+	if requestMeta.Host == "" {
+		return nil
+	}
+
+	org, err := s.brandingResolver.GetByBrandHost(ctx, requestMeta.Host)
+	if err != nil {
+		return err
+	}
+	if org == nil {
+		return nil
+	}
+
+	if siteName := strings.TrimSpace(org.Name); siteName != "" {
+		settings.SiteName = siteName
+	}
+	if logoURL := distributionBrandString(org.BrandConfig, "logo_url"); logoURL != "" {
+		settings.SiteLogo = logoURL
+	}
+	if apiURL := ResolveDistributionBrandURL(distributionBrandString(org.BrandConfig, "api_domain"), requestMeta.Scheme); apiURL != "" {
+		settings.APIBaseURL = apiURL
+	} else {
+		settings.APIBaseURL = requestMeta.Scheme + "://" + requestMeta.Host
+	}
+	return nil
 }
 
 func DefaultWeChatConnectScopesForMode(mode string) string {
@@ -1731,6 +1772,32 @@ func (s *SettingService) buildSystemSettingsUpdates(ctx context.Context, setting
 		settings.AffiliateRebatePerInviteeCap = AffiliateRebatePerInviteeCapDefault
 	}
 	updates[SettingKeyAffiliateRebatePerInviteeCap] = strconv.FormatFloat(settings.AffiliateRebatePerInviteeCap, 'f', 8, 64)
+	if settings.DistributionFreezeHours < 0 {
+		settings.DistributionFreezeHours = DistributionFreezeHoursDefault
+	}
+	if settings.DistributionFreezeHours > DistributionFreezeHoursMax {
+		settings.DistributionFreezeHours = DistributionFreezeHoursMax
+	}
+	updates[SettingKeyDistributionFreezeHours] = strconv.Itoa(settings.DistributionFreezeHours)
+	if settings.DistributionKol2Rate < 0 {
+		settings.DistributionKol2Rate = DistributionKol2RateDefault
+	}
+	if settings.DistributionKol2Rate > 100 {
+		settings.DistributionKol2Rate = DistributionKol2RateDefault
+	}
+	if settings.DistributionCommissionUpperRatio < 0 {
+		settings.DistributionCommissionUpperRatio = DistributionCommissionUpperRatioDefault
+	}
+	if settings.DistributionCommissionUpperRatio > 100 {
+		settings.DistributionCommissionUpperRatio = DistributionCommissionUpperRatioDefault
+	}
+	updates[SettingKeyDistributionKol2Rate] = strconv.FormatFloat(settings.DistributionKol2Rate, 'f', 8, 64)
+	updates[SettingKeyDistributionCommissionUpperRatio] = strconv.FormatFloat(settings.DistributionCommissionUpperRatio, 'f', 8, 64)
+	distributionGlobalLevelsJSON, err := json.Marshal(normalizeDistributionLevelConfigs(settings.DistributionGlobalLevels))
+	if err != nil {
+		return nil, fmt.Errorf("marshal distribution global levels: %w", err)
+	}
+	updates[SettingKeyDistributionGlobalLevels] = string(distributionGlobalLevelsJSON)
 	updates[SettingKeyDefaultUserRPMLimit] = strconv.Itoa(settings.DefaultUserRPMLimit)
 	defaultSubsJSON, err := json.Marshal(settings.DefaultSubscriptions)
 	if err != nil {
@@ -2252,6 +2319,67 @@ func (s *SettingService) GetAffiliateRebateDurationDays(ctx context.Context) int
 	return days
 }
 
+// GetDistributionFreezeHours 返回分销冻结期（小时）。
+func (s *SettingService) GetDistributionFreezeHours(ctx context.Context) int {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionFreezeHours)
+	if err != nil {
+		return DistributionFreezeHoursDefault
+	}
+	hours, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || hours < 0 {
+		return DistributionFreezeHoursDefault
+	}
+	if hours > DistributionFreezeHoursMax {
+		return DistributionFreezeHoursMax
+	}
+	return hours
+}
+
+// GetDistributionKol2Rate 返回 2 级 KOL 全局佣金比例。
+func (s *SettingService) GetDistributionKol2Rate(ctx context.Context) float64 {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionKol2Rate)
+	if err != nil {
+		return DistributionKol2RateDefault
+	}
+	rate, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
+	if err != nil || math.IsNaN(rate) || math.IsInf(rate, 0) || rate < 0 {
+		return DistributionKol2RateDefault
+	}
+	if rate > 100 {
+		return DistributionKol2RateDefault
+	}
+	return rate
+}
+
+// GetDistributionCommissionUpperRatio 返回分销单笔总佣金比例上限。
+func (s *SettingService) GetDistributionCommissionUpperRatio(ctx context.Context) float64 {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionCommissionUpperRatio)
+	if err != nil {
+		return DistributionCommissionUpperRatioDefault
+	}
+	ratio, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
+	if err != nil || math.IsNaN(ratio) || math.IsInf(ratio, 0) || ratio < 0 {
+		return DistributionCommissionUpperRatioDefault
+	}
+	if ratio > 100 {
+		return DistributionCommissionUpperRatioDefault
+	}
+	return ratio
+}
+
+// GetDistributionGlobalLevels returns the global agent level configuration.
+func (s *SettingService) GetDistributionGlobalLevels(ctx context.Context) []DistributionLevelConfig {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionGlobalLevels)
+	if err != nil || strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	var levels []DistributionLevelConfig
+	if err := json.Unmarshal([]byte(raw), &levels); err != nil {
+		return nil
+	}
+	return normalizeDistributionLevelConfigs(levels)
+}
+
 // GetAffiliateRebatePerInviteeCap 返回单人返利上限。
 // 返回 0 表示无上限。
 func (s *SettingService) GetAffiliateRebatePerInviteeCap(ctx context.Context) float64 {
@@ -2543,12 +2671,32 @@ func (s *SettingService) InitializeDefaultSettings(ctx context.Context) error {
 		SettingKeyOIDCConnectUserInfoEmailPath:              "",
 		SettingKeyOIDCConnectUserInfoIDPath:                 "",
 		SettingKeyOIDCConnectUserInfoUsernamePath:           "",
+		SettingKeyDingTalkConnectEnabled:                    "false",
+		SettingKeyDingTalkConnectClientID:                   "",
+		SettingKeyDingTalkConnectClientSecret:               "",
+		SettingKeyDingTalkConnectRedirectURL:                "",
+		SettingKeyDingTalkConnectCorpRestrictionPolicy:      "none",
+		SettingKeyDingTalkConnectInternalCorpID:             "",
+		SettingKeyDingTalkConnectBypassRegistration:         "false",
+		SettingKeyDingTalkConnectSyncCorpEmail:              "false",
+		SettingKeyDingTalkConnectSyncDisplayName:            "false",
+		SettingKeyDingTalkConnectSyncDept:                   "false",
+		SettingKeyDingTalkConnectSyncCorpEmailAttrKey:       "dingtalk_email",
+		SettingKeyDingTalkConnectSyncDisplayNameAttrKey:     "dingtalk_name",
+		SettingKeyDingTalkConnectSyncDeptAttrKey:            "dingtalk_department",
+		SettingKeyDingTalkConnectSyncCorpEmailAttrName:      "钉钉企业邮箱",
+		SettingKeyDingTalkConnectSyncDisplayNameAttrName:    "钉钉姓名",
+		SettingKeyDingTalkConnectSyncDeptAttrName:           "钉钉部门",
 		SettingKeyDefaultConcurrency:                        strconv.Itoa(s.cfg.Default.UserConcurrency),
 		SettingKeyDefaultBalance:                            strconv.FormatFloat(s.cfg.Default.UserBalance, 'f', 8, 64),
 		SettingKeyAffiliateRebateRate:                       strconv.FormatFloat(AffiliateRebateRateDefault, 'f', 8, 64),
 		SettingKeyAffiliateRebateFreezeHours:                strconv.Itoa(AffiliateRebateFreezeHoursDefault),
 		SettingKeyAffiliateRebateDurationDays:               strconv.Itoa(AffiliateRebateDurationDaysDefault),
 		SettingKeyAffiliateRebatePerInviteeCap:              strconv.FormatFloat(AffiliateRebatePerInviteeCapDefault, 'f', 2, 64),
+		SettingKeyDistributionFreezeHours:                   strconv.Itoa(DistributionFreezeHoursDefault),
+		SettingKeyDistributionKol2Rate:                      strconv.FormatFloat(DistributionKol2RateDefault, 'f', 8, 64),
+		SettingKeyDistributionCommissionUpperRatio:          strconv.FormatFloat(DistributionCommissionUpperRatioDefault, 'f', 8, 64),
+		SettingKeyDistributionGlobalLevels:                  "[]",
 		SettingKeyDefaultUserRPMLimit:                       "0",
 		SettingKeyDefaultSubscriptions:                      "[]",
 		SettingKeyAuthSourceDefaultEmailBalance:             "0",
@@ -2736,6 +2884,36 @@ func (s *SettingService) parseSettings(settings map[string]string) *SystemSettin
 	}
 	if perInviteeCap, err := strconv.ParseFloat(settings[SettingKeyAffiliateRebatePerInviteeCap], 64); err == nil && perInviteeCap >= 0 {
 		result.AffiliateRebatePerInviteeCap = perInviteeCap
+	}
+	if freezeHours, err := strconv.Atoi(settings[SettingKeyDistributionFreezeHours]); err == nil && freezeHours >= 0 {
+		if freezeHours > DistributionFreezeHoursMax {
+			freezeHours = DistributionFreezeHoursMax
+		}
+		result.DistributionFreezeHours = freezeHours
+	} else {
+		result.DistributionFreezeHours = DistributionFreezeHoursDefault
+	}
+	if kol2Rate, err := strconv.ParseFloat(settings[SettingKeyDistributionKol2Rate], 64); err == nil && kol2Rate >= 0 && !math.IsNaN(kol2Rate) && !math.IsInf(kol2Rate, 0) {
+		if kol2Rate > 100 {
+			kol2Rate = DistributionKol2RateDefault
+		}
+		result.DistributionKol2Rate = kol2Rate
+	} else {
+		result.DistributionKol2Rate = DistributionKol2RateDefault
+	}
+	if upperRatio, err := strconv.ParseFloat(settings[SettingKeyDistributionCommissionUpperRatio], 64); err == nil && upperRatio >= 0 && !math.IsNaN(upperRatio) && !math.IsInf(upperRatio, 0) {
+		if upperRatio > 100 {
+			upperRatio = DistributionCommissionUpperRatioDefault
+		}
+		result.DistributionCommissionUpperRatio = upperRatio
+	} else {
+		result.DistributionCommissionUpperRatio = DistributionCommissionUpperRatioDefault
+	}
+	if raw := strings.TrimSpace(settings[SettingKeyDistributionGlobalLevels]); raw != "" {
+		var levels []DistributionLevelConfig
+		if err := json.Unmarshal([]byte(raw), &levels); err == nil {
+			result.DistributionGlobalLevels = normalizeDistributionLevelConfigs(levels)
+		}
 	}
 	result.DefaultSubscriptions = parseDefaultSubscriptions(settings[SettingKeyDefaultSubscriptions])
 

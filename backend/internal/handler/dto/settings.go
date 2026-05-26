@@ -23,6 +23,16 @@ type CustomEndpoint struct {
 	Description string `json:"description"`
 }
 
+// DistributionLevelConfig represents a configurable distribution level.
+type DistributionLevelConfig struct {
+	Code           string  `json:"code"`
+	Name           string  `json:"name"`
+	CommissionRate float64 `json:"commission_rate"`
+	Active         bool    `json:"active"`
+	SortOrder      int     `json:"sort_order"`
+	Note           string  `json:"note"`
+}
+
 // SystemSettings represents the admin settings API response payload.
 type SystemSettings struct {
 	RegistrationEnabled              bool                     `json:"registration_enabled"`
@@ -140,14 +150,18 @@ type SystemSettings struct {
 	CustomMenuItems             []CustomMenuItem `json:"custom_menu_items"`
 	CustomEndpoints             []CustomEndpoint `json:"custom_endpoints"`
 
-	DefaultConcurrency           int                          `json:"default_concurrency"`
-	DefaultBalance               float64                      `json:"default_balance"`
-	AffiliateRebateRate          float64                      `json:"affiliate_rebate_rate"`
-	AffiliateRebateFreezeHours   int                          `json:"affiliate_rebate_freeze_hours"`
-	AffiliateRebateDurationDays  int                          `json:"affiliate_rebate_duration_days"`
-	AffiliateRebatePerInviteeCap float64                      `json:"affiliate_rebate_per_invitee_cap"`
-	DefaultUserRPMLimit          int                          `json:"default_user_rpm_limit"`
-	DefaultSubscriptions         []DefaultSubscriptionSetting `json:"default_subscriptions"`
+	DefaultConcurrency               int                          `json:"default_concurrency"`
+	DefaultBalance                   float64                      `json:"default_balance"`
+	AffiliateRebateRate              float64                      `json:"affiliate_rebate_rate"`
+	AffiliateRebateFreezeHours       int                          `json:"affiliate_rebate_freeze_hours"`
+	AffiliateRebateDurationDays      int                          `json:"affiliate_rebate_duration_days"`
+	AffiliateRebatePerInviteeCap     float64                      `json:"affiliate_rebate_per_invitee_cap"`
+	DistributionFreezeHours          int                          `json:"distribution_freeze_hours"`
+	DistributionKol2Rate             float64                      `json:"distribution_kol2_rate"`
+	DistributionCommissionUpperRatio float64                      `json:"distribution_commission_upper_ratio"`
+	DistributionGlobalLevels         []DistributionLevelConfig    `json:"distribution_global_levels"`
+	DefaultUserRPMLimit              int                          `json:"default_user_rpm_limit"`
+	DefaultSubscriptions             []DefaultSubscriptionSetting `json:"default_subscriptions"`
 
 	// Model fallback configuration
 	EnableModelFallback      bool   `json:"enable_model_fallback"`
