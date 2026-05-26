@@ -351,6 +351,8 @@ export default {
     apiKeys: 'API Keys',
     usage: 'Usage',
     redeem: 'Redeem',
+    distribution: 'Distribution',
+    distributionManagement: 'Distribution',
     affiliate: 'Affiliate Rebates',
     affiliateManagement: 'Affiliate Rebates',
     affiliateInviteRecords: 'Invite Records',
@@ -1040,6 +1042,280 @@ export default {
     }
   },
 
+  distribution: {
+    title: 'Distribution',
+    description: 'View your channel-scoped members, attributed users, and commission records.',
+    overview: {
+      title: 'Channel Overview',
+      description: 'Review channel performance, warning states, and your personal promotion metrics.'
+    },
+    tabs: {
+      wallet: 'Wallet Activity',
+      alertEvents: 'Alert Events',
+      walletRequests: 'Recharge / Refund Requests',
+      wholesalePricing: 'Wholesale Pricing',
+      members: 'Members',
+      promotionLinks: 'Promotion Links',
+      attributions: 'Promoted Users',
+      commissions: 'Commissions'
+    },
+    groups: {
+      organizationManagement: 'Organization Management',
+      promotionManagement: 'Promotion Management',
+      commissionSettlement: 'Commission Settlement',
+      riskAlerts: 'Risk Alerts'
+    },
+    stats: {
+      channelOrgId: 'Channel Org',
+      members: 'Members',
+      promotionLinks: 'Promotion Links',
+      walletBalance: 'Wallet Balance',
+      walletReserved: 'Reserved Commission',
+      totalRecharged: 'Total Recharged',
+      totalConsumed: 'Total Consumed',
+      attributions: 'Promoted Users',
+      commissions: 'Commission Rows'
+    },
+    actions: {
+      viewChannelOverview: 'Channel Overview',
+      viewDistributionCenter: 'Distribution Center',
+      createMember: 'Create Member',
+      createPromotionLink: 'Create Promotion Link',
+      requestWalletRecharge: 'Request Recharge',
+      requestWalletRefund: 'Request Refund',
+      manageChannel: 'Channel Settings',
+      settleCommission: 'Settle Commission',
+      batchSettleCommission: 'Batch Settle ({count})'
+    },
+    dialogs: {
+      memberTitle: 'Create Member',
+      linkTitle: 'Create Promotion Link',
+      walletRechargeRequestTitle: 'Submit Recharge Request',
+      walletRefundRequestTitle: 'Submit Refund Request',
+      settingsTitle: 'Channel Settings',
+      settleTitle: 'Settle Commission'
+    },
+    fields: {
+      channelName: 'Channel Name',
+      userId: 'User ID',
+      roleType: 'Role',
+      parentMemberIdPlaceholder: 'Enter your parent member ID when creating KOLs',
+      levelCode: 'Level Code',
+      levelCodePlaceholder: 'Optional, leave blank to use the default rule',
+      commissionSettlementMethod: 'Default Settlement Method',
+      levelsJson: 'Channel Levels (JSON)',
+      wholesaleDiscountRate: 'Wholesale Discount',
+      refundFeeRate: 'Refund Fee Rate',
+      firstRechargeMinAmount: 'First Recharge Minimum',
+      rechargeMinAmount: 'Per Recharge Minimum',
+      warningThreshold: 'Warning Threshold',
+      consumptionLimit: 'Consumption Limit',
+      consumptionWarningThreshold: 'Consumption Warning Threshold',
+      rechargeLeadTimeDays: 'Recharge Lead Time (days)',
+      rechargeDeadlineNote: 'Recharge Deadline Note',
+      logoUrl: 'Logo URL',
+      primaryColor: 'Primary Color',
+      domain: 'Custom Domain',
+      apiDomain: 'API Gateway Domain',
+      commissionRate: 'Commission Rate',
+      memberId: 'Member ID',
+      code: 'Code',
+      codePlaceholder: 'Leave blank to auto-generate',
+      targetType: 'Target Type',
+      settlementMethod: 'Settlement Method',
+      amount: 'Amount',
+      referenceNo: 'Reference No.',
+      note: 'Note',
+      status: 'Status'
+    },
+    pricing: {
+      input: 'Input',
+      output: 'Output',
+      cacheWrite: 'Cache Write',
+      cacheRead: 'Cache Read',
+      image: 'Image'
+    },
+    analytics: {
+      channelTitle: 'Channel Performance',
+      channelDescription: 'A channel-wide view of registrations, recharges, consumption, and commissions within the selected range.',
+      personalTitle: 'Personal Promotion Performance',
+      personalDescription: 'See what your own agent / KOL members generated within the selected range.',
+      trendTitle: 'Channel Trend',
+      trendDescription: 'Track recharge, consumption, and commission changes over time.',
+      memberRankingTitle: 'Member Ranking',
+      childRankingTitle: 'Direct Child Ranking',
+      channelUnavailable: 'This account cannot manage the channel, so the channel-wide analytics panel is hidden.',
+      personalUnavailable: 'This account has no agent / KOL promoter membership, so the personal analytics panel is hidden.',
+      emptyTrend: 'No trend data is available for the selected range.',
+      emptyRanking: 'No member ranking data is available for the selected range.',
+      emptyChildRanking: 'No direct child ranking data is available for the selected range.',
+      topRanking: 'Top {count}',
+      granularity: {
+        day: 'Daily',
+        week: 'Weekly',
+        month: 'Monthly'
+      },
+      metrics: {
+        registeredUsers: 'Registered Users',
+        rechargeAmount: 'Recharge Amount',
+        consumptionAmount: 'Consumption Amount',
+        commissionAmount: 'Commission Amount',
+        settledCommissionAmount: 'Settled Commission',
+        commissionExpenseRatio: 'Commission Expense Ratio',
+        commissionUpperRatio: 'Commission Cap'
+      }
+    },
+    filters: {
+      allRoles: 'All roles',
+      allTransactionTypes: 'All transaction types',
+      allAlertTypes: 'All alert types',
+      allAlertStatuses: 'All alert statuses',
+      allSeverities: 'All severities',
+      allRequestTypes: 'All request types',
+      allRequestStatuses: 'All request statuses',
+      pricingSearchPlaceholder: 'Search by model or provider'
+    },
+    warnings: {
+      suspendedTitle: 'Channel service is suspended',
+      suspendedGenericDescription: 'The current channel status is {status}, so new API consumption has been paused. {note}',
+      suspendedByBalanceDescription: 'The available prepaid balance is {available} (balance {balance}, reserved commission {reserved}), so new API consumption has been paused. {note}',
+      suspendedByConsumptionDescription: 'Channel consumption has reached {consumed} against the limit of {limit}, so new API consumption has been paused. {note}',
+      lowBalanceTitle: 'Prepaid balance is near the warning threshold',
+      lowBalanceDescription: 'Current balance {balance}, warning threshold {threshold}. Recharge at least {leadDays} day(s) in advance. {note}',
+      consumptionTitle: 'Channel consumption capacity is running low',
+      consumptionDescription: 'Remaining capacity {remaining}, total limit {limit}, warning threshold {threshold}. {note}'
+    },
+    alertTypes: {
+      low_balance: 'Low Balance',
+      balance_exhausted: 'Balance Exhausted',
+      consumption_warning: 'Consumption Warning',
+      consumption_exhausted: 'Consumption Exhausted'
+    },
+    severities: {
+      info: 'Info',
+      warning: 'Warning',
+      critical: 'Critical'
+    },
+    alertStatuses: {
+      active: 'Active',
+      resolved: 'Resolved'
+    },
+    alertSummaries: {
+      lowBalance: 'Current balance {balance}, warning threshold {threshold}. {note}',
+      balanceExhausted: 'Available balance is {available}; new API consumption has been paused. {note}',
+      consumptionWarning: 'Remaining capacity {remaining}, total limit {limit}. {note}',
+      consumptionExhausted: 'Current consumption {consumed} has reached the limit of {limit}. {note}'
+    },
+    empty: {
+      title: 'No distribution channel yet',
+      description: 'This account is not currently attributed to a distribution channel.'
+    },
+    columns: {
+      id: 'ID',
+      memberId: 'Member ID',
+      user: 'User',
+      code: 'Code',
+      channelOrgId: 'Channel Org',
+      role: 'Role',
+      levelCode: 'Level Code',
+      parentMemberId: 'Parent',
+      referrerMemberId: 'Referrer',
+      promotionLinkId: 'Promotion Link',
+      model: 'Model',
+      provider: 'Provider',
+      billingMode: 'Mode',
+      commissionType: 'Commission Type',
+      requestType: 'Request Type',
+      transactionType: 'Transaction Type',
+      commissionRate: 'Rate',
+      officialPricing: 'Official Pricing',
+      wholesalePricing: 'Wholesale Pricing',
+      baseAmount: 'Base Amount',
+      amount: 'Amount',
+      balanceBefore: 'Balance Before',
+      balanceAfter: 'Balance After',
+      reservedAfter: 'Reserved After',
+      referenceNo: 'Reference No.',
+      note: 'Note',
+      status: 'Status',
+      settlementMethod: 'Settlement Method',
+      targetType: 'Target Type',
+      boundSource: 'Source',
+      boundAt: 'Bound At',
+      frozenUntil: 'Frozen Until',
+      createdAt: 'Created At'
+    },
+    targetTypes: {
+      registration: 'Registration',
+      oauth: 'OAuth',
+      manual: 'Manual'
+    },
+    settlementMethods: {
+      balance: 'Balance',
+      auto: 'Auto',
+      manual: 'Manual',
+      offline: 'Offline'
+    },
+    commissionTypes: {
+      direct: 'Direct',
+      management_reward: 'Management Reward',
+      channel_commission: 'Channel Commission',
+      team_reward: 'Team Reward'
+    },
+    transactionTypes: {
+      recharge: 'Recharge',
+      refund: 'Refund',
+      consume: 'Usage Deduction',
+      commission_reserve: 'Commission Reserve',
+      commission_release: 'Commission Release',
+      commission_settle: 'Commission Settlement Debit',
+      commission_deduct: 'Commission Direct Debit',
+      commission_refund: 'Commission Refund'
+    },
+    requestTypes: {
+      recharge: 'Recharge Request',
+      refund: 'Refund Request'
+    },
+    requestStatuses: {
+      pending: 'Pending Review',
+      approved: 'Approved',
+      rejected: 'Rejected'
+    },
+    roles: {
+      manager: 'Manager',
+      agent: 'Agent',
+      kol1: 'KOL 1',
+      kol2: 'KOL 2'
+    },
+    statuses: {
+      active: 'Active',
+      inactive: 'Inactive',
+      disabled: 'Disabled',
+      frozen: 'Frozen',
+      available: 'Available',
+      settled: 'Settled',
+      cancelled: 'Cancelled',
+      reversed: 'Reversed'
+    },
+    errors: {
+      loadFailed: 'Failed to load distribution data',
+      createFailed: 'Failed to create distribution record',
+      updateFailed: 'Failed to update distribution record',
+      levelsFormatError: 'Invalid channel distribution levels JSON.'
+    },
+    messages: {
+      memberCreated: 'Member created',
+      linkCreated: 'Promotion link created',
+      walletRequestSubmitted: 'Request submitted and waiting for review',
+      settingsUpdated: 'Channel settings updated',
+      commissionSettled: 'Commission settled',
+      commissionsSettled: '{count} commissions settled',
+      commissionsSettledPartial: '{count} commissions settled before a later item failed',
+      selectedCommissionCount: '{count} commissions will be settled in this operation.',
+      wholesaleDiscountRate: 'Current wholesale discount: {rate}'
+    }
+  },
+
   affiliate: {
     title: 'Affiliate Rebates',
     description: 'Invite new users and convert your rebate quota into account balance',
@@ -1114,7 +1390,9 @@ export default {
     historyWillAppear: 'Your redemption history will appear here',
     balanceAddedRedeem: 'Balance Added (Redeem)',
     balanceAddedAffiliate: 'Balance Added (Affiliate Transfer)',
+    balanceAddedDistribution: 'Balance Added (Distribution Commission)',
     balanceAddedAdmin: 'Balance Added (Admin)',
+    balanceDeductedDistribution: 'Balance Deducted (Distribution Commission Reversal)',
     balanceDeductedAdmin: 'Balance Deducted (Admin)',
     concurrencyAddedRedeem: 'Concurrency Added (Redeem)',
     concurrencyAddedAdmin: 'Concurrency Added (Admin)',
@@ -1704,6 +1982,272 @@ export default {
       }
     },
 
+    distribution: {
+      title: 'Distribution',
+      description: 'Manage channel organizations, members, attributions, and usage-based commission records.',
+      groups: {
+        organizationManagement: 'Organization Management',
+        promotionManagement: 'Promotion Management',
+        commissionSettlement: 'Commission Settlement',
+        riskAlerts: 'Risk Alerts'
+      },
+      tabs: {
+        organizations: 'Organizations',
+        members: 'Members',
+      promotionLinks: 'Promotion Links',
+      wallets: 'Wallets',
+      alertEvents: 'Alert Events',
+      walletRequests: 'Recharge / Refund Requests',
+        attributions: 'Attributed Users',
+        commissions: 'Commissions'
+      },
+      stats: {
+        organizations: 'Organizations',
+        members: 'Members',
+        promotionLinks: 'Promotion Links',
+        wallets: 'Wallets',
+        walletTransactions: 'Wallet Transactions',
+        prepaidBalanceTotal: 'Prepaid Balance Total',
+        commissionExpenseRatio: 'Commission Expense Ratio',
+        commissionUpperRatio: 'Commission Cap',
+        attributions: 'Attributed Users',
+        commissions: 'Commission Rows'
+      },
+      actions: {
+        createOrganization: 'Create Organization',
+        createMember: 'Create Member',
+        createPromotionLink: 'Create Promotion Link',
+        approveWalletRequest: 'Approve Request',
+        rejectWalletRequest: 'Reject Request',
+        viewAttributionAudits: 'View Audit',
+        adjustAttribution: 'Adjust Attribution',
+        rechargeWallet: 'Confirm Recharge',
+        refundWallet: 'Confirm Refund',
+        settleCommission: 'Settle Commission',
+        reverseCommission: 'Reverse Commission'
+      },
+      filters: {
+      channelOrgId: 'Channel org ID',
+      allRoles: 'All roles',
+      allTransactionTypes: 'All transaction types',
+      allAlertTypes: 'All alert types',
+      allAlertStatuses: 'All alert statuses',
+      allSeverities: 'All severities',
+      allRequestTypes: 'All request types',
+        allRequestStatuses: 'All request statuses'
+      },
+      dialogs: {
+        organizationTitle: 'Create Organization',
+        organizationEditTitle: 'Edit Organization',
+        memberTitle: 'Create Member',
+        linkTitle: 'Create Promotion Link',
+        walletTitle: 'Edit Wallet',
+        rechargeTitle: 'Confirm Prepaid Recharge',
+        refundTitle: 'Confirm Prepaid Refund',
+        settleTitle: 'Settle Commission',
+        attributionTitle: 'Adjust Attribution',
+        attributionAuditTitle: 'Attribution Audit'
+      },
+      fields: {
+        name: 'Name',
+        type: 'Type',
+        ownerUserId: 'Owner User ID',
+        wholesaleDiscountRate: 'Wholesale Discount',
+        channelOrgId: 'Channel Org ID',
+        userId: 'User ID',
+        role: 'Role',
+        parentMemberId: 'Parent Member ID',
+        levelCode: 'Level Code',
+        levelCodeDesc: 'When provided, the backend resolves the channel or global level and overrides the commission rate.',
+        commissionRate: 'Commission Rate',
+        status: 'Status',
+        memberId: 'Member ID',
+        code: 'Code',
+        codePlaceholder: 'Leave blank to auto-generate',
+        targetType: 'Target Type',
+        warningThreshold: 'Warning Threshold',
+        amount: 'Amount',
+        rechargeAmount: 'Recharge Amount',
+        refundAmount: 'Refund Amount',
+        referenceNo: 'Reference No.',
+        note: 'Note',
+        refundHint: 'This is a mock refund bookkeeping flow only. No external refund provider is called, and fees are calculated from the channel refund fee rate.',
+        settlementMethod: 'Settlement Method',
+        commissionSettlementMethod: 'Default Settlement Method',
+        refundFeeRate: 'Refund Fee Rate',
+        commissionUpperRatio: 'Commission Upper Ratio',
+        managementRewardCap: 'Management Reward Cap',
+        directCommissionRateCap: 'Direct Commission Rate Cap',
+        channelCommissionRate: 'Channel Commission Rate',
+        firstRechargeMinAmount: 'First Recharge Minimum',
+        rechargeMinAmount: 'Per Recharge Minimum',
+        consumptionLimit: 'Consumption Limit',
+        consumptionWarningThreshold: 'Consumption Warning Threshold',
+        rechargeLeadTimeDays: 'Recharge Lead Time (days)',
+        rechargeDeadlineNote: 'Recharge Deadline Note',
+        maxAgentCount: 'Agent Limit',
+        maxKolCount: 'KOL Limit',
+        maxManagerCount: 'Manager Limit',
+        userCommissionTotalCap: 'End User Lifetime Commission Cap',
+        memberCommissionTotalCap: 'Promoter Lifetime Commission Cap',
+        teamRewardRate: 'Team Reward Rate',
+        teamRewardThreshold: 'Team Reward Threshold',
+        freezeHours: 'Freeze Period (hours)',
+        kol2Rate: 'KOL2 Rate',
+        levelsJson: 'Channel Levels (JSON)',
+        levelsJsonDesc: 'Edit the channel-specific agent level list as JSON.',
+        logoUrl: 'Logo URL',
+        primaryColor: 'Primary Color',
+        domain: 'Custom Domain',
+        apiDomain: 'API Gateway Domain',
+      },
+      columns: {
+        id: 'ID',
+        memberId: 'Member ID',
+        name: 'Name',
+        type: 'Type',
+        ownerUserId: 'Owner User ID',
+        user: 'User',
+        code: 'Code',
+        channelOrgId: 'Channel Org',
+        organizationName: 'Organization',
+        organizationType: 'Org Type',
+        prepaidBalance: 'Prepaid Balance',
+        commissionReserved: 'Reserved',
+        totalRecharged: 'Recharged',
+        totalConsumed: 'Consumed',
+        warningThreshold: 'Warning',
+        updatedAt: 'Updated At',
+        role: 'Role',
+        levelCode: 'Level Code',
+        parentMemberId: 'Parent',
+        referrerMemberId: 'Referrer',
+        promotionLinkId: 'Promotion Link',
+        previousChannelOrgId: 'Previous Channel Org',
+        newChannelOrgId: 'New Channel Org',
+        previousReferrerMemberId: 'Previous Referrer',
+        newReferrerMemberId: 'New Referrer',
+        previousPromotionLinkId: 'Previous Promotion Link',
+        newPromotionLinkId: 'New Promotion Link',
+        operator: 'Operator',
+        requestType: 'Request Type',
+        transactionType: 'Transaction Type',
+        alertType: 'Alert Type',
+        commissionType: 'Commission Type',
+        commissionRate: 'Rate',
+        baseAmount: 'Base Amount',
+        amount: 'Amount',
+        summary: 'Summary',
+        severity: 'Severity',
+        balanceBefore: 'Balance Before',
+        balanceAfter: 'Balance After',
+        reservedAfter: 'Reserved After',
+        referenceNo: 'Reference No.',
+        note: 'Note',
+        status: 'Status',
+        settlementMethod: 'Settlement Method',
+        targetType: 'Target Type',
+        boundSource: 'Source',
+        boundAt: 'Bound At',
+        frozenUntil: 'Frozen Until',
+        createdAt: 'Created At',
+        triggeredAt: 'Triggered At',
+        resolvedAt: 'Resolved At',
+        lastObservedAt: 'Last Observed At'
+      },
+      targetTypes: {
+        registration: 'Registration',
+        oauth: 'OAuth',
+        manual: 'Manual'
+      },
+      settlementMethods: {
+        balance: 'Balance',
+        auto: 'Auto',
+        manual: 'Manual',
+        offline: 'Offline'
+      },
+      commissionTypes: {
+        direct: 'Direct',
+        management_reward: 'Management Reward',
+        channel_commission: 'Channel Commission',
+        team_reward: 'Team Reward'
+      },
+      organizationTypes: {
+        platform: 'Platform',
+        reseller: 'Independent Agent',
+        oem: 'OEM'
+      },
+      roles: {
+        manager: 'Manager',
+        agent: 'Agent',
+        kol1: 'KOL 1',
+        kol2: 'KOL 2'
+      },
+      statuses: {
+        active: 'Active',
+        inactive: 'Inactive',
+        disabled: 'Disabled',
+        pending: 'Pending Review',
+        approved: 'Approved',
+        rejected: 'Rejected',
+        frozen: 'Frozen',
+        available: 'Available',
+        settled: 'Settled',
+        cancelled: 'Cancelled',
+        reversed: 'Reversed'
+      },
+      messages: {
+        organizationCreated: 'Organization created',
+        organizationUpdated: 'Organization updated',
+        memberCreated: 'Member created',
+        linkCreated: 'Promotion link created',
+        walletUpdated: 'Wallet updated',
+        walletRecharged: 'Prepaid balance updated',
+        walletRefunded: 'Prepaid refund recorded. Net {netAmount}, fee {feeAmount}',
+        walletRequestReviewed: 'Wallet request review completed',
+        attributionUpdated: 'Attribution updated',
+        noAttributionAudits: 'No attribution audit records yet',
+        commissionSettled: 'Commission settled',
+        commissionReversed: 'Commission reversed'
+      },
+      errors: {
+        loadFailed: 'Failed to load distribution data',
+        createFailed: 'Failed to create distribution record',
+        updateFailed: 'Failed to update distribution record',
+        levelsFormatError: 'Invalid channel distribution levels JSON.'
+      },
+      requestTypes: {
+        recharge: 'Recharge Request',
+        refund: 'Refund Request'
+      },
+      alertTypes: {
+        low_balance: 'Low Balance',
+        balance_exhausted: 'Balance Exhausted',
+        consumption_warning: 'Consumption Warning',
+        consumption_exhausted: 'Consumption Exhausted'
+      },
+      severities: {
+        info: 'Info',
+        warning: 'Warning',
+        critical: 'Critical'
+      },
+      alertStatuses: {
+        active: 'Active',
+        resolved: 'Resolved'
+      },
+      alertSummaries: {
+        lowBalance: 'Current balance {balance}, warning threshold {threshold}. {note}',
+        balanceExhausted: 'Available balance is {available}; new API consumption has been paused. {note}',
+        consumptionWarning: 'Remaining capacity {remaining}, total limit {limit}. {note}',
+        consumptionExhausted: 'Current consumption {consumed} has reached the limit of {limit}. {note}'
+      },
+      requestStatuses: {
+        pending: 'Pending Review',
+        approved: 'Approved',
+        rejected: 'Rejected'
+      }
+    },
+
     affiliates: {
       invitesDescription: 'View site-wide inviter and invitee relationships',
       rebatesDescription: 'View recharge orders that generated affiliate rebates',
@@ -1912,6 +2456,7 @@ export default {
       allTypes: 'All Types',
       typeBalance: 'Balance (Redeem)',
       typeAffiliateBalance: 'Balance (Affiliate Transfer)',
+      typeDistributionBalance: 'Balance (Distribution Commission)',
       typeAdminBalance: 'Balance (Admin)',
       typeConcurrency: 'Concurrency (Redeem)',
       typeAdminConcurrency: 'Concurrency (Admin)',
@@ -5287,6 +5832,19 @@ export default {
             placeholder: 'e.g. 30',
             clearHint: 'Submitting empty will clear the exclusive rate for selected users.',
           },
+        },
+        distribution: {
+          title: 'Distribution',
+          description: 'Global defaults for distribution freeze period, KOL2 rate, and commission cap.',
+          freezeHours: 'Freeze Period (hours)',
+          freezeHoursDesc: 'Used as the default freeze period when a channel does not override it.',
+          kol2Rate: 'KOL2 Rate',
+          kol2RateDesc: 'Global commission rate for level-2 KOLs (0-100%).',
+          commissionUpperRatio: 'Commission Cap',
+          commissionUpperRatioDesc: 'Maximum total commission ratio for a single usage (0-100%).',
+          levelsJson: 'Global Levels (JSON)',
+          levelsJsonDesc: 'Edit the global agent level list as JSON. Each item needs code, name, commission_rate, active, sort_order, and note.',
+          levelsFormatError: 'Invalid global distribution levels JSON.',
         },
       },
       emailTabDisabledTitle: 'Email Verification Not Enabled',

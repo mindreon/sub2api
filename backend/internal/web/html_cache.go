@@ -11,8 +11,7 @@ import (
 // HTMLCache manages the cached index.html with injected settings
 type HTMLCache struct {
 	mu              sync.RWMutex
-	cachedHTML      []byte
-	etag            string
+	cached          map[string]CachedHTML
 	baseHTMLHash    string // Hash of the original index.html (immutable after build)
 	settingsVersion uint64 // Incremented when settings change
 }
@@ -25,7 +24,7 @@ type CachedHTML struct {
 
 // NewHTMLCache creates a new HTML cache instance
 func NewHTMLCache() *HTMLCache {
-	return &HTMLCache{}
+	return &HTMLCache{cached: make(map[string]CachedHTML)}
 }
 
 // SetBaseHTML initializes the cache with the base HTML template
@@ -43,31 +42,41 @@ func (c *HTMLCache) Invalidate() {
 	defer c.mu.Unlock()
 
 	c.settingsVersion++
-	c.cachedHTML = nil
-	c.etag = ""
+	c.cached = make(map[string]CachedHTML)
 }
 
 // Get returns the cached HTML or nil if cache is stale
 func (c *HTMLCache) Get() *CachedHTML {
+	return c.GetForKey("")
+}
+
+func (c *HTMLCache) GetForKey(key string) *CachedHTML {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if c.cachedHTML == nil {
+	cached, ok := c.cached[key]
+	if !ok || cached.Content == nil {
 		return nil
 	}
 	return &CachedHTML{
-		Content: c.cachedHTML,
-		ETag:    c.etag,
+		Content: cached.Content,
+		ETag:    cached.ETag,
 	}
 }
 
 // Set updates the cache with new rendered HTML
 func (c *HTMLCache) Set(html []byte, settingsJSON []byte) {
+	c.SetForKey("", html, settingsJSON)
+}
+
+func (c *HTMLCache) SetForKey(key string, html []byte, settingsJSON []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.cachedHTML = html
-	c.etag = c.generateETag(settingsJSON)
+	c.cached[key] = CachedHTML{
+		Content: html,
+		ETag:    c.generateETag(settingsJSON),
+	}
 }
 
 // generateETag creates an ETag from base HTML hash + settings hash

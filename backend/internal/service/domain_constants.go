@@ -20,15 +20,19 @@ const (
 
 // Affiliate rebate settings
 const (
-	AffiliateRebateRateDefault          = 20.0
-	AffiliateRebateRateMin              = 0.0
-	AffiliateRebateRateMax              = 100.0
-	AffiliateEnabledDefault             = false // 邀请返利总开关默认关闭
-	AffiliateRebateFreezeHoursDefault   = 0     // 0 = 不冻结（向后兼容）
-	AffiliateRebateFreezeHoursMax       = 720   // 最大 30 天
-	AffiliateRebateDurationDaysDefault  = 0     // 0 = 永久有效
-	AffiliateRebateDurationDaysMax      = 3650  // ~10 年
-	AffiliateRebatePerInviteeCapDefault = 0.0   // 0 = 无上限
+	AffiliateRebateRateDefault              = 20.0
+	AffiliateRebateRateMin                  = 0.0
+	AffiliateRebateRateMax                  = 100.0
+	AffiliateEnabledDefault                 = false // 邀请返利总开关默认关闭
+	AffiliateRebateFreezeHoursDefault       = 0     // 0 = 不冻结（向后兼容）
+	AffiliateRebateFreezeHoursMax           = 720   // 最大 30 天
+	AffiliateRebateDurationDaysDefault      = 0     // 0 = 永久有效
+	AffiliateRebateDurationDaysMax          = 3650  // ~10 年
+	AffiliateRebatePerInviteeCapDefault     = 0.0   // 0 = 无上限
+	DistributionFreezeHoursDefault          = 168   // 默认 7 天
+	DistributionFreezeHoursMax              = 720   // 最大 30 天
+	DistributionKol2RateDefault             = 5.0   // 默认 5%
+	DistributionCommissionUpperRatioDefault = 35.0  // 默认 35%
 )
 
 // Platform constants
@@ -51,11 +55,12 @@ const (
 
 // Redeem type constants
 const (
-	RedeemTypeBalance          = domain.RedeemTypeBalance
-	RedeemTypeConcurrency      = domain.RedeemTypeConcurrency
-	RedeemTypeSubscription     = domain.RedeemTypeSubscription
-	RedeemTypeInvitation       = domain.RedeemTypeInvitation
-	RedeemTypeAffiliateBalance = "affiliate_balance"
+	RedeemTypeBalance             = domain.RedeemTypeBalance
+	RedeemTypeConcurrency         = domain.RedeemTypeConcurrency
+	RedeemTypeSubscription        = domain.RedeemTypeSubscription
+	RedeemTypeInvitation          = domain.RedeemTypeInvitation
+	RedeemTypeAffiliateBalance    = "affiliate_balance"
+	RedeemTypeDistributionBalance = "distribution_balance"
 )
 
 // PromoCode status constants
@@ -110,6 +115,10 @@ const (
 	SettingKeyAffiliateRebateFreezeHours       = "affiliate_rebate_freeze_hours"       // 返利冻结期（小时，0=不冻结）
 	SettingKeyAffiliateRebateDurationDays      = "affiliate_rebate_duration_days"      // 返利有效期（天，0=永久）
 	SettingKeyAffiliateRebatePerInviteeCap     = "affiliate_rebate_per_invitee_cap"    // 单人返利上限（0=无上限）
+	SettingKeyDistributionFreezeHours          = "distribution_freeze_hours"           // 分销冻结期（小时，0=不冻结）
+	SettingKeyDistributionKol2Rate             = "distribution_kol2_rate"              // 2级KOL全局佣金比例（0-100）
+	SettingKeyDistributionCommissionUpperRatio = "distribution_commission_upper_ratio" // 分销单笔总佣金比例上限（0-100）
+	SettingKeyDistributionGlobalLevels         = "distribution_global_levels"          // 平台全局分销等级配置（JSON 数组）
 	SettingKeyRiskControlEnabled               = "risk_control_enabled"                // 是否启用风控中心入口与审计链路
 	SettingKeyContentModerationConfig          = "content_moderation_config"           // 内容审计配置（JSON）
 	SettingKeyLoginAgreementEnabled            = "login_agreement_enabled"             // 登录前是否要求同意条款

@@ -97,6 +97,37 @@ func RegisterAdminRoutes(
 
 		// 邀请返利（专属用户管理）
 		registerAffiliateRoutes(admin, h)
+
+		// 分销体系
+		registerDistributionRoutes(admin, h)
+	}
+}
+
+func registerDistributionRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	distribution := admin.Group("/distribution")
+	{
+		distribution.GET("/organizations", h.Admin.Distribution.ListOrganizations)
+		distribution.POST("/organizations", h.Admin.Distribution.CreateOrganization)
+		distribution.PUT("/organizations/:id", h.Admin.Distribution.UpdateOrganization)
+		distribution.GET("/members", h.Admin.Distribution.ListMembers)
+		distribution.POST("/members", h.Admin.Distribution.CreateMember)
+		distribution.GET("/promotion-links", h.Admin.Distribution.ListPromotionLinks)
+		distribution.POST("/promotion-links", h.Admin.Distribution.CreatePromotionLink)
+		distribution.GET("/attributions", h.Admin.Distribution.ListAttributions)
+		distribution.GET("/attribution-audits", h.Admin.Distribution.ListAttributionAudits)
+		distribution.PUT("/attributions/:user_id", h.Admin.Distribution.UpdateAttribution)
+		distribution.GET("/commissions", h.Admin.Distribution.ListCommissions)
+		distribution.GET("/wallets", h.Admin.Distribution.ListWallets)
+		distribution.GET("/alert-events", h.Admin.Distribution.ListAlertEvents)
+		distribution.GET("/wallet-requests", h.Admin.Distribution.ListWalletRequests)
+		distribution.GET("/wallet-transactions", h.Admin.Distribution.ListWalletTransactions)
+		distribution.POST("/wallets/:channel_org_id/recharge", h.Admin.Distribution.RechargeWallet)
+		distribution.POST("/wallets/:channel_org_id/refund", h.Admin.Distribution.RefundWallet)
+		distribution.POST("/wallet-requests/:request_id/review", h.Admin.Distribution.ReviewWalletRequest)
+		distribution.PUT("/wallets/:channel_org_id/warning-threshold", h.Admin.Distribution.UpdateWalletWarningThreshold)
+		distribution.GET("/stats", h.Admin.Distribution.GetStats)
+		distribution.POST("/commissions/:commission_id/settle", h.Admin.Distribution.SettleCommission)
+		distribution.POST("/commissions/:commission_id/reverse", h.Admin.Distribution.ReverseCommission)
 	}
 }
 

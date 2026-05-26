@@ -703,6 +703,22 @@ func TestHTMLCache(t *testing.T) {
 		assert.Nil(t, cache.Get())
 	})
 
+	t.Run("keyed_entries_do_not_overlap", func(t *testing.T) {
+		cache := NewHTMLCache()
+		cache.SetBaseHTML([]byte("<html></html>"))
+
+		cache.SetForKey("brand-a.example.com", []byte("<html>A</html>"), []byte(`{"site_name":"A"}`))
+		cache.SetForKey("brand-b.example.com", []byte("<html>B</html>"), []byte(`{"site_name":"B"}`))
+
+		a := cache.GetForKey("brand-a.example.com")
+		b := cache.GetForKey("brand-b.example.com")
+		require.NotNil(t, a)
+		require.NotNil(t, b)
+		assert.Equal(t, []byte("<html>A</html>"), a.Content)
+		assert.Equal(t, []byte("<html>B</html>"), b.Content)
+		assert.NotEqual(t, a.ETag, b.ETag)
+	})
+
 	t.Run("etag_changes_with_settings", func(t *testing.T) {
 		cache := NewHTMLCache()
 		cache.SetBaseHTML([]byte("<html></html>"))

@@ -431,9 +431,84 @@ func ProvideAPIKeyService(
 	cache APIKeyCache,
 	cfg *config.Config,
 	billingCacheService *BillingCacheService,
+	distributionChannelBillingService *DistributionChannelBillingService,
 ) *APIKeyService {
 	svc := NewAPIKeyService(apiKeyRepo, userRepo, groupRepo, userSubRepo, userGroupRateRepo, cache, cfg)
 	svc.SetRateLimitCacheInvalidator(billingCacheService)
+	svc.SetDistributionAccessChecker(distributionChannelBillingService)
+	return svc
+}
+
+func ProvideDistributionChannelBillingService(
+	attributionRepo DistributionAttributionLookupRepository,
+	organizationRepo DistributionOrganizationLookupRepository,
+	walletRepo DistributionChannelBillingWalletRepository,
+) *DistributionChannelBillingService {
+	return NewDistributionChannelBillingService(attributionRepo, organizationRepo, walletRepo)
+}
+
+func ProvideDistributionScopeService(
+	attributionRepo DistributionAttributionListRepository,
+	memberRepo DistributionMemberListRepository,
+	commissionRepo DistributionCommissionListRepository,
+	walletRepo DistributionWalletSummaryRepository,
+	statsRepo DistributionStatsSummaryRepository,
+	organizationRepo distributionUserChannelOrganizationRepository,
+	walletTransactionRepo DistributionWalletTransactionListRepository,
+) *DistributionScopeService {
+	svc := NewDistributionScopeService(attributionRepo, memberRepo, commissionRepo, walletRepo, statsRepo)
+	svc.SetOrganizationRepository(organizationRepo)
+	svc.SetWalletTransactionRepository(walletTransactionRepo)
+	return svc
+}
+
+func ProvideDistributionAdminService(
+	organizationRepo DistributionOrganizationListRepository,
+	memberRepo DistributionMemberAdminListRepository,
+	attributionRepo DistributionAttributionAdminListRepository,
+	commissionRepo DistributionCommissionAdminListRepository,
+	walletRepo DistributionWalletAdminListRepository,
+	statsRepo DistributionStatsAdminRepository,
+	settlementRepo DistributionCommissionSettlementRepository,
+	walletTransactionRepo DistributionWalletTransactionListRepository,
+	walletRequestRepo DistributionWalletRequestRepository,
+	alertEventRepo DistributionAlertEventRepository,
+) *DistributionAdminService {
+	svc := NewDistributionAdminService(
+		organizationRepo,
+		memberRepo,
+		attributionRepo,
+		commissionRepo,
+		walletRepo,
+		statsRepo,
+		settlementRepo,
+	)
+	svc.SetWalletTransactionRepository(walletTransactionRepo)
+	svc.SetWalletRequestRepository(walletRequestRepo)
+	svc.SetAlertEventRepository(alertEventRepo)
+	return svc
+}
+
+func ProvideDistributionCommissionService(
+	attributionRepo DistributionAttributionLookupRepository,
+	memberRepo DistributionMemberLookupRepository,
+	organizationRepo DistributionOrganizationLookupRepository,
+	consumptionRepo DistributionConsumptionRepository,
+	commissionRepo DistributionCommissionRepository,
+	historyRepo DistributionCommissionHistoryRepository,
+	walletRepo DistributionWalletMutationRepository,
+) *DistributionCommissionService {
+	svc := NewDistributionCommissionService(attributionRepo, memberRepo, organizationRepo, consumptionRepo, commissionRepo, historyRepo, 7*24*time.Hour)
+	svc.SetWalletRepository(walletRepo)
+	return svc
+}
+
+func ProvideDistributionAutoSettlementService(
+	repo DistributionAutoSettlementRepository,
+	adminService *DistributionAdminService,
+) *DistributionAutoSettlementService {
+	svc := NewDistributionAutoSettlementService(repo, adminService, time.Minute)
+	svc.Start()
 	return svc
 }
 
@@ -523,6 +598,14 @@ var ProviderSet = wire.NewSet(
 	NewModelPricingResolver,
 	NewContentModerationService,
 	NewAffiliateService,
+	ProvideDistributionScopeService,
+	ProvideDistributionAdminService,
+	NewDistributionOrganizationService,
+	NewDistributionMemberService,
+	NewDistributionPromotionService,
+	ProvideDistributionChannelBillingService,
+	ProvideDistributionCommissionService,
+	ProvideDistributionAutoSettlementService,
 	ProvidePaymentConfigService,
 	ProvidePaymentService,
 	ProvidePaymentOrderExpiryService,
@@ -530,6 +613,7 @@ var ProviderSet = wire.NewSet(
 	ProvideChannelMonitorService,
 	ProvideChannelMonitorRunner,
 	NewChannelMonitorRequestTemplateService,
+	NewDistributionAttributionService,
 )
 
 // ProvidePaymentConfigService wraps NewPaymentConfigService to accept the named

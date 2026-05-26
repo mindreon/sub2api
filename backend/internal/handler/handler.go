@@ -36,11 +36,13 @@ type AdminHandlers struct {
 	ContentModeration      *admin.ContentModerationHandler
 	Payment                *admin.PaymentHandler
 	Affiliate              *admin.AffiliateHandler
+	Distribution           *admin.DistributionHandler
 }
 
 // Handlers contains all HTTP handlers
 type Handlers struct {
 	Auth             *AuthHandler
+	Distribution     *DistributionHandler
 	User             *UserHandler
 	APIKey           *APIKeyHandler
 	Usage            *UsageHandler

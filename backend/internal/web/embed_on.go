@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
+	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -144,7 +145,8 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 	nonce := middleware.GetNonceFromContext(c)
 
 	// Check cache first
-	cached := s.cache.Get()
+	cacheKey := publicSettingsCacheKey(c)
+	cached := s.cache.GetForKey(cacheKey)
 	if cached != nil {
 		// Check If-None-Match for 304 response
 		if match := c.GetHeader("If-None-Match"); match == cached.ETag {
@@ -167,6 +169,7 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
 	defer cancel()
 
+	ctx = service.WithPublicSettingsRequestMeta(ctx, publicSettingsRequestHost(c), publicSettingsRequestScheme(c))
 	settings, err := s.settings.GetPublicSettingsForInjection(ctx)
 	if err != nil {
 		// Fallback: serve without injection
@@ -184,18 +187,54 @@ func (s *FrontendServer) serveIndexHTML(c *gin.Context) {
 	}
 
 	rendered := s.injectSettings(settingsJSON)
-	s.cache.Set(rendered, settingsJSON)
+	s.cache.SetForKey(cacheKey, rendered, settingsJSON)
 
 	// Replace nonce placeholder with actual nonce before serving
 	content := replaceNoncePlaceholder(rendered, nonce)
 
-	cached = s.cache.Get()
+	cached = s.cache.GetForKey(cacheKey)
 	if cached != nil {
 		c.Header("ETag", cached.ETag)
 	}
 	c.Header("Cache-Control", "no-cache")
 	c.Data(http.StatusOK, "text/html; charset=utf-8", content)
 	c.Abort()
+}
+
+func publicSettingsCacheKey(c *gin.Context) string {
+	if c == nil || c.Request == nil {
+		return ""
+	}
+	if host := strings.TrimSpace(c.GetHeader("X-Forwarded-Host")); host != "" {
+		return strings.ToLower(host)
+	}
+	return strings.ToLower(strings.TrimSpace(c.Request.Host))
+}
+
+func publicSettingsRequestHost(c *gin.Context) string {
+	if c == nil || c.Request == nil {
+		return ""
+	}
+	if forwardedHost := strings.TrimSpace(c.GetHeader("X-Forwarded-Host")); forwardedHost != "" {
+		return forwardedHost
+	}
+	return c.Request.Host
+}
+
+func publicSettingsRequestScheme(c *gin.Context) string {
+	if c == nil || c.Request == nil {
+		return "https"
+	}
+	if forwardedProto := strings.TrimSpace(c.GetHeader("X-Forwarded-Proto")); forwardedProto != "" {
+		return forwardedProto
+	}
+	if c.Request.TLS != nil {
+		return "https"
+	}
+	if strings.TrimSpace(c.Request.URL.Scheme) != "" {
+		return c.Request.URL.Scheme
+	}
+	return "http"
 }
 
 func (s *FrontendServer) injectSettings(settingsJSON []byte) []byte {

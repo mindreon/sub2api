@@ -241,6 +241,46 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/distribution',
+    name: 'Distribution',
+    component: () => import('@/views/user/DistributionView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Distribution',
+      titleKey: 'distribution.title',
+      descriptionKey: 'distribution.description'
+    }
+  },
+  {
+    path: '/distribution/group/organization-management',
+    redirect: '/distribution#members',
+  },
+  {
+    path: '/distribution/group/promotion-management',
+    redirect: '/distribution#promotion-links',
+  },
+  {
+    path: '/distribution/group/commission-settlement',
+    redirect: '/distribution#wallet',
+  },
+  {
+    path: '/distribution/group/risk-alerts',
+    redirect: '/distribution#alert-events',
+  },
+  {
+    path: '/distribution/overview',
+    name: 'DistributionOverview',
+    component: () => import('@/views/user/DistributionOverviewView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Channel Overview',
+      titleKey: 'distribution.overview.title',
+      descriptionKey: 'distribution.overview.description'
+    }
+  },
+  {
     path: '/available-channels',
     name: 'UserAvailableChannels',
     component: () => import('@/views/user/AvailableChannelsView.vue'),
@@ -571,6 +611,38 @@ const routes: RouteRecordRaw[] = [
       title: 'Usage Records',
       titleKey: 'admin.usage.title',
       descriptionKey: 'admin.usage.description'
+    }
+  },
+  {
+    path: '/admin/distribution',
+    redirect: '/admin/distribution/organizations',
+  },
+  {
+    path: '/admin/distribution/group/organization-management',
+    redirect: '/admin/distribution/organizations',
+  },
+  {
+    path: '/admin/distribution/group/promotion-management',
+    redirect: '/admin/distribution/promotion-links',
+  },
+  {
+    path: '/admin/distribution/group/commission-settlement',
+    redirect: '/admin/distribution/wallets',
+  },
+  {
+    path: '/admin/distribution/group/risk-alerts',
+    redirect: '/admin/distribution/alert-events',
+  },
+  {
+    path: '/admin/distribution/:tab(organizations|members|promotion-links|wallets|alert-events|wallet-requests|wallet-transactions|attributions|commissions)',
+    name: 'AdminDistribution',
+    component: () => import('@/views/admin/distribution/AdminDistributionView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Distribution',
+      titleKey: 'admin.distribution.title',
+      descriptionKey: 'admin.distribution.description'
     }
   },
   {

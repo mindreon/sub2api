@@ -12,6 +12,7 @@ import (
 	"time"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
+	"github.com/Wei-Shaw/sub2api/migrations"
 	"github.com/stretchr/testify/require"
 )
 
@@ -109,6 +110,21 @@ func TestMigrationChecksumCompatibilityRules_CoverEditedUpgradeCompatibilityMigr
 		require.Truef(t, ok, "missing compatibility rule for %s", name)
 		require.NotEmpty(t, rule.fileChecksum)
 		require.NotEmpty(t, rule.acceptedDBChecksum)
+	}
+}
+
+func TestDistributionMigrationFilesAreEmbedded(t *testing.T) {
+	for _, name := range []string{
+		"136_distribution_channel_orgs.sql",
+		"137_distribution_members.sql",
+		"138_distribution_promo_links.sql",
+		"139_distribution_user_attributions.sql",
+		"140_distribution_commission_ledger.sql",
+		"141_distribution_channel_wallets.sql",
+		"142_distribution_wallet_transactions.sql",
+	} {
+		_, err := fs.ReadFile(migrations.FS, name)
+		require.NoErrorf(t, err, "expected embedded migration %s to exist", name)
 	}
 }
 

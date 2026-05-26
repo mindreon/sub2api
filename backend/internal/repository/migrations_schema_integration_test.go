@@ -145,6 +145,31 @@ func TestMigrationsRunner_AuthIdentityAndPaymentSchemaStayAligned(t *testing.T) 
 	requireIndexAbsent(t, tx, "payment_orders", "paymentorder_out_trade_no_unique")
 }
 
+func TestDistributionSchema_IsPresentAndConstrained(t *testing.T) {
+	tx := testTx(t)
+
+	for _, table := range []string{
+		"channel_organizations",
+		"channel_members",
+		"promotion_links",
+		"user_attributions",
+		"commission_ledger",
+		"channel_wallets",
+		"channel_wallet_transactions",
+	} {
+		var regclass sql.NullString
+		require.NoError(t, tx.QueryRowContext(context.Background(), "SELECT to_regclass($1)", "public."+table).Scan(&regclass))
+		require.Truef(t, regclass.Valid, "expected %s table to exist", table)
+	}
+
+	requireColumn(t, tx, "user_attributions", "user_id", "bigint", 0, false)
+	requireIndex(t, tx, "user_attributions", "user_attributions_pkey")
+	requireConstraintDefinitionContains(t, tx, "channel_members", "channel_members_user_role_unique", "UNIQUE", "user_id", "channel_org_id", "role_type")
+	requireColumn(t, tx, "channel_wallet_transactions", "transaction_type", "character varying", 32, false)
+	requireIndex(t, tx, "channel_wallet_transactions", "idx_channel_wallet_transactions_channel_org_id")
+	requireIndex(t, tx, "channel_wallet_transactions", "idx_channel_wallet_transactions_type")
+}
+
 func requireIndex(t *testing.T, tx *sql.Tx, table, index string) {
 	t.Helper()
 

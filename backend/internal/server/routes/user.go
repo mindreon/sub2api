@@ -54,6 +54,27 @@ func RegisterUserRoutes(
 			}
 		}
 
+		// 分销数据（渠道内可见）
+		distribution := authenticated.Group("/distribution")
+		{
+			distribution.GET("/overview", h.Distribution.GetOverview)
+			distribution.GET("/organization", h.Distribution.GetOrganization)
+			distribution.PUT("/organization", h.Distribution.UpdateOrganization)
+			distribution.GET("/members", h.Distribution.ListMembers)
+			distribution.POST("/members", h.Distribution.CreateMember)
+			distribution.GET("/promotion-links", h.Distribution.ListPromotionLinks)
+			distribution.POST("/promotion-links", h.Distribution.CreatePromotionLink)
+			distribution.GET("/attributions", h.Distribution.ListAttributions)
+			distribution.GET("/commissions", h.Distribution.ListCommissions)
+			distribution.GET("/analytics", h.Distribution.GetAnalytics)
+			distribution.GET("/wholesale-pricing", h.Distribution.ListWholesalePricing)
+			distribution.POST("/commissions/:commission_id/settle", h.Distribution.SettleCommission)
+			distribution.GET("/alert-events", h.Distribution.ListAlertEvents)
+			distribution.GET("/wallet-requests", h.Distribution.ListWalletRequests)
+			distribution.POST("/wallet-requests", h.Distribution.CreateWalletRequest)
+			distribution.GET("/wallet-transactions", h.Distribution.ListWalletTransactions)
+		}
+
 		// API Key管理
 		keys := authenticated.Group("/keys")
 		{
