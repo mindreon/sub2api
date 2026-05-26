@@ -133,6 +133,7 @@ func (s *AuthService) loginOrRegisterVerifiedEmailOAuth(
 		}
 	}
 	s.RecordSuccessfulLogin(ctx, user.ID)
+	s.bindDistributionAttribution(ctx, user.ID, affiliateCode, "oauth")
 
 	tokenPair, err := s.GenerateTokenPair(ctx, user, "")
 	if err != nil {

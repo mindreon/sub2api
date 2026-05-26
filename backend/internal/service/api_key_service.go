@@ -192,6 +192,10 @@ type RateLimitCacheInvalidator interface {
 	InvalidateAPIKeyRateLimit(ctx context.Context, keyID int64) error
 }
 
+type DistributionAccessChecker interface {
+	CheckUserAccess(ctx context.Context, userID int64) error
+}
+
 type APIKeyService struct {
 	apiKeyRepo            APIKeyRepository
 	userRepo              UserRepository
@@ -200,6 +204,7 @@ type APIKeyService struct {
 	userGroupRateRepo     UserGroupRateRepository
 	cache                 APIKeyCache
 	rateLimitCacheInvalid RateLimitCacheInvalidator // optional: invalidate Redis rate limit cache
+	distributionChecker   DistributionAccessChecker
 	cfg                   *config.Config
 	authCacheL1           *ristretto.Cache
 	authCfg               apiKeyAuthCacheConfig
@@ -235,6 +240,17 @@ func NewAPIKeyService(
 // Called after construction (e.g. in wire) to avoid circular dependencies.
 func (s *APIKeyService) SetRateLimitCacheInvalidator(inv RateLimitCacheInvalidator) {
 	s.rateLimitCacheInvalid = inv
+}
+
+func (s *APIKeyService) SetDistributionAccessChecker(checker DistributionAccessChecker) {
+	s.distributionChecker = checker
+}
+
+func (s *APIKeyService) CheckDistributionAccess(ctx context.Context, userID int64) error {
+	if s == nil || s.distributionChecker == nil || userID <= 0 {
+		return nil
+	}
+	return s.distributionChecker.CheckUserAccess(ctx, userID)
 }
 
 func (s *APIKeyService) compileAPIKeyIPRules(apiKey *APIKey) {

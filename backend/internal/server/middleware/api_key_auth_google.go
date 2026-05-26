@@ -58,6 +58,10 @@ func APIKeyAuthWithSubscriptionGoogle(apiKeyService *service.APIKeyService, subs
 			abortWithGoogleError(c, 403, message)
 			return
 		}
+		if err := apiKeyService.CheckDistributionAccess(c.Request.Context(), apiKey.User.ID); err != nil {
+			abortWithGoogleError(c, 403, err.Error())
+			return
+		}
 
 		// 简易模式：跳过余额和订阅检查
 		if cfg.RunMode == config.RunModeSimple {

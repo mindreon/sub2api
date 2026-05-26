@@ -284,6 +284,7 @@ func (s *AuthService) FinalizeOAuthEmailAccount(
 	grantPlan := s.resolveSignupGrantPlan(ctx, signupSource)
 	s.assignSubscriptions(ctx, user.ID, grantPlan.Subscriptions, "auto assigned by signup defaults")
 	s.bindOAuthAffiliate(ctx, user.ID, affiliateCode)
+	s.bindDistributionAttribution(ctx, user.ID, affiliateCode, "oauth")
 	return nil
 }
 

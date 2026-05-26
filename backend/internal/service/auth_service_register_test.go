@@ -763,3 +763,64 @@ func TestCanBypassRegistrationDisabledForOAuth(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthService_LoginOrRegisterOAuthWithTokenPair_PreservesOriginalDistributionAttribution(t *testing.T) {
+	repo := &userRepoStub{nextID: 71}
+	var storedAttribution *DistributionAttribution
+	distRepo := &distributionAttributionRepoStub{
+		getFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
+			if storedAttribution != nil {
+				return storedAttribution, nil
+			}
+			return nil, ErrDistributionAttributionNotFound
+		},
+		createFn: func(ctx context.Context, input DistributionAttributionInput) (*DistributionAttribution, error) {
+			storedAttribution = &DistributionAttribution{
+				UserID:           input.UserID,
+				ChannelOrgID:     input.ChannelOrgID,
+				ReferrerMemberID: input.ReferrerMemberID,
+				PromotionLinkID:  input.PromotionLinkID,
+				BoundAt:          input.BoundAt,
+				BoundSource:      input.BoundSource,
+				BoundBy:          input.BoundBy,
+				CreatedAt:        input.BoundAt,
+				UpdatedAt:        input.BoundAt,
+			}
+			return storedAttribution, nil
+		},
+	}
+	promoRepo := &distributionPromotionRepoStub{
+		links: map[string]*DistributionPromotionLink{
+			"LINK-A": {ID: 9001, ChannelOrgID: 1001, MemberID: 5001, Code: "LINK-A", Status: "active"},
+			"LINK-B": {ID: 9002, ChannelOrgID: 2002, MemberID: 6002, Code: "LINK-B", Status: "active"},
+		},
+	}
+	distSvc := NewDistributionAttributionService(distRepo)
+	distSvc.SetPromotionRepository(promoRepo)
+
+	service := newAuthService(repo, map[string]string{
+		SettingKeyRegistrationEnabled: "true",
+	}, nil)
+	service.refreshTokenCache = &refreshTokenCacheStub{}
+	service.SetDistributionAttributionService(distSvc)
+
+	tokenPair, user, err := service.LoginOrRegisterOAuthWithTokenPair(context.Background(), "oauth-dist@test.com", "oauth-user", "", "LINK-A")
+	require.NoError(t, err)
+	require.NotNil(t, tokenPair)
+	require.NotNil(t, user)
+	require.Equal(t, int64(71), user.ID)
+	require.NotNil(t, storedAttribution)
+	require.Equal(t, int64(1001), storedAttribution.ChannelOrgID)
+	require.Equal(t, 1, distRepo.createCalls)
+	require.Equal(t, []string{"LINK-A"}, promoRepo.getCalls)
+
+	tokenPair, user, err = service.LoginOrRegisterOAuthWithTokenPair(context.Background(), "oauth-dist@test.com", "oauth-user", "", "LINK-B")
+	require.NoError(t, err)
+	require.NotNil(t, tokenPair)
+	require.NotNil(t, user)
+	require.Equal(t, int64(71), user.ID)
+	require.NotNil(t, storedAttribution)
+	require.Equal(t, int64(1001), storedAttribution.ChannelOrgID)
+	require.Equal(t, 1, distRepo.createCalls)
+	require.Equal(t, []string{"LINK-A", "LINK-B"}, promoRepo.getCalls)
+}

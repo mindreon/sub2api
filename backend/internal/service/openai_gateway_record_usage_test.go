@@ -127,6 +127,25 @@ func (s *openAIUserGroupRateRepoStub) GetByUserAndGroup(ctx context.Context, use
 	return s.rate, nil
 }
 
+type openAIDistributionChannelBillingStub struct {
+	err        error
+	accessErr  error
+	calls      int
+	checkedIDs []int64
+	lastLog    *UsageLog
+}
+
+func (s *openAIDistributionChannelBillingStub) CheckUserAccess(ctx context.Context, userID int64) error {
+	s.checkedIDs = append(s.checkedIDs, userID)
+	return s.accessErr
+}
+
+func (s *openAIDistributionChannelBillingStub) ConsumeUsage(ctx context.Context, usageLog *UsageLog) error {
+	s.calls++
+	s.lastLog = usageLog
+	return s.err
+}
+
 func i64p(v int64) *int64 {
 	return &v
 }
@@ -240,6 +259,34 @@ func TestOpenAIGatewayServiceRecordUsage_ZeroUsageStillWritesUsageLog(t *testing
 	require.Zero(t, billingRepo.lastCmd.APIKeyQuotaCost)
 	require.Zero(t, billingRepo.lastCmd.APIKeyRateLimitCost)
 	require.Zero(t, billingRepo.lastCmd.AccountQuotaCost)
+}
+
+func TestOpenAIGatewayServiceRecordUsage_ConsumesDistributionChannelUsage(t *testing.T) {
+	usageRepo := &openAIRecordUsageLogRepoStub{inserted: true}
+	billingRepo := &openAIRecordUsageBillingRepoStub{result: &UsageBillingApplyResult{Applied: true}}
+	channelBilling := &openAIDistributionChannelBillingStub{}
+	svc := newOpenAIRecordUsageServiceWithBillingRepoForTest(usageRepo, billingRepo, &openAIRecordUsageUserRepoStub{}, &openAIRecordUsageSubRepoStub{}, nil)
+	svc.SetDistributionChannelBillingService(channelBilling)
+
+	err := svc.RecordUsage(context.Background(), &OpenAIRecordUsageInput{
+		Result: &OpenAIForwardResult{
+			RequestID: "resp_distribution_usage",
+			Usage: OpenAIUsage{
+				InputTokens:  1000,
+				OutputTokens: 200,
+			},
+			Model:    "gpt-5.1",
+			Duration: time.Second,
+		},
+		APIKey:  &APIKey{ID: 1000, Quota: 100, Group: &Group{RateMultiplier: 1}},
+		User:    &User{ID: 2000},
+		Account: &Account{ID: 3000, Type: AccountTypeAPIKey},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, 1, channelBilling.calls)
+	require.NotNil(t, channelBilling.lastLog)
+	require.Equal(t, int64(2000), channelBilling.lastLog.UserID)
 }
 
 func TestOpenAIGatewayServiceRecordUsage_MissingPricingRecordsZeroCostUsageLog(t *testing.T) {

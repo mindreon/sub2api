@@ -540,41 +540,43 @@ func (s *GatewayService) TempUnscheduleRetryableError(ctx context.Context, accou
 
 // GatewayService handles API gateway operations
 type GatewayService struct {
-	accountRepo           AccountRepository
-	groupRepo             GroupRepository
-	usageLogRepo          UsageLogRepository
-	usageBillingRepo      UsageBillingRepository
-	userRepo              UserRepository
-	userSubRepo           UserSubscriptionRepository
-	userGroupRateRepo     UserGroupRateRepository
-	cache                 GatewayCache
-	digestStore           *DigestSessionStore
-	cfg                   *config.Config
-	schedulerSnapshot     *SchedulerSnapshotService
-	billingService        *BillingService
-	rateLimitService      *RateLimitService
-	billingCacheService   *BillingCacheService
-	identityService       *IdentityService
-	httpUpstream          HTTPUpstream
-	deferredService       *DeferredService
-	concurrencyService    *ConcurrencyService
-	claudeTokenProvider   *ClaudeTokenProvider
-	sessionLimitCache     SessionLimitCache // 会话数量限制缓存（仅 Anthropic OAuth/SetupToken）
-	rpmCache              RPMCache          // RPM 计数缓存（仅 Anthropic OAuth/SetupToken）
-	userGroupRateResolver *userGroupRateResolver
-	userGroupRateCache    *gocache.Cache
-	userGroupRateSF       singleflight.Group
-	modelsListCache       *gocache.Cache
-	modelsListCacheTTL    time.Duration
-	settingService        *SettingService
-	responseHeaderFilter  *responseheaders.CompiledHeaderFilter
-	debugModelRouting     atomic.Bool
-	debugClaudeMimic      atomic.Bool
-	channelService        *ChannelService
-	resolver              *ModelPricingResolver
-	debugGatewayBodyFile  atomic.Pointer[os.File] // non-nil when SUB2API_DEBUG_GATEWAY_BODY is set
-	tlsFPProfileService   *TLSFingerprintProfileService
-	balanceNotifyService  *BalanceNotifyService
+	accountRepo                   AccountRepository
+	groupRepo                     GroupRepository
+	usageLogRepo                  UsageLogRepository
+	usageBillingRepo              UsageBillingRepository
+	userRepo                      UserRepository
+	userSubRepo                   UserSubscriptionRepository
+	userGroupRateRepo             UserGroupRateRepository
+	cache                         GatewayCache
+	digestStore                   *DigestSessionStore
+	cfg                           *config.Config
+	schedulerSnapshot             *SchedulerSnapshotService
+	billingService                *BillingService
+	rateLimitService              *RateLimitService
+	billingCacheService           *BillingCacheService
+	identityService               *IdentityService
+	httpUpstream                  HTTPUpstream
+	deferredService               *DeferredService
+	concurrencyService            *ConcurrencyService
+	claudeTokenProvider           *ClaudeTokenProvider
+	sessionLimitCache             SessionLimitCache // 会话数量限制缓存（仅 Anthropic OAuth/SetupToken）
+	rpmCache                      RPMCache          // RPM 计数缓存（仅 Anthropic OAuth/SetupToken）
+	userGroupRateResolver         *userGroupRateResolver
+	userGroupRateCache            *gocache.Cache
+	userGroupRateSF               singleflight.Group
+	modelsListCache               *gocache.Cache
+	modelsListCacheTTL            time.Duration
+	settingService                *SettingService
+	responseHeaderFilter          *responseheaders.CompiledHeaderFilter
+	debugModelRouting             atomic.Bool
+	debugClaudeMimic              atomic.Bool
+	channelService                *ChannelService
+	resolver                      *ModelPricingResolver
+	debugGatewayBodyFile          atomic.Pointer[os.File] // non-nil when SUB2API_DEBUG_GATEWAY_BODY is set
+	tlsFPProfileService           *TLSFingerprintProfileService
+	balanceNotifyService          *BalanceNotifyService
+	distributionCommissionService distributionCommissionAccrual
+	distributionChannelBilling    distributionChannelUsageConsumer
 }
 
 // NewGatewayService creates a new GatewayService
@@ -654,6 +656,20 @@ func NewGatewayService(
 		svc.initDebugGatewayBodyFile(path)
 	}
 	return svc
+}
+
+func (s *GatewayService) SetDistributionCommissionService(distributionCommissionService *DistributionCommissionService) {
+	if s == nil {
+		return
+	}
+	s.distributionCommissionService = distributionCommissionService
+}
+
+func (s *GatewayService) SetDistributionChannelBillingService(distributionChannelBilling distributionChannelUsageConsumer) {
+	if s == nil {
+		return
+	}
+	s.distributionChannelBilling = distributionChannelBilling
 }
 
 // GenerateSessionHash 从预解析请求计算粘性会话 hash
@@ -8514,6 +8530,7 @@ func (s *GatewayService) recordUsageCore(ctx context.Context, input *recordUsage
 
 	if s.cfg != nil && s.cfg.RunMode == config.RunModeSimple {
 		writeUsageLogBestEffort(ctx, s.usageLogRepo, usageLog, "service.gateway")
+		recordDistributionCommissionBestEffort(ctx, s.distributionCommissionService, usageLog, "service.gateway")
 		logger.LegacyPrintf("service.gateway", "[SIMPLE MODE] Usage recorded (not billed): user=%d, tokens=%d", usageLog.UserID, usageLog.TotalTokens())
 		s.deferredService.ScheduleLastUsedUpdate(account.ID)
 		return nil
@@ -8535,7 +8552,13 @@ func (s *GatewayService) recordUsageCore(ctx context.Context, input *recordUsage
 	if billingErr != nil {
 		return billingErr
 	}
+	if s.distributionChannelBilling != nil {
+		if err := s.distributionChannelBilling.ConsumeUsage(ctx, usageLog); err != nil {
+			return err
+		}
+	}
 	writeUsageLogBestEffort(ctx, s.usageLogRepo, usageLog, "service.gateway")
+	recordDistributionCommissionBestEffort(ctx, s.distributionCommissionService, usageLog, "service.gateway")
 
 	return nil
 }

@@ -62,18 +62,19 @@ type JWTClaims struct {
 
 // AuthService 认证服务
 type AuthService struct {
-	entClient          *dbent.Client
-	userRepo           UserRepository
-	redeemRepo         RedeemCodeRepository
-	refreshTokenCache  RefreshTokenCache
-	cfg                *config.Config
-	settingService     *SettingService
-	emailService       *EmailService
-	turnstileService   *TurnstileService
-	emailQueueService  *EmailQueueService
-	promoService       *PromoService
-	affiliateService   *AffiliateService
-	defaultSubAssigner DefaultSubscriptionAssigner
+	entClient                      *dbent.Client
+	userRepo                       UserRepository
+	redeemRepo                     RedeemCodeRepository
+	refreshTokenCache              RefreshTokenCache
+	cfg                            *config.Config
+	settingService                 *SettingService
+	emailService                   *EmailService
+	turnstileService               *TurnstileService
+	emailQueueService              *EmailQueueService
+	promoService                   *PromoService
+	affiliateService               *AffiliateService
+	distributionAttributionService *DistributionAttributionService
+	defaultSubAssigner             DefaultSubscriptionAssigner
 }
 
 type DefaultSubscriptionAssigner interface {
@@ -115,6 +116,13 @@ func NewAuthService(
 		affiliateService:   affiliateService,
 		defaultSubAssigner: defaultSubAssigner,
 	}
+}
+
+func (s *AuthService) SetDistributionAttributionService(distributionAttributionService *DistributionAttributionService) {
+	if s == nil {
+		return
+	}
+	s.distributionAttributionService = distributionAttributionService
 }
 
 func (s *AuthService) EntClient() *dbent.Client {
@@ -237,6 +245,7 @@ func (s *AuthService) RegisterWithVerification(ctx context.Context, email, passw
 			}
 		}
 	}
+	s.bindDistributionAttribution(ctx, user.ID, affiliateCode, "registration")
 
 	// 标记邀请码为已使用（如果使用了邀请码）
 	if invitationRedeemCode != nil {
@@ -727,6 +736,7 @@ func (s *AuthService) LoginOrRegisterOAuthWithTokenPair(ctx context.Context, ema
 			logger.LegacyPrintf("service.auth", "[Auth] Failed to update username after oauth login: %v", err)
 		}
 	}
+	s.bindDistributionAttribution(ctx, user.ID, affiliateCode, "oauth")
 	tokenPair, err := s.GenerateTokenPair(ctx, user, "")
 	if err != nil {
 		return nil, nil, fmt.Errorf("generate token pair: %w", err)
@@ -817,6 +827,19 @@ func (s *AuthService) bindOAuthAffiliate(ctx context.Context, userID int64, affi
 		if err := s.affiliateService.BindInviterByCode(ctx, userID, code); err != nil {
 			logger.LegacyPrintf("service.auth", "[Auth] Failed to bind affiliate inviter for user %d: %v", userID, err)
 		}
+	}
+}
+
+func (s *AuthService) bindDistributionAttribution(ctx context.Context, userID int64, promotionCode, boundSource string) {
+	if s == nil || s.distributionAttributionService == nil || userID <= 0 {
+		return
+	}
+	promotionCode = strings.TrimSpace(promotionCode)
+	if promotionCode == "" {
+		return
+	}
+	if _, err := s.distributionAttributionService.EnsureUserAttributionFromPromotionCode(ctx, userID, promotionCode, boundSource, "system"); err != nil {
+		logger.LegacyPrintf("service.auth", "[Auth] Failed to bind distribution attribution for user %d: %v", userID, err)
 	}
 }
 

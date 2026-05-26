@@ -116,6 +116,11 @@ func apiKeyAuthWithSubscription(apiKeyService *service.APIKeyService, subscripti
 			return
 		}
 
+		if err := apiKeyService.CheckDistributionAccess(c.Request.Context(), apiKey.User.ID); err != nil {
+			AbortWithError(c, 403, "DISTRIBUTION_CHANNEL_UNAVAILABLE", err.Error())
+			return
+		}
+
 		// ── 4. SimpleMode → early return ─────────────────────────────
 
 		if cfg.RunMode == config.RunModeSimple {

@@ -320,29 +320,31 @@ var ErrNoAvailableCompactAccounts = errors.New("no available OpenAI accounts sup
 
 // OpenAIGatewayService handles OpenAI API gateway operations
 type OpenAIGatewayService struct {
-	accountRepo           AccountRepository
-	usageLogRepo          UsageLogRepository
-	usageBillingRepo      UsageBillingRepository
-	userRepo              UserRepository
-	userSubRepo           UserSubscriptionRepository
-	cache                 GatewayCache
-	cfg                   *config.Config
-	codexDetector         CodexClientRestrictionDetector
-	schedulerSnapshot     *SchedulerSnapshotService
-	concurrencyService    *ConcurrencyService
-	billingService        *BillingService
-	rateLimitService      *RateLimitService
-	billingCacheService   *BillingCacheService
-	userGroupRateResolver *userGroupRateResolver
-	httpUpstream          HTTPUpstream
-	deferredService       *DeferredService
-	openAITokenProvider   *OpenAITokenProvider
-	toolCorrector         *CodexToolCorrector
-	openaiWSResolver      OpenAIWSProtocolResolver
-	resolver              *ModelPricingResolver
-	channelService        *ChannelService
-	balanceNotifyService  *BalanceNotifyService
-	settingService        *SettingService
+	accountRepo                   AccountRepository
+	usageLogRepo                  UsageLogRepository
+	usageBillingRepo              UsageBillingRepository
+	userRepo                      UserRepository
+	userSubRepo                   UserSubscriptionRepository
+	cache                         GatewayCache
+	cfg                           *config.Config
+	codexDetector                 CodexClientRestrictionDetector
+	schedulerSnapshot             *SchedulerSnapshotService
+	concurrencyService            *ConcurrencyService
+	billingService                *BillingService
+	rateLimitService              *RateLimitService
+	billingCacheService           *BillingCacheService
+	userGroupRateResolver         *userGroupRateResolver
+	httpUpstream                  HTTPUpstream
+	deferredService               *DeferredService
+	openAITokenProvider           *OpenAITokenProvider
+	toolCorrector                 *CodexToolCorrector
+	openaiWSResolver              OpenAIWSProtocolResolver
+	resolver                      *ModelPricingResolver
+	channelService                *ChannelService
+	balanceNotifyService          *BalanceNotifyService
+	settingService                *SettingService
+	distributionCommissionService distributionCommissionAccrual
+	distributionChannelBilling    distributionChannelUsageConsumer
 
 	openaiWSPoolOnce              sync.Once
 	openaiWSStateStoreOnce        sync.Once
@@ -429,6 +431,20 @@ func NewOpenAIGatewayService(
 	}
 	svc.logOpenAIWSModeBootstrap()
 	return svc
+}
+
+func (s *OpenAIGatewayService) SetDistributionCommissionService(distributionCommissionService *DistributionCommissionService) {
+	if s == nil {
+		return
+	}
+	s.distributionCommissionService = distributionCommissionService
+}
+
+func (s *OpenAIGatewayService) SetDistributionChannelBillingService(distributionChannelBilling distributionChannelUsageConsumer) {
+	if s == nil {
+		return
+	}
+	s.distributionChannelBilling = distributionChannelBilling
 }
 
 // ResolveChannelMapping 解析渠道级模型映射（代理到 ChannelService）
@@ -5618,6 +5634,7 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 
 	if s.cfg != nil && s.cfg.RunMode == config.RunModeSimple {
 		writeUsageLogBestEffort(ctx, s.usageLogRepo, usageLog, "service.openai_gateway")
+		recordDistributionCommissionBestEffort(ctx, s.distributionCommissionService, usageLog, "service.openai_gateway")
 		logger.LegacyPrintf("service.openai_gateway", "[SIMPLE MODE] Usage recorded (not billed): user=%d, tokens=%d", usageLog.UserID, usageLog.TotalTokens())
 		s.deferredService.ScheduleLastUsedUpdate(account.ID)
 		return nil
@@ -5641,7 +5658,13 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 	if billingErr != nil {
 		return billingErr
 	}
+	if s.distributionChannelBilling != nil {
+		if err := s.distributionChannelBilling.ConsumeUsage(ctx, usageLog); err != nil {
+			return err
+		}
+	}
 	writeUsageLogBestEffort(ctx, s.usageLogRepo, usageLog, "service.openai_gateway")
+	recordDistributionCommissionBestEffort(ctx, s.distributionCommissionService, usageLog, "service.openai_gateway")
 
 	return nil
 }

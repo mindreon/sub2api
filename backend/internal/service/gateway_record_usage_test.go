@@ -141,6 +141,34 @@ func TestGatewayServiceRecordUsage_BillingFingerprintIncludesRequestPayloadHash(
 	require.Equal(t, payloadHash, billingRepo.lastCmd.RequestPayloadHash)
 }
 
+func TestGatewayServiceRecordUsage_ConsumesDistributionChannelUsage(t *testing.T) {
+	usageRepo := &openAIRecordUsageLogRepoStub{}
+	billingRepo := &openAIRecordUsageBillingRepoStub{result: &UsageBillingApplyResult{Applied: true}}
+	channelBilling := &openAIDistributionChannelBillingStub{}
+	svc := newGatewayRecordUsageServiceWithBillingRepoForTest(usageRepo, billingRepo, &openAIRecordUsageUserRepoStub{}, &openAIRecordUsageSubRepoStub{})
+	svc.SetDistributionChannelBillingService(channelBilling)
+
+	err := svc.RecordUsage(context.Background(), &RecordUsageInput{
+		Result: &ForwardResult{
+			RequestID: "gateway_distribution_usage",
+			Usage: ClaudeUsage{
+				InputTokens:  10,
+				OutputTokens: 6,
+			},
+			Model:    "claude-sonnet-4",
+			Duration: time.Second,
+		},
+		APIKey:  &APIKey{ID: 501, Quota: 100},
+		User:    &User{ID: 601},
+		Account: &Account{ID: 701},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, 1, channelBilling.calls)
+	require.NotNil(t, channelBilling.lastLog)
+	require.Equal(t, int64(601), channelBilling.lastLog.UserID)
+}
+
 func TestGatewayServiceRecordUsage_BillingFingerprintFallsBackToContextRequestID(t *testing.T) {
 	usageRepo := &openAIRecordUsageLogRepoStub{}
 	billingRepo := &openAIRecordUsageBillingRepoStub{result: &UsageBillingApplyResult{Applied: true}}
