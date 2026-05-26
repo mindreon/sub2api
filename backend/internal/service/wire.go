@@ -512,6 +512,15 @@ func ProvideDistributionAutoSettlementService(
 	return svc
 }
 
+// ProvideCatalogModelService creates CatalogModelService and seeds if empty.
+func ProvideCatalogModelService(repo CatalogModelRepository) (*CatalogModelService, error) {
+	svc := NewCatalogModelService(repo)
+	if err := svc.SeedIfEmpty(context.Background()); err != nil {
+		logger.LegacyPrintf("service.catalog_model", "Seed warning: %v", err)
+	}
+	return svc, nil
+}
+
 // ProviderSet is the Wire provider set for all services
 var ProviderSet = wire.NewSet(
 	// Core services
@@ -530,6 +539,7 @@ var ProviderSet = wire.NewSet(
 	NewBillingService,
 	ProvideBillingCacheService,
 	NewAnnouncementService,
+	ProvideCatalogModelService,
 	NewAdminService,
 	NewGatewayService,
 	NewOpenAIGatewayService,

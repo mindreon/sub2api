@@ -66,6 +66,7 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	billingCacheService := service.ProvideBillingCacheService(billingCache, userRepository, userSubscriptionRepository, apiKeyRepository, userRPMCache, userGroupRateRepository, configConfig)
 	apiKeyCache := repository.NewAPIKeyCache(redisClient)
 	affiliateRepository := repository.NewAffiliateRepository(client, db)
+	catalogModelRepository := repository.NewCatalogModelRepository(client)
 	distributionAttributionRepository := repository.NewDistributionAttributionRepository(client, db)
 	distributionOrganizationRepository := repository.NewDistributionOrganizationRepository(client, db)
 	distributionPromotionRepository := repository.NewDistributionPromotionRepository(client, db)
@@ -83,6 +84,10 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	promoService := service.NewPromoService(promoCodeRepository, userRepository, billingCacheService, client, apiKeyAuthCacheInvalidator)
 	subscriptionService := service.NewSubscriptionService(groupRepository, userSubscriptionRepository, billingCacheService, client, configConfig)
 	affiliateService := service.NewAffiliateService(affiliateRepository, settingService, apiKeyAuthCacheInvalidator, billingCacheService)
+	catalogModelService, err := service.ProvideCatalogModelService(catalogModelRepository)
+	if err != nil {
+		return nil, err
+	}
 	distributionAttributionService := service.NewDistributionAttributionService(distributionAttributionRepository)
 	distributionAttributionService.SetPromotionRepository(distributionPromotionRepository)
 	distributionScopeService := service.ProvideDistributionScopeService(distributionAttributionRepository, distributionMemberRepository, distributionCommissionRepository, distributionWalletRepository, distributionWalletRepository, distributionOrganizationRepository, distributionWalletRepository)
@@ -273,7 +278,8 @@ func initializeApplication(buildInfo handler.BuildInfo) (*Application, error) {
 	paymentHandler := admin.NewPaymentHandler(paymentService, paymentConfigService)
 	affiliateHandler := admin.NewAffiliateHandler(affiliateService, adminService)
 	adminDistributionHandler := admin.NewDistributionHandler(distributionAdminService, distributionOrganizationService, distributionMemberService, distributionPromotionService)
-	adminHandlers := handler.ProvideAdminHandlers(dashboardHandler, adminUserHandler, groupHandler, accountHandler, adminAnnouncementHandler, dataManagementHandler, backupHandler, oAuthHandler, openAIOAuthHandler, geminiOAuthHandler, antigravityOAuthHandler, proxyHandler, adminRedeemHandler, promoHandler, settingHandler, opsHandler, systemHandler, adminSubscriptionHandler, adminUsageHandler, userAttributeHandler, errorPassthroughHandler, tlsFingerprintProfileHandler, adminAPIKeyHandler, scheduledTestHandler, channelHandler, channelMonitorHandler, channelMonitorRequestTemplateHandler, contentModerationHandler, paymentHandler, affiliateHandler, adminDistributionHandler)
+	adminCatalogModelHandler := admin.NewCatalogModelHandler(catalogModelService)
+	adminHandlers := handler.ProvideAdminHandlers(dashboardHandler, adminUserHandler, groupHandler, accountHandler, adminAnnouncementHandler, dataManagementHandler, backupHandler, oAuthHandler, openAIOAuthHandler, geminiOAuthHandler, antigravityOAuthHandler, proxyHandler, adminRedeemHandler, promoHandler, settingHandler, opsHandler, systemHandler, adminSubscriptionHandler, adminUsageHandler, userAttributeHandler, errorPassthroughHandler, tlsFingerprintProfileHandler, adminAPIKeyHandler, scheduledTestHandler, channelHandler, channelMonitorHandler, channelMonitorRequestTemplateHandler, contentModerationHandler, paymentHandler, affiliateHandler, adminDistributionHandler, adminCatalogModelHandler)
 	usageRecordWorkerPool := service.NewUsageRecordWorkerPool(configConfig)
 	userMsgQueueCache := repository.NewUserMsgQueueCache(redisClient)
 	userMessageQueueService := service.ProvideUserMessageQueueService(userMsgQueueCache, rpmCache, configConfig)
