@@ -83,6 +83,9 @@ func SetupRouter(
 	// 注册路由
 	registerRoutes(r, handlers, jwtAuth, adminAuth, apiKeyAuth, apiKeyService, subscriptionService, opsService, settingService, cfg, redisClient)
 
+	// 公开目录接口（无需认证，供 gasboard 前端消费）
+	routes.RegisterPublicRoutes(r, handlers)
+
 	return r
 }
 
