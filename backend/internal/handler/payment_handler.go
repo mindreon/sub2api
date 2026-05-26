@@ -96,6 +96,11 @@ func (h *PaymentHandler) GetChannels(c *gin.Context) {
 // payment methods with limits, subscription plans, and configuration.
 // GET /api/v1/payment/checkout-info
 func (h *PaymentHandler) GetCheckoutInfo(c *gin.Context) {
+	subject, ok := requireAuth(c)
+	if !ok {
+		return
+	}
+
 	ctx := c.Request.Context()
 
 	// Fetch limits (methods + global range)
@@ -103,6 +108,14 @@ func (h *PaymentHandler) GetCheckoutInfo(c *gin.Context) {
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return
+	}
+	if h.paymentService != nil && limitsResp != nil {
+		adjusted, err := h.paymentService.ApplyDistributionMethodLimits(ctx, subject.UserID, *limitsResp)
+		if err != nil {
+			response.ErrorFrom(c, err)
+			return
+		}
+		limitsResp = &adjusted
 	}
 
 	// Fetch payment config
@@ -199,10 +212,23 @@ func parseFeatures(raw string) []string {
 // GetLimits returns per-payment-type limits derived from enabled provider instances.
 // GET /api/v1/payment/limits
 func (h *PaymentHandler) GetLimits(c *gin.Context) {
+	subject, ok := requireAuth(c)
+	if !ok {
+		return
+	}
+
 	resp, err := h.configService.GetAvailableMethodLimits(c.Request.Context())
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return
+	}
+	if h.paymentService != nil && resp != nil {
+		adjusted, err := h.paymentService.ApplyDistributionMethodLimits(c.Request.Context(), subject.UserID, *resp)
+		if err != nil {
+			response.ErrorFrom(c, err)
+			return
+		}
+		resp = &adjusted
 	}
 	response.Success(c, resp)
 }

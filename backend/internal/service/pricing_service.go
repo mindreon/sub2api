@@ -113,6 +113,11 @@ type PricingService struct {
 	wg     sync.WaitGroup
 }
 
+type ModelPricingCatalogEntry struct {
+	Model   string
+	Pricing LiteLLMModelPricing
+}
+
 // NewPricingService 创建价格服务
 func NewPricingService(cfg *config.Config, remoteClient PricingRemoteClient) *PricingService {
 	s := &PricingService{
@@ -630,6 +635,31 @@ func normalizeModelNameForPricing(model string) string {
 		return canonical
 	}
 	return model
+}
+
+func (s *PricingService) ListModelPricings() []ModelPricingCatalogEntry {
+	if s == nil {
+		return nil
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	items := make([]ModelPricingCatalogEntry, 0, len(s.pricingData))
+	for model, pricing := range s.pricingData {
+		if strings.TrimSpace(model) == "" || pricing == nil {
+			continue
+		}
+		items = append(items, ModelPricingCatalogEntry{
+			Model:   model,
+			Pricing: *pricing,
+		})
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Model < items[j].Model
+	})
+	return items
 }
 
 func lastSegment(model string) string {

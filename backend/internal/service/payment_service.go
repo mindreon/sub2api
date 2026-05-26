@@ -188,6 +188,7 @@ type PaymentService struct {
 	resumeService            *PaymentResumeService
 	affiliateService         *AffiliateService
 	notificationEmailService *NotificationEmailService
+	distributionRule         DistributionPaymentRuleResolver
 }
 
 func NewPaymentService(entClient *dbent.Client, registry *payment.Registry, loadBalancer payment.LoadBalancer, redeemService *RedeemService, subscriptionSvc *SubscriptionService, configService *PaymentConfigService, userRepo UserRepository, groupRepo GroupRepository, affiliateService *AffiliateService) *PaymentService {
@@ -198,6 +199,20 @@ func NewPaymentService(entClient *dbent.Client, registry *payment.Registry, load
 
 func (s *PaymentService) SetNotificationEmailService(notificationEmailService *NotificationEmailService) {
 	s.notificationEmailService = notificationEmailService
+}
+
+func (s *PaymentService) SetDistributionPaymentRuleResolver(resolver DistributionPaymentRuleResolver) {
+	if s == nil {
+		return
+	}
+	s.distributionRule = resolver
+}
+
+func (s *PaymentService) ApplyDistributionMethodLimits(ctx context.Context, userID int64, input MethodLimitsResponse) (MethodLimitsResponse, error) {
+	if s == nil || s.distributionRule == nil || userID <= 0 {
+		return input, nil
+	}
+	return s.distributionRule.ApplyMethodLimits(ctx, userID, input)
 }
 
 // --- Provider Registry ---

@@ -126,6 +126,11 @@ func (s *PaymentService) validateOrderInput(ctx context.Context, req CreateOrder
 		return nil, infraerrors.BadRequest("INVALID_AMOUNT", "amount out of range").
 			WithMetadata(map[string]string{"min": fmt.Sprintf("%.2f", cfg.MinAmount), "max": fmt.Sprintf("%.2f", cfg.MaxAmount)})
 	}
+	if s != nil && s.distributionRule != nil {
+		if err := s.distributionRule.ValidateBalanceRecharge(ctx, req.UserID, req.Amount); err != nil {
+			return nil, err
+		}
+	}
 	return nil, nil
 }
 
