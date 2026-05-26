@@ -1,0 +1,2631 @@
+[
+  {
+    "id": "bailian/qwen3.6-plus",
+    "display_name": "Qwen3.6 Plus",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000005",
+      "output": "0.000003",
+      "input_cache_read": "0.00000005",
+      "input_cache_write": "0.000000625",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": true,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-04-02T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-5v-turbo",
+    "display_name": "GLM-5V-Turbo",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000012",
+      "output": "0.000004",
+      "input_cache_read": "0.00000024",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": true,
+      "pdf_input": true
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-04-01T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-5.1",
+    "display_name": "Z.ai: GLM 5.1",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000014",
+      "output": "0.0000044",
+      "input_cache_read": "0.00000026",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-27T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.7",
+    "display_name": "MiniMax: MiniMax M2.7",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-18T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.7-highspeed",
+    "display_name": "MiniMax: MiniMax M2.7 Highspeed",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000006",
+      "output": "0.0000024",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-18T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.4-mini",
+    "display_name": "OpenAI: GPT-5.4 Mini",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 400000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000075",
+      "output": "0.000003",
+      "input_cache_read": "0.000000075",
+      "input_cache_write": "0.000000375",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-25T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.4-nano",
+    "display_name": "OpenAI: GPT-5.4 Nano",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 400000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000002",
+      "output": "0.0000008",
+      "input_cache_read": "0.00000002",
+      "input_cache_write": "0.0000001"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-25T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-5-turbo",
+    "display_name": "Z.ai: GLM-5-Turbo",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000012",
+      "output": "0.000004",
+      "input_cache_read": "0.00000024",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-20T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-embedding-2-preview",
+    "display_name": "Google: Gemini Embedding 2 Preview",
+    "icon": "Gemini",
+    "mode": "embedding",
+    "context_window": 8192,
+    "max_output_tokens": 8192,
+    "pricing": {
+      "input": "0.0000002"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": false,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2026-03-15T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.4",
+    "display_name": "OpenAI: GPT-5.4",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 1050000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000025",
+      "output": "0.00001",
+      "input_cache_read": "0.00000025",
+      "input_cache_write": "0.00000125",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-25T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.4-pro",
+    "display_name": "OpenAI: GPT-5.4 Pro",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 1050000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00003",
+      "output": "0.00012",
+      "input_cache_read": "0.000003",
+      "input_cache_write": "0.000015",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-25T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-3.1-flash-lite-preview",
+    "display_name": "Google: Gemini 3.1 Flash Lite Preview",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000025",
+      "output": "0.000001",
+      "input_cache_read": "0.000000025"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-20T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-3.1-flash-image-preview",
+    "display_name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
+    "icon": "Gemini",
+    "mode": "image_generation",
+    "context_window": 64000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000005",
+      "output_image_per_num": "0.04"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-18T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.3-chat",
+    "display_name": "OpenAI: GPT-5.3 Chat",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 16000,
+    "pricing": {
+      "input": "0.00000175",
+      "output": "0.000007",
+      "input_cache_read": "0.000000175",
+      "input_cache_write": "0.000000875"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.3-codex",
+    "display_name": "OpenAI: GPT-5.3 Codex",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 512000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000175",
+      "output": "0.000007",
+      "input_cache_read": "0.000000175",
+      "input_cache_write": "0.000000875"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-122b-a10b",
+    "display_name": "Qwen: Qwen3.5 122B A10B",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000029",
+      "output": "0.0000012",
+      "input_cache_read": "0.000000029",
+      "input_cache_write": "0.00000015"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-27b",
+    "display_name": "Qwen: Qwen3.5 27B",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000029",
+      "output": "0.0000012",
+      "input_cache_read": "0.000000029",
+      "input_cache_write": "0.00000015"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-35b-a3b",
+    "display_name": "Qwen: Qwen3.5 35B A3B",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000029",
+      "output": "0.0000012",
+      "input_cache_read": "0.000000029",
+      "input_cache_write": "0.00000015"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-397b-a17b",
+    "display_name": "Qwen: Qwen3.5 397B A17B",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000055",
+      "output": "0.0000022",
+      "input_cache_read": "0.000000055",
+      "input_cache_write": "0.000000275"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-flash",
+    "display_name": "Qwen: Qwen3.5 Flash",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000001",
+      "output": "0.0000004",
+      "input_cache_read": "0.00000001",
+      "input_cache_write": "0.00000005"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-3.1-pro-preview",
+    "display_name": "Google: Gemini 3.1 Pro Preview",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1048576,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.000002",
+      "output": "0.000008",
+      "input_cache_read": "0.0000002"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3-coder-next",
+    "display_name": "Qwen3 Coder Next",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000002",
+      "output": "0.0000008",
+      "input_cache_read": "0.00000002",
+      "input_cache_write": "0.0000001"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-05T00:00:00Z"
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.6",
+    "display_name": "Anthropic: Claude Sonnet 4.6",
+    "icon": "Claude",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.000003",
+      "output": "0.000015",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.000003",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "anthropic"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-28T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3.5-plus",
+    "display_name": "Qwen3.5 Plus",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000004",
+      "output": "0.0000016",
+      "input_cache_read": "0.00000004",
+      "input_cache_write": "0.0000002"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-10T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-2.0-code",
+    "display_name": "Doubao Seed 2.0 Code",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000067",
+      "output": "0.00000268",
+      "input_cache_read": "0.000000067"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-2.0-lite",
+    "display_name": "Doubao Seed 2.0 Lite",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000013",
+      "output": "0.00000052",
+      "input_cache_read": "0.000000013"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-2.0-mini",
+    "display_name": "Doubao Seed 2.0 Mini",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000006",
+      "output": "0.00000024",
+      "input_cache_read": "0.000000006"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-2.0-pro",
+    "display_name": "Doubao Seed 2.0 Pro",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000067",
+      "output": "0.00000268",
+      "input_cache_read": "0.000000067"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-02-15T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.5",
+    "display_name": "MiniMax: MiniMax M2.5",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-20T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.5-lightning",
+    "display_name": "MiniMax: MiniMax M2.5 Lightning",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-20T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-5",
+    "display_name": "Z.ai: GLM-5",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.000001",
+      "output": "0.000003",
+      "input_cache_read": "0.0000002",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-01T00:00:00Z"
+  },
+  {
+    "id": "anthropic/claude-opus-4.6",
+    "display_name": "Anthropic: Claude Opus 4.6",
+    "icon": "Claude",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.000005",
+      "output": "0.000025",
+      "input_cache_read": "0.0000005",
+      "input_cache_write": "0.000005",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "anthropic"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-03-28T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seedream-5.0-lite",
+    "display_name": "Doubao Seedream 5.0 Lite",
+    "icon": "Doubao",
+    "mode": "image_generation",
+    "context_window": 100000,
+    "max_output_tokens": 100000,
+    "pricing": {
+      "input": "0"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2026-02-20T00:00:00Z"
+  },
+  {
+    "id": "moonshotai/kimi-k2.5",
+    "display_name": "MoonshotAI: Kimi K2.5",
+    "icon": "Moonshot",
+    "mode": "chat",
+    "context_window": 262144,
+    "max_output_tokens": 262144,
+    "pricing": {
+      "input": "0.0000006",
+      "output": "0.0000024",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.0000003"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "moonshot"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-27T00:00:00Z"
+  },
+  {
+    "id": "minimax/m2-her",
+    "display_name": "MiniMax: MiniMax M2 Her",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-15T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3-max",
+    "display_name": "Qwen3 Max",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000036",
+      "output": "0.00000144",
+      "input_cache_read": "0.000000036",
+      "input_cache_write": "0.00000018"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-10T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-4.7-flashx",
+    "display_name": "Z.ai: GLM-4.7 FlashX",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.000000072",
+      "output": "0.000000288",
+      "input_cache_read": "0.0000000072"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-05T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-4.7-flash:free",
+    "display_name": "Z.ai: GLM-4.7-Flash (Free)",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0",
+      "output": "0"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2026-01-05T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.2-codex",
+    "display_name": "OpenAI: GPT-5.2 Codex",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 512000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000175",
+      "output": "0.000007",
+      "input_cache_read": "0.000000175",
+      "input_cache_write": "0.000000875"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-12-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-1-8",
+    "display_name": "Doubao Seed 1.8",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000012",
+      "output": "0.00000048",
+      "input_cache_read": "0.000000012"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-12-10T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.1",
+    "display_name": "MiniMax: MiniMax M2.1",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 204800,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-12-01T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2.1-lightning",
+    "display_name": "MiniMax: MiniMax M2.1 Lightning",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 204800,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-12-01T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-4.7",
+    "display_name": "Z.ai: GLM 4.7",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000004",
+      "output": "0.0000016",
+      "input_cache_read": "0.00000004",
+      "input_cache_write": "0.0000002",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-11-20T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-3-flash-preview",
+    "display_name": "Google: Gemini 3 Flash Preview",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1048576,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.0000005",
+      "output": "0.000002",
+      "input_cache_read": "0.00000005"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-11-15T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-image-1.5",
+    "display_name": "OpenAI: GPT Image 1.5",
+    "icon": "OpenAI",
+    "mode": "image_generation",
+    "context_window": 0,
+    "max_output_tokens": 0,
+    "pricing": {
+      "input": "0.000005"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": false,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2025-11-10T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.2",
+    "display_name": "OpenAI: GPT-5.2",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 512000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000175",
+      "output": "0.000007",
+      "input_cache_read": "0.000000175",
+      "input_cache_write": "0.000000875",
+      "web_search": "0.01"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": true,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-11-05T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.1-codex-max",
+    "display_name": "OpenAI: GPT-5.1 Codex Max",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000125",
+      "output": "0.000005",
+      "input_cache_read": "0.000000125",
+      "input_cache_write": "0.000000625"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-10-20T00:00:00Z"
+  },
+  {
+    "id": "deepseek/deepseek-v3.2",
+    "display_name": "DeepSeek V3.2",
+    "icon": "DeepSeek",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000029",
+      "output": "0.00000116",
+      "input_cache_read": "0.000000029",
+      "input_cache_write": "0.000000145"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "deepseek"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-10-15T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen-plus",
+    "display_name": "Qwen Plus",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000012",
+      "output": "0.00000048",
+      "input_cache_read": "0.000000012",
+      "input_cache_write": "0.00000006"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-10-10T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seedream-4.5",
+    "display_name": "Doubao Seedream 4.5",
+    "icon": "Doubao",
+    "mode": "image_generation",
+    "context_window": 100000,
+    "max_output_tokens": 100000,
+    "pricing": {
+      "input": "0"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2025-10-05T00:00:00Z"
+  },
+  {
+    "id": "anthropic/claude-opus-4.5",
+    "display_name": "Anthropic: Claude Opus 4.5",
+    "icon": "Claude",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.000005",
+      "output": "0.000025",
+      "input_cache_read": "0.0000005",
+      "input_cache_write": "0.000005"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "anthropic"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-09-25T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-3-pro-image-preview",
+    "display_name": "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)",
+    "icon": "Gemini",
+    "mode": "image_generation",
+    "context_window": 64000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.000002"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-09-20T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.1-codex-mini",
+    "display_name": "GPT-5.1 Codex Mini",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.00000025",
+      "output": "0.000001",
+      "input_cache_read": "0.000000025",
+      "input_cache_write": "0.000000125"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-09-15T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5.1",
+    "display_name": "OpenAI: GPT-5.1",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.00000125",
+      "output": "0.000005",
+      "input_cache_read": "0.000000125",
+      "input_cache_write": "0.000000625"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-09-10T00:00:00Z"
+  },
+  {
+    "id": "openai/text-embedding-3-large",
+    "display_name": "OpenAI: Text Embedding 3 Large",
+    "icon": "OpenAI",
+    "mode": "embedding",
+    "context_window": 8200,
+    "max_output_tokens": 8200,
+    "pricing": {
+      "input": "0.00000013"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": false,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2025-09-05T00:00:00Z"
+  },
+  {
+    "id": "openai/text-embedding-3-small",
+    "display_name": "OpenAI: Text Embedding 3 Small",
+    "icon": "OpenAI",
+    "mode": "embedding",
+    "context_window": 8200,
+    "max_output_tokens": 8200,
+    "pricing": {
+      "input": "0.00000002"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": false,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2025-09-05T00:00:00Z"
+  },
+  {
+    "id": "minimax/minimax-m2",
+    "display_name": "MiniMax: MiniMax M2",
+    "icon": "Minimax",
+    "mode": "chat",
+    "context_window": 204800,
+    "max_output_tokens": 131000,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000012",
+      "input_cache_read": "0.00000006",
+      "input_cache_write": "0.000000375"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "minimax"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-08-20T00:00:00Z"
+  },
+  {
+    "id": "anthropic/claude-haiku-4.5",
+    "display_name": "Anthropic: Claude Haiku 4.5",
+    "icon": "Claude",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.000001",
+      "output": "0.000005",
+      "input_cache_read": "0.0000001",
+      "input_cache_write": "0.000001"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "anthropic"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-08-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-1-6",
+    "display_name": "Doubao Seed 1.6",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.00000012",
+      "output": "0.00000048",
+      "input_cache_read": "0.000000012"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-08-10T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-2.5-flash-image",
+    "display_name": "Google: Nano Banana (Gemini 2.5 Flash Image)",
+    "icon": "Gemini",
+    "mode": "image_generation",
+    "context_window": 32000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.0000003"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-08-05T00:00:00Z"
+  },
+  {
+    "id": "z-ai/glm-4.6",
+    "display_name": "Z.ai: GLM-4.6",
+    "icon": "Zhipu",
+    "mode": "chat",
+    "context_window": 200000,
+    "max_output_tokens": 128000,
+    "pricing": {
+      "input": "0.0000004",
+      "output": "0.0000016",
+      "input_cache_read": "0.00000004",
+      "input_cache_write": "0.0000002"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "zhipu"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "anthropic/claude-sonnet-4.5",
+    "display_name": "Anthropic: Claude Sonnet 4.5",
+    "icon": "Claude",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.000003",
+      "output": "0.000015",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.000003"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "anthropic"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-07-25T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3-coder-plus",
+    "display_name": "Qwen3 Coder Plus",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000018",
+      "output": "0.000009",
+      "input_cache_read": "0.0000002",
+      "input_cache_write": "0.000001"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-07-20T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-1-6-flash",
+    "display_name": "Doubao Seed 1.6 Flash",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000003",
+      "output": "0.00000012",
+      "input_cache_read": "0.000000003"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-07-15T00:00:00Z"
+  },
+  {
+    "id": "volcengine/doubao-seed-1-6-vision",
+    "display_name": "Doubao Seed 1.6 Vision",
+    "icon": "Doubao",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.00000012",
+      "output": "0.00000048",
+      "input_cache_read": "0.000000012"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "volcengine"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-07-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen-vl-max",
+    "display_name": "Qwen VL Max",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 8000,
+    "pricing": {
+      "input": "0.00000023",
+      "output": "0.00000058",
+      "input_cache_read": "0.000000023",
+      "input_cache_write": "0.000000115"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-07-05T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5",
+    "display_name": "GPT-5",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.00000125",
+      "output": "0.000005",
+      "input_cache_read": "0.000000125",
+      "input_cache_write": "0.000000625"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-20T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5-mini",
+    "display_name": "GPT-5 Mini",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 256000,
+    "max_output_tokens": 32768,
+    "pricing": {
+      "input": "0.00000025",
+      "output": "0.000001",
+      "input_cache_read": "0.000000025",
+      "input_cache_write": "0.000000125"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-20T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-5-nano",
+    "display_name": "GPT-5 Nano",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 16384,
+    "pricing": {
+      "input": "0.00000005",
+      "output": "0.0000002",
+      "input_cache_read": "0.000000005",
+      "input_cache_write": "0.000000025"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-20T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen3-coder-flash",
+    "display_name": "Qwen3 Coder Flash",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 64000,
+    "pricing": {
+      "input": "0.0000005",
+      "output": "0.000002",
+      "input_cache_read": "0.00000005",
+      "input_cache_write": "0.00000025"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-15T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen-flash",
+    "display_name": "Qwen Flash",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 1000000,
+    "max_output_tokens": 32000,
+    "pricing": {
+      "input": "0.000000022",
+      "output": "0.000000088",
+      "input_cache_read": "0.0000000022",
+      "input_cache_write": "0.000000011"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-10T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-2.5-flash-lite",
+    "display_name": "Google: Gemini 2.5 Flash Lite",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1048576,
+    "max_output_tokens": 65535,
+    "pricing": {
+      "input": "0.0000001",
+      "output": "0.0000004",
+      "input_cache_read": "0.00000001"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-05T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen-turbo",
+    "display_name": "Qwen Turbo",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 16000,
+    "pricing": {
+      "input": "0.00000005",
+      "output": "0.0000002",
+      "input_cache_read": "0.000000005",
+      "input_cache_write": "0.000000025"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-06-01T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-2.5-flash",
+    "display_name": "Google: Gemini 2.5 Flash",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1048576,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.0000003",
+      "output": "0.0000025",
+      "input_cache_read": "0.00000003"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-05-20T00:00:00Z"
+  },
+  {
+    "id": "google/gemini-2.5-pro",
+    "display_name": "Google: Gemini 2.5 Pro",
+    "icon": "Gemini",
+    "mode": "chat",
+    "context_window": 1048576,
+    "max_output_tokens": 65536,
+    "pricing": {
+      "input": "0.00000125",
+      "output": "0.000005",
+      "input_cache_read": "0.000000125"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "google"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-05-15T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-4.1",
+    "display_name": "GPT-4.1",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 1047576,
+    "max_output_tokens": 32768,
+    "pricing": {
+      "input": "0.000002",
+      "output": "0.000008",
+      "input_cache_read": "0.0000002",
+      "input_cache_write": "0.000001"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-05-10T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-4.1-mini",
+    "display_name": "GPT-4.1 Mini",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 1047576,
+    "max_output_tokens": 32768,
+    "pricing": {
+      "input": "0.0000004",
+      "output": "0.0000016",
+      "input_cache_read": "0.00000004",
+      "input_cache_write": "0.0000002"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": true,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-05-10T00:00:00Z"
+  },
+  {
+    "id": "bailian/qwen-max",
+    "display_name": "Qwen Max",
+    "icon": "Qwen",
+    "mode": "chat",
+    "context_window": 32000,
+    "max_output_tokens": 8000,
+    "pricing": {
+      "input": "0.00000035",
+      "output": "0.0000014",
+      "input_cache_read": "0.000000035",
+      "input_cache_write": "0.000000175"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-05-05T00:00:00Z"
+  },
+  {
+    "id": "bailian/text-embedding-v4",
+    "display_name": "Qwen Text Embedding V4",
+    "icon": "Qwen",
+    "mode": "embedding",
+    "context_window": 8192,
+    "max_output_tokens": 0,
+    "pricing": {
+      "input": "0.000000072"
+    },
+    "capabilities": {
+      "vision": false,
+      "function_calling": false,
+      "reasoning": false,
+      "prompt_caching": false,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "aliyun_bailian"
+    ],
+    "supported_protocols": [
+      "openai"
+    ],
+    "released_at": "2025-05-01T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-4o-mini",
+    "display_name": "GPT-4o Mini",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 16384,
+    "pricing": {
+      "input": "0.00000015",
+      "output": "0.0000006",
+      "input_cache_read": "0.000000015",
+      "input_cache_write": "0.000000075"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-04-20T00:00:00Z"
+  },
+  {
+    "id": "openai/gpt-4o",
+    "display_name": "GPT-4o",
+    "icon": "OpenAI",
+    "mode": "chat",
+    "context_window": 128000,
+    "max_output_tokens": 16384,
+    "pricing": {
+      "input": "0.0000025",
+      "output": "0.00001",
+      "input_cache_read": "0.00000025",
+      "input_cache_write": "0.00000125"
+    },
+    "capabilities": {
+      "vision": true,
+      "function_calling": true,
+      "reasoning": false,
+      "prompt_caching": true,
+      "web_search": false,
+      "web_fetch": false,
+      "audio_input": false,
+      "video_input": false,
+      "pdf_input": false
+    },
+    "supported_provider_types": [
+      "openai"
+    ],
+    "supported_protocols": [
+      "openai",
+      "anthropic"
+    ],
+    "released_at": "2025-04-15T00:00:00Z"
+  }
+]
