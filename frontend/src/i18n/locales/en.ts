@@ -4865,6 +4865,12 @@ export default {
       deleteConfirm: 'Are you sure you want to delete this announcement? This action cannot be undone.'
     },
 
+    // Model Catalog
+    catalog: {
+      title: 'Model Catalog',
+      description: 'Manage the public model catalog. Toggle visibility to control what users can see.'
+    },
+
     // Promo Codes
     promo: {
       title: 'Promo Code Management',

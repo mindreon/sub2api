@@ -5029,6 +5029,12 @@ export default {
       deleteConfirm: '确定要删除该公告吗？此操作无法撤销。'
     },
 
+    // Model Catalog
+    catalog: {
+      title: '模型目录',
+      description: '管理公开展示的模型目录，上架/下架控制公开可见性'
+    },
+
     // Promo Codes
     promo: {
       title: '优惠码管理',

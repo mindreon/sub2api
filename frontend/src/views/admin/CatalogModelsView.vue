@@ -16,22 +16,22 @@
             v-model="filters.vendor"
             :options="vendorOptions"
             class="w-36"
-            @change="loadModels"
+            @change="() => loadModels()"
           />
           <Select
             v-model="filters.category"
             :options="categoryOptions"
             class="w-36"
-            @change="loadModels"
+            @change="() => loadModels()"
           />
           <Select
             v-model="enabledFilter"
             :options="enabledOptions"
             class="w-32"
-            @change="loadModels"
+            @change="() => loadModels()"
           />
           <div class="flex flex-1 items-center justify-end gap-2">
-            <button @click="loadModels" :disabled="loading" class="btn btn-secondary" title="刷新">
+            <button @click="() => loadModels()" :disabled="loading" class="btn btn-secondary" title="刷新">
               <Icon name="refresh" size="md" :class="loading ? 'animate-spin' : ''" />
             </button>
             <button @click="handleSeed" :disabled="seeding" class="btn btn-secondary">
@@ -93,10 +93,10 @@
 
       <template #pagination>
         <Pagination
-          :current-page="currentPage"
+          :page="currentPage"
           :total="total"
           :page-size="pageSize"
-          @page-change="handlePageChange"
+          @update:page="handlePageChange"
         />
       </template>
     </TablePageLayout>
