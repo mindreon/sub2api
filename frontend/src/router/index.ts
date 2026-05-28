@@ -12,6 +12,10 @@ import { useRoutePrefetch } from '@/composables/useRoutePrefetch'
 import { getSetupStatus } from '@/api/setup'
 import { resolveCompletedSetupRedirectPath } from './setupRedirect'
 import { resolveDocumentTitle } from './title'
+import {
+  buildOAuthCallbackRecoveryTargetFromLocation,
+  recoverOAuthCallbackHashFromLoginRedirect,
+} from '@/utils/oauthRedirectRecovery'
 
 /**
  * Route definitions with lazy loading
@@ -776,6 +780,7 @@ let routePrefetch: ReturnType<typeof useRoutePrefetch> | null = null
 const BACKEND_MODE_ALLOWED_PATHS = ['/login', '/key-usage', '/setup', '/payment/result', '/payment/airwallex', '/legal']
 const BACKEND_MODE_CALLBACK_PATHS = [
   '/auth/callback',
+  '/auth/oauth/callback',
   '/auth/linuxdo/callback',
   '/auth/dingtalk/callback',
   '/auth/dingtalk/email-completion',
@@ -811,6 +816,29 @@ router.beforeEach(async (to, _from, next) => {
   if (!authInitialized) {
     authStore.checkAuth()
     authInitialized = true
+  }
+
+  if (typeof window !== 'undefined') {
+    const oauthCallbackTarget = buildOAuthCallbackRecoveryTargetFromLocation(
+      window.location.pathname,
+      to.path,
+      window.location.search,
+      window.location.hash
+    )
+    if (oauthCallbackTarget) {
+      next(oauthCallbackTarget)
+      return
+    }
+  }
+
+  // Recover malformed OAuth redirect links like:
+  // /login?redirect=/dashboard%23access_token=...%26expires_in=...
+  if (to.path === '/login') {
+    const recoveredHash = recoverOAuthCallbackHashFromLoginRedirect(to.query.redirect)
+    if (recoveredHash) {
+      next(`/auth/oauth/callback#${recoveredHash}`)
+      return
+    }
   }
 
   // Set page title
@@ -852,12 +880,6 @@ router.beforeEach(async (to, _from, next) => {
   if (!requiresAuth) {
     // If already authenticated and trying to access login/register, redirect to appropriate dashboard
     if (authStore.isAuthenticated && (to.path === '/login' || to.path === '/register')) {
-      // In backend mode, non-admin users should NOT be redirected away from login
-      // (they are blocked from all protected routes, so redirecting would cause a loop)
-      if (appStore.backendModeEnabled && !authStore.isAdmin) {
-        next()
-        return
-      }
       // Admin users go to admin dashboard, regular users go to user dashboard
       next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
       return
@@ -922,19 +944,6 @@ router.beforeEach(async (to, _from, next) => {
     if (restrictedPaths.some((path) => to.path.startsWith(path))) {
       // 简易模式下访问受限页面,重定向到仪表板
       next(authStore.isAdmin ? '/admin/dashboard' : '/dashboard')
-      return
-    }
-  }
-
-  // Backend mode: admin gets full access, non-admin blocked
-  if (appStore.backendModeEnabled) {
-    if (authStore.isAuthenticated && authStore.isAdmin) {
-      next()
-      return
-    }
-    const isAllowed = isBackendModePublicRouteAllowed(to.path, authStore.hasPendingAuthSession)
-    if (!isAllowed) {
-      next('/login')
       return
     }
   }
