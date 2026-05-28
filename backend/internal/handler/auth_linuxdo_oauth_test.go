@@ -22,6 +22,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNormalizeOAuthTokenFrontendCallback(t *testing.T) {
+	require.Equal(t, "/auth/oauth/callback", normalizeOAuthTokenFrontendCallback(""))
+	require.Equal(t, "/auth/oauth/callback", normalizeOAuthTokenFrontendCallback("/auth/oauth/callback"))
+	require.Equal(t, "http://localhost/auth/oauth/callback", normalizeOAuthTokenFrontendCallback("http://localhost/dashboard"))
+	require.Equal(t, "/auth/callback", normalizeOAuthTokenFrontendCallback("/auth/callback"))
+}
+
 func TestSanitizeFrontendRedirectPath(t *testing.T) {
 	require.Equal(t, "/dashboard", sanitizeFrontendRedirectPath("/dashboard"))
 	require.Equal(t, "/dashboard", sanitizeFrontendRedirectPath(" /dashboard "))

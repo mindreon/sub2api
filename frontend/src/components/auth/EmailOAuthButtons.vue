@@ -35,6 +35,7 @@ import { resolveAffiliateReferralCode, storeOAuthAffiliateCode } from '@/utils/o
 
 type EmailOAuthProvider = 'github' | 'google'
 const EMAIL_OAUTH_PENDING_PROVIDER_KEY = 'email_oauth_pending_provider'
+const EMAIL_OAUTH_PENDING_KEY = 'email_oauth_pending'
 
 const props = withDefaults(defineProps<{
   disabled?: boolean
@@ -75,6 +76,7 @@ function startLogin(provider: EmailOAuthProvider): void {
   const affiliateCode = resolveAffiliateReferralCode(props.affCode, route.query.aff, route.query.aff_code)
   storeOAuthAffiliateCode(affiliateCode)
   window.sessionStorage.setItem(EMAIL_OAUTH_PENDING_PROVIDER_KEY, provider)
+  window.sessionStorage.setItem(EMAIL_OAUTH_PENDING_KEY, '1')
   const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) || '/api/v1'
   const normalized = apiBase.replace(/\/$/, '')
   const params = new URLSearchParams({ redirect: redirectTo })

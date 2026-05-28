@@ -73,18 +73,18 @@ export async function list(
 }
 
 export async function update(id: number, request: UpdateCatalogModelRequest): Promise<CatalogModel> {
-  const { data } = await apiClient.put<{ data: CatalogModel }>(`/admin/catalog/models/${id}`, request)
-  return data.data
+  const { data } = await apiClient.put<CatalogModel>(`/admin/catalog/models/${id}`, request)
+  return data as unknown as CatalogModel
 }
 
 export async function toggle(id: number): Promise<CatalogModel> {
-  const { data } = await apiClient.patch<{ data: CatalogModel }>(`/admin/catalog/models/${id}/toggle`)
-  return data.data
+  const { data } = await apiClient.patch<CatalogModel>(`/admin/catalog/models/${id}/toggle`)
+  return data as unknown as CatalogModel
 }
 
 export async function seed(): Promise<{ seeded: number }> {
-  const { data } = await apiClient.post<{ data: { seeded: number } }>('/admin/catalog/models/seed')
-  return data.data
+  const { data } = await apiClient.post<{ seeded: number }>('/admin/catalog/models/seed')
+  return data as unknown as { seeded: number }
 }
 
 const catalogModelsAPI = { list, update, toggle, seed }

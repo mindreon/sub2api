@@ -199,7 +199,7 @@
 
 <script setup lang="ts">
 import { computed, ref, reactive, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { AuthLayout } from '@/components/layout'
 import LinuxDoOAuthSection from '@/components/auth/LinuxDoOAuthSection.vue'
@@ -212,17 +212,26 @@ import TotpLoginModal from '@/components/auth/TotpLoginModal.vue'
 import Icon from '@/components/icons/Icon.vue'
 import TurnstileWidget from '@/components/TurnstileWidget.vue'
 import { useAuthStore, useAppStore } from '@/stores'
-import { getPublicSettings, isTotp2FARequired, isWeChatWebOAuthEnabled } from '@/api/auth'
+import {
+  getPublicSettings,
+  isTotp2FARequired,
+  isWeChatWebOAuthEnabled,
+  persistOAuthTokenContext
+} from '@/api/auth'
 import type { LoginAgreementDocument, TotpLoginResponse } from '@/types'
 import { extractI18nErrorMessage } from '@/utils/apiError'
 import { clearAllAffiliateReferralCodes } from '@/utils/oauthAffiliate'
 
 const { t } = useI18n()
 const LOGIN_AGREEMENT_STORAGE_KEY = 'sub2api_login_agreement_consent'
+const EMAIL_OAUTH_PENDING_PROVIDER_KEY = 'email_oauth_pending_provider'
+const EMAIL_OAUTH_PENDING_KEY = 'email_oauth_pending'
+const EMAIL_OAUTH_LOGIN_RESUME_KEY = 'email_oauth_login_resume_once'
 
 // ==================== Router & Stores ====================
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 
@@ -306,6 +315,18 @@ watch(validationToastMessage, (value, previousValue) => {
 // ==================== Lifecycle ====================
 
 onMounted(async () => {
+  if (await resumeEmailOAuthFlowFromLogin()) {
+    return
+  }
+
+  if (await recoverOAuthTokenFromHash()) {
+    return
+  }
+
+  if (await recoverMalformedOAuthRedirect()) {
+    return
+  }
+
   const expiredFlag = sessionStorage.getItem('auth_expired')
   if (expiredFlag) {
     sessionStorage.removeItem('auth_expired')
@@ -337,6 +358,132 @@ onMounted(async () => {
     publicSettingsLoaded.value = true
   }
 })
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+function repeatedlyDecode(value: string, maxRound = 3): string {
+  let result = value
+  for (let i = 0; i < maxRound; i += 1) {
+    const decoded = safeDecodeURIComponent(result)
+    if (decoded === result) {
+      break
+    }
+    result = decoded
+  }
+  return result
+}
+
+function sanitizeRedirectPath(path: string | null | undefined): string {
+  if (!path) return '/dashboard'
+  if (!path.startsWith('/')) return '/dashboard'
+  if (path.startsWith('//')) return '/dashboard'
+  if (path.includes('://')) return '/dashboard'
+  if (path.includes('\n') || path.includes('\r')) return '/dashboard'
+  return path
+}
+
+async function recoverMalformedOAuthRedirect(): Promise<boolean> {
+  const redirectParam = (route.query.redirect as string | undefined)?.trim()
+  if (!redirectParam) {
+    return false
+  }
+
+  const normalizedRedirect = repeatedlyDecode(redirectParam, 4)
+  const hashIndex = normalizedRedirect.indexOf('#')
+  if (hashIndex < 0) {
+    return false
+  }
+
+  const hashPayload = normalizedRedirect.slice(hashIndex + 1)
+  const hashParams = new URLSearchParams(hashPayload)
+  const accessToken = hashParams.get('access_token')?.trim()
+  if (!accessToken) {
+    return false
+  }
+
+  const redirectInHash = repeatedlyDecode(hashParams.get('redirect') || '', 4)
+  hashParams.set('redirect', sanitizeRedirectPath(redirectInHash || '/dashboard'))
+  await router.replace(`/auth/oauth/callback#${hashParams.toString()}`)
+  return true
+}
+
+async function recoverOAuthTokenFromHash(): Promise<boolean> {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const rawHash = window.location.hash || ''
+  if (!rawHash.startsWith('#')) {
+    return false
+  }
+
+  const hashParams = new URLSearchParams(rawHash.slice(1))
+  const accessToken = hashParams.get('access_token')?.trim() || ''
+  if (!accessToken) {
+    return false
+  }
+
+  const refreshToken = hashParams.get('refresh_token')?.trim() || ''
+  const expiresIn = Number.parseInt(hashParams.get('expires_in')?.trim() || '', 10)
+  const redirectInHash = repeatedlyDecode(hashParams.get('redirect') || '', 4)
+
+  persistOAuthTokenContext({
+    access_token: accessToken,
+    refresh_token: refreshToken || undefined,
+    expires_in: Number.isFinite(expiresIn) && expiresIn > 0 ? expiresIn : undefined,
+    token_type: hashParams.get('token_type')?.trim() || undefined
+  })
+
+  try {
+    await authStore.setToken(accessToken)
+    clearAllAffiliateReferralCodes()
+    appStore.showSuccess(t('auth.loginSuccess'))
+    await router.replace(sanitizeRedirectPath(redirectInHash || '/dashboard'))
+    return true
+  } catch (error: unknown) {
+    const message = extractI18nErrorMessage(error, t, 'auth.errors', t('auth.loginFailed'))
+    appStore.showError(message)
+    return false
+  }
+}
+
+async function resumeEmailOAuthFlowFromLogin(): Promise<boolean> {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const provider = window.sessionStorage.getItem(EMAIL_OAUTH_PENDING_PROVIDER_KEY)
+  const hasOAuthPending =
+    provider === 'github' ||
+    provider === 'google' ||
+    window.sessionStorage.getItem(EMAIL_OAUTH_PENDING_KEY) === '1'
+  if (!hasOAuthPending) {
+    return false
+  }
+
+  const redirectParam = typeof route.query.redirect === 'string' ? route.query.redirect : ''
+  const hasOAuthLikeHash = window.location.hash.includes('access_token=') || window.location.hash.includes('error=')
+  if (!redirectParam && !hasOAuthLikeHash) {
+    return false
+  }
+
+  const resumeSignature = `${redirectParam}|${window.location.hash}`
+  const lastResumeSignature = window.sessionStorage.getItem(EMAIL_OAUTH_LOGIN_RESUME_KEY)
+  if (lastResumeSignature === resumeSignature) {
+    return false
+  }
+  window.sessionStorage.setItem(EMAIL_OAUTH_LOGIN_RESUME_KEY, resumeSignature)
+
+  const callbackTarget = `/auth/oauth/callback${window.location.search}${window.location.hash}`
+  await router.replace(callbackTarget)
+  return true
+}
 
 // ==================== Login Agreement ====================
 

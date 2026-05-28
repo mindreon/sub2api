@@ -75,11 +75,9 @@
           </template>
 
           <template #cell-is_enabled="{ value, row }">
-            <input
-              type="checkbox"
-              :checked="value"
-              class="toggle"
-              @change="handleToggle(row)"
+            <Toggle
+              :model-value="value"
+              @update:model-value="handleToggle(row)"
             />
           </template>
 
@@ -120,6 +118,7 @@ import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import Select from '@/components/common/Select.vue'
 import Icon from '@/components/icons/Icon.vue'
+import Toggle from '@/components/common/Toggle.vue'
 import CatalogModelEditDialog from '@/components/admin/CatalogModelEditDialog.vue'
 import { catalogModels } from '@/api/admin'
 import type { CatalogModel } from '@/api/admin/catalogModels'

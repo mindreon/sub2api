@@ -87,6 +87,7 @@ function simulateGuard(
       const allowed = ['/login', '/key-usage', '/setup', '/payment/result']
       const callbackPaths = [
         '/auth/callback',
+        '/auth/oauth/callback',
         '/auth/linuxdo/callback',
         '/auth/oidc/callback',
         '/auth/wechat/callback',
@@ -136,6 +137,7 @@ function simulateGuard(
     const allowed = ['/login', '/key-usage', '/setup', '/payment/result']
     const callbackPaths = [
       '/auth/callback',
+      '/auth/oauth/callback',
       '/auth/linuxdo/callback',
       '/auth/oidc/callback',
       '/auth/wechat/callback',
@@ -479,6 +481,18 @@ describe('路由守卫逻辑', () => {
         hasPendingAuthSession: false,
       }
       const redirect = simulateGuard('/auth/wechat/callback', { requiresAuth: false }, authState)
+      expect(redirect).toBeNull()
+    })
+
+    it('unauthenticated: canonical email oauth callback route is allowed', () => {
+      const authState: MockAuthState = {
+        isAuthenticated: false,
+        isAdmin: false,
+        isSimpleMode: false,
+        backendModeEnabled: true,
+        hasPendingAuthSession: false,
+      }
+      const redirect = simulateGuard('/auth/oauth/callback', { requiresAuth: false }, authState)
       expect(redirect).toBeNull()
     })
 

@@ -172,9 +172,18 @@ func seedToDomain(r seedModelJSON) CatalogModel {
 		CacheReadPrice:   cacheReadPrice,
 		CacheWritePrice:  cacheWritePrice,
 		Currency:         "USD",
-		IsEnabled:        true,
+		IsEnabled:        isDefaultEnabledVendor(vendor),
 		Tags:             []string{},
 		Description:      "",
+	}
+}
+
+func isDefaultEnabledVendor(vendor string) bool {
+	switch vendor {
+	case "OpenAI", "Anthropic":
+		return true
+	default:
+		return false
 	}
 }
 

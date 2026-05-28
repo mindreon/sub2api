@@ -881,6 +881,34 @@ func singleLine(value string) string {
 	return strings.Join(strings.Fields(value), " ")
 }
 
+const oauthTokenFragmentDeliveryPath = "/auth/oauth/callback"
+
+// normalizeOAuthTokenFrontendCallback ensures OAuth access tokens are only
+// delivered to a frontend callback route that knows how to consume URL fragments.
+func normalizeOAuthTokenFrontendCallback(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return oauthTokenFragmentDeliveryPath
+	}
+
+	lower := strings.ToLower(raw)
+	if strings.Contains(lower, oauthTokenFragmentDeliveryPath) || strings.Contains(lower, "/auth/callback") {
+		return raw
+	}
+
+	u, err := url.Parse(raw)
+	if err != nil {
+		return oauthTokenFragmentDeliveryPath
+	}
+	if u.Scheme != "" && u.Host != "" {
+		u.Path = oauthTokenFragmentDeliveryPath
+		u.RawQuery = ""
+		u.Fragment = ""
+		return u.String()
+	}
+	return oauthTokenFragmentDeliveryPath
+}
+
 func sanitizeFrontendRedirectPath(path string) string {
 	path = strings.TrimSpace(path)
 	if path == "" {

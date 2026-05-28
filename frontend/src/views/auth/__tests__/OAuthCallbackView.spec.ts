@@ -125,6 +125,32 @@ describe('OAuthCallbackView', () => {
     expect(wrapper.find('.bg-red-50').exists()).toBe(false)
   })
 
+  it('shows invalid callback guidance for oauth errors returned in the fragment', async () => {
+    routeState.path = '/auth/oauth/callback'
+    locationState.current.href =
+      'http://localhost/auth/oauth/callback#error=token_exchange_failed&error_message=failed'
+    locationState.current.hash = '#error=token_exchange_failed&error_message=failed'
+
+    const wrapper = mount(OAuthCallbackView)
+    await vi.dynamicImportSettled()
+
+    expect(showErrorMock).toHaveBeenCalledWith('failed')
+    expect(wrapper.text()).toContain('auth.oauth.invalidCallbackTitle')
+    expect(wrapper.text()).toContain('auth.oauth.invalidCallbackHint')
+    expect(wrapper.find('input[readonly]').exists()).toBe(false)
+  })
+
+  it('finalizes fragment token login on canonical callback path', async () => {
+    routeState.path = '/auth/callback'
+    locationState.current.hash = '#access_token=token-fragment&expires_in=3600&redirect=%2Fdashboard'
+
+    mount(OAuthCallbackView)
+    await vi.dynamicImportSettled()
+
+    expect(setTokenMock).toHaveBeenCalledWith('token-fragment')
+    expect(routerReplaceMock).toHaveBeenCalledWith('/dashboard')
+  })
+
   it('does not render manual copy fields for direct email oauth callback visits', async () => {
     routeState.path = '/auth/oauth/callback'
     exchangePendingOAuthCompletionMock.mockRejectedValue(new Error('pending session not found'))

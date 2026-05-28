@@ -162,6 +162,12 @@ import {
   loadOAuthAffiliateCode,
   oauthAffiliatePayload
 } from '@/utils/oauthAffiliate'
+import {
+  isOAuthCallbackPath,
+  readOAuthRedirectTargetFromHash,
+  readOAuthTokenResponseFromHash,
+  sanitizeOAuthRedirectPath
+} from '@/utils/oauthRedirectRecovery'
 
 const route = useRoute()
 const router = useRouter()
@@ -182,6 +188,7 @@ const pendingProvider = ref<'github' | 'google'>('github')
 const redirectTo = ref('/dashboard')
 const invalidCallback = ref(false)
 const EMAIL_OAUTH_PENDING_PROVIDER_KEY = 'email_oauth_pending_provider'
+const EMAIL_OAUTH_PENDING_KEY = 'email_oauth_pending'
 
 type EmailOAuthPendingCompletion = Partial<OAuthTokenResponse> & {
   error?: string
@@ -218,35 +225,6 @@ const canSubmitRegistration = computed(() => {
   return true
 })
 
-function parseFragmentParams(): URLSearchParams {
-  const raw = typeof window !== 'undefined' ? window.location.hash : ''
-  const hash = raw.startsWith('#') ? raw.slice(1) : raw
-  return new URLSearchParams(hash)
-}
-
-function readTokenResponse(params: URLSearchParams): OAuthTokenResponse | null {
-  const accessToken = params.get('access_token')?.trim() || ''
-  if (!accessToken) return null
-
-  const response: OAuthTokenResponse = { access_token: accessToken }
-  const refreshToken = params.get('refresh_token')?.trim() || ''
-  if (refreshToken) response.refresh_token = refreshToken
-  const expiresIn = Number.parseInt(params.get('expires_in')?.trim() || '', 10)
-  if (Number.isFinite(expiresIn) && expiresIn > 0) response.expires_in = expiresIn
-  const tokenType = params.get('token_type')?.trim() || ''
-  if (tokenType) response.token_type = tokenType
-  return response
-}
-
-function sanitizeRedirectPath(path: string | null | undefined): string {
-  if (!path) return '/dashboard'
-  if (!path.startsWith('/')) return '/dashboard'
-  if (path.startsWith('//')) return '/dashboard'
-  if (path.includes('://')) return '/dashboard'
-  if (path.includes('\n') || path.includes('\r')) return '/dashboard'
-  return path
-}
-
 function readPendingEmailOAuthProvider(): 'github' | 'google' | null {
   if (typeof window === 'undefined') return null
   const provider = window.sessionStorage.getItem(EMAIL_OAUTH_PENDING_PROVIDER_KEY)
@@ -277,10 +255,11 @@ async function finalizeTokenResponse(tokenResponse: OAuthTokenResponse, redirect
   await authStore.setToken(tokenResponse.access_token)
   if (typeof window !== 'undefined') {
     window.sessionStorage.removeItem(EMAIL_OAUTH_PENDING_PROVIDER_KEY)
+    window.sessionStorage.removeItem(EMAIL_OAUTH_PENDING_KEY)
   }
   clearAllAffiliateReferralCodes()
   appStore.showSuccess(t('auth.loginSuccess'))
-  await router.replace(sanitizeRedirectPath(redirect))
+  await router.replace(sanitizeOAuthRedirectPath(redirect))
 }
 
 function hasOAuthTokenResponse(value: Partial<OAuthTokenResponse>): value is OAuthTokenResponse {
@@ -301,7 +280,7 @@ async function resumePendingEmailOAuth() {
     if (provider === 'github' || provider === 'google') {
       pendingProvider.value = provider
     }
-    redirectTo.value = sanitizeRedirectPath(completionRedirect)
+    redirectTo.value = sanitizeOAuthRedirectPath(completionRedirect)
 
     if (completion.error === 'invitation_required' || completion.error === 'registration_completion_required') {
       invitationRequired.value = completion.error === 'invitation_required' || completion.invitation_required === true
@@ -365,34 +344,45 @@ async function handleSubmitRegistration() {
 }
 
 onMounted(async () => {
-  const params = parseFragmentParams()
-  const tokenResponse = readTokenResponse(params)
-  const fragmentError = params.get('error') || ''
+  if (authStore.isAuthenticated) {
+    await router.replace('/dashboard')
+    return
+  }
+
+  const rawHash = typeof window !== 'undefined' ? window.location.hash : ''
+  const tokenResponse = readOAuthTokenResponseFromHash(rawHash)
+  const fragmentParams = new URLSearchParams(rawHash.startsWith('#') ? rawHash.slice(1) : rawHash)
+  const fragmentError = fragmentParams.get('error') || ''
   const fragmentErrorDescription =
-    params.get('error_description') || params.get('error_message') || ''
+    fragmentParams.get('error_description') || fragmentParams.get('error_message') || ''
 
   if (fragmentError) {
     appStore.showError(fragmentErrorDescription || fragmentError)
+    invalidCallback.value = true
+    isProcessing.value = false
     return
   }
   if (!tokenResponse) {
-    if (route.path === '/auth/oauth/callback') {
+    if (isOAuthCallbackPath(route.path)) {
       const pendingEmailOAuthProvider = readPendingEmailOAuthProvider()
       if (pendingEmailOAuthProvider && code.value && state.value) {
         redirectProviderCallbackToBackend(pendingEmailOAuthProvider)
         return
       }
       await resumePendingEmailOAuth()
+      return
     }
+    invalidCallback.value = true
     return
   }
 
   isProcessing.value = true
   try {
-    await finalizeTokenResponse(tokenResponse, params.get('redirect') || '/dashboard')
+    await finalizeTokenResponse(tokenResponse, readOAuthRedirectTargetFromHash(rawHash))
   } catch (error: unknown) {
     const message = (error as { message?: string })?.message || t('auth.loginFailed')
     appStore.showError(message)
+    invalidCallback.value = true
     isProcessing.value = false
   }
 })

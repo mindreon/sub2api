@@ -105,8 +105,44 @@ func TestCatalogModelServiceSeedIfEmptyInsertsWhenEmpty(t *testing.T) {
 	if first.Vendor == "" {
 		t.Error("expected Vendor to be non-empty")
 	}
-	if !first.IsEnabled {
-		t.Error("expected seeded models to be enabled by default")
+	if first.Vendor == "OpenAI" || first.Vendor == "Anthropic" {
+		if !first.IsEnabled {
+			t.Error("expected OpenAI/Anthropic models to be enabled by default")
+		}
+	}
+}
+
+func TestCatalogModelServiceSeedDefaultEnablementPolicy(t *testing.T) {
+	repo := &mockCatalogRepo{count: 0}
+	svc := service.NewCatalogModelService(repo)
+	if err := svc.SeedIfEmpty(context.Background()); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(repo.items) == 0 {
+		t.Fatal("expected seeded models")
+	}
+
+	seenOpenVendors := false
+	seenOtherVendors := false
+	for _, model := range repo.items {
+		switch model.Vendor {
+		case "OpenAI", "Anthropic":
+			seenOpenVendors = true
+			if !model.IsEnabled {
+				t.Fatalf("expected %s model %s to be enabled by default", model.Vendor, model.ModelID)
+			}
+		default:
+			seenOtherVendors = true
+			if model.IsEnabled {
+				t.Fatalf("expected non OpenAI/Anthropic model %s (%s) to be disabled by default", model.ModelID, model.Vendor)
+			}
+		}
+	}
+	if !seenOpenVendors {
+		t.Fatal("expected seed data to include OpenAI or Anthropic models")
+	}
+	if !seenOtherVendors {
+		t.Fatal("expected seed data to include non OpenAI/Anthropic models")
 	}
 }
 

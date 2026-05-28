@@ -82,6 +82,43 @@ func TestEmailOAuthCallbackRequiresPendingRegistrationWhenInvitationEnabled(t *t
 	require.NotEmpty(t, findSetCookieValue(recorder.Result().Cookies(), oauthPendingBrowserCookieName))
 }
 
+func TestEmailOAuthCallbackNormalizesDashboardFrontendRedirect(t *testing.T) {
+	handler, client := newOAuthPendingFlowTestHandler(t, false)
+	ctx := context.Background()
+
+	_, err := client.User.Create().
+		SetEmail("google-dashboard@example.com").
+		SetUsername("google-dashboard").
+		SetPasswordHash("hash").
+		SetRole(service.RoleUser).
+		SetStatus(service.StatusActive).
+		Save(ctx)
+	require.NoError(t, err)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/auth/oauth/google/callback", nil)
+
+	handler.emailOAuthCallbackWithProfile(c, "google", config.EmailOAuthProviderConfig{
+		Enabled:             true,
+		ClientID:            "google-client",
+		ClientSecret:        "google-secret",
+		RedirectURL:         "http://localhost/api/v1/auth/oauth/google/callback",
+		FrontendRedirectURL: "http://localhost/dashboard",
+	}, "http://localhost/dashboard", "/dashboard", &emailOAuthProfile{
+		Subject:       "google-dashboard-user",
+		Email:         "google-dashboard@example.com",
+		EmailVerified: true,
+		Username:      "google-dashboard",
+	})
+
+	require.Equal(t, http.StatusFound, recorder.Code)
+	location := recorder.Header().Get("Location")
+	require.Contains(t, location, "/auth/oauth/callback")
+	require.Contains(t, location, "access_token=")
+	require.NotContains(t, location, "/dashboard#")
+}
+
 func TestEmailOAuthCallbackExistingEmailLogsInWhenInvitationEnabled(t *testing.T) {
 	handler, client := newOAuthPendingFlowTestHandler(t, true)
 	ctx := context.Background()
@@ -130,7 +167,7 @@ func TestEmailOAuthCallbackExistingEmailLogsInWhenInvitationEnabled(t *testing.T
 	_ = user
 }
 
-func TestEmailOAuthCallbackCreatesPasswordRegistrationSessionForNewEmail(t *testing.T) {
+func TestEmailOAuthCallbackAutoRegistersNewEmailWithAffiliate(t *testing.T) {
 	affiliateRepo := newOAuthEmailAffiliateRepoStub(map[string]int64{"AFF123": 1001})
 	handler, client := newOAuthPendingFlowTestHandlerWithDependencies(t, oauthPendingFlowTestHandlerOptions{
 		settingValues: map[string]string{
@@ -162,26 +199,18 @@ func TestEmailOAuthCallbackCreatesPasswordRegistrationSessionForNewEmail(t *test
 	})
 
 	require.Equal(t, http.StatusFound, recorder.Code)
-	require.NotContains(t, recorder.Header().Get("Location"), "access_token=")
+	location := recorder.Header().Get("Location")
+	require.Contains(t, location, "access_token=")
+	require.Contains(t, location, "redirect=%252Fdashboard")
+
 	userCount, err := client.User.Query().Where(dbuser.EmailEQ("aff-user@example.com")).Count(ctx)
 	require.NoError(t, err)
-	require.Zero(t, userCount)
-	require.Empty(t, affiliateRepo.ensureUserIDs)
-	require.Empty(t, affiliateRepo.bindCalls)
+	require.Equal(t, 1, userCount)
+	require.NotEmpty(t, affiliateRepo.bindCalls)
 
-	session, err := client.PendingAuthSession.Query().Only(ctx)
+	sessionCount, err := client.PendingAuthSession.Query().Count(ctx)
 	require.NoError(t, err)
-	require.Equal(t, "aff-user@example.com", session.ResolvedEmail)
-	require.Equal(t, "AFF123", pendingSessionStringValue(session.UpstreamIdentityClaims, "aff_code"))
-
-	completion, ok := readCompletionResponse(session.LocalFlowState)
-	require.True(t, ok)
-	require.Equal(t, oauthPendingChoiceStep, completion["step"])
-	require.Equal(t, "registration_completion_required", completion["error"])
-	require.Equal(t, false, completion["invitation_required"])
-	require.Equal(t, true, completion["create_account_allowed"])
-	require.Equal(t, true, completion["force_email_on_signup"])
-	require.Equal(t, "aff-user@example.com", completion["resolved_email"])
+	require.Zero(t, sessionCount)
 }
 
 func TestCompleteEmailOAuthRegistrationUsesAffiliateCodeFromPendingSession(t *testing.T) {
