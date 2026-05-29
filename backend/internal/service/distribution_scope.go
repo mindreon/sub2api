@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"time"
 
@@ -151,7 +152,30 @@ func (s *DistributionScopeService) ListMembersForUser(
 	if s.memberRepo == nil {
 		return nil, nil, ErrInvalidDistributionAttribution
 	}
-	return s.memberRepo.ListByChannelOrgID(ctx, channelOrgID, params, roleType)
+	canManage, err := s.CanManageChannelForUser(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if canManage {
+		return s.memberRepo.ListByChannelOrgID(ctx, channelOrgID, params, roleType)
+	}
+	allMembers, err := s.listAllMembersByChannel(ctx, channelOrgID)
+	if err != nil {
+		return nil, nil, err
+	}
+	visibleIDs := distributionVisibleMemberIDs(channelOrgID, allMembers, userID)
+	filtered := make([]DistributionMemberView, 0, len(allMembers))
+	roleType = strings.ToLower(strings.TrimSpace(roleType))
+	for _, member := range allMembers {
+		if _, ok := visibleIDs[member.MemberID]; !ok {
+			continue
+		}
+		if roleType != "" && !strings.EqualFold(strings.TrimSpace(member.RoleType), roleType) {
+			continue
+		}
+		filtered = append(filtered, member)
+	}
+	return paginateDistributionViews(filtered, params), buildDistributionPaginationResult(int64(len(filtered)), params), nil
 }
 
 func (s *DistributionScopeService) ListAttributionsForUser(
@@ -169,7 +193,33 @@ func (s *DistributionScopeService) ListAttributionsForUser(
 	if s.attributionRepo == nil {
 		return nil, nil, ErrInvalidDistributionAttribution
 	}
-	return s.attributionRepo.ListByChannelOrgID(ctx, channelOrgID, params)
+	canManage, err := s.CanManageChannelForUser(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if canManage {
+		return s.attributionRepo.ListByChannelOrgID(ctx, channelOrgID, params)
+	}
+	allMembers, err := s.listAllMembersByChannel(ctx, channelOrgID)
+	if err != nil {
+		return nil, nil, err
+	}
+	visibleIDs := distributionVisibleMemberIDs(channelOrgID, allMembers, userID)
+	allRows, err := s.listAllAttributionsByChannel(ctx, channelOrgID)
+	if err != nil {
+		return nil, nil, err
+	}
+	filtered := make([]DistributionAttributionView, 0, len(allRows))
+	for _, row := range allRows {
+		if row.ReferrerMemberID == nil {
+			continue
+		}
+		if _, ok := visibleIDs[*row.ReferrerMemberID]; !ok {
+			continue
+		}
+		filtered = append(filtered, row)
+	}
+	return paginateDistributionViews(filtered, params), buildDistributionPaginationResult(int64(len(filtered)), params), nil
 }
 
 func (s *DistributionScopeService) ListCommissionsForUser(
@@ -187,7 +237,30 @@ func (s *DistributionScopeService) ListCommissionsForUser(
 	if s.commissionRepo == nil {
 		return nil, nil, ErrInvalidDistributionAttribution
 	}
-	return s.commissionRepo.ListByChannelOrgID(ctx, channelOrgID, params)
+	canManage, err := s.CanManageChannelForUser(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if canManage {
+		return s.commissionRepo.ListByChannelOrgID(ctx, channelOrgID, params)
+	}
+	allMembers, err := s.listAllMembersByChannel(ctx, channelOrgID)
+	if err != nil {
+		return nil, nil, err
+	}
+	visibleIDs := distributionVisibleMemberIDs(channelOrgID, allMembers, userID)
+	allRows, err := s.listAllCommissionsByChannel(ctx, channelOrgID)
+	if err != nil {
+		return nil, nil, err
+	}
+	filtered := make([]DistributionCommissionLedgerView, 0, len(allRows))
+	for _, row := range allRows {
+		if _, ok := visibleIDs[row.MemberID]; !ok {
+			continue
+		}
+		filtered = append(filtered, row)
+	}
+	return paginateDistributionViews(filtered, params), buildDistributionPaginationResult(int64(len(filtered)), params), nil
 }
 
 func (s *DistributionScopeService) GetOverviewForUser(ctx context.Context, userID int64) (*DistributionChannelSummary, error) {
@@ -251,5 +324,128 @@ func (s *DistributionScopeService) ListWalletTransactionsForUser(
 	if s.walletTransactionRepo == nil {
 		return nil, nil, ErrInvalidDistributionWalletTransaction
 	}
+	canManage, err := s.CanManageChannelForUser(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !canManage {
+		return nil, nil, infraerrors.Forbidden("DISTRIBUTION_CHANNEL_PERMISSION_DENIED", "distribution channel permission denied")
+	}
 	return s.walletTransactionRepo.ListTransactionsByChannelOrgID(ctx, channelOrgID, params, transactionType)
+}
+
+func (s *DistributionScopeService) listAllMembersByChannel(ctx context.Context, channelOrgID int64) ([]DistributionMemberView, error) {
+	const pageSize = 500
+	page := 1
+	out := make([]DistributionMemberView, 0, pageSize)
+	for {
+		items, meta, err := s.memberRepo.ListByChannelOrgID(ctx, channelOrgID, pagination.PaginationParams{Page: page, PageSize: pageSize}, "")
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, items...)
+		if meta == nil || page >= meta.Pages || len(items) == 0 {
+			break
+		}
+		page++
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		return out[i].MemberID < out[j].MemberID
+	})
+	return out, nil
+}
+
+func (s *DistributionScopeService) listAllAttributionsByChannel(ctx context.Context, channelOrgID int64) ([]DistributionAttributionView, error) {
+	const pageSize = 500
+	page := 1
+	out := make([]DistributionAttributionView, 0, pageSize)
+	for {
+		items, meta, err := s.attributionRepo.ListByChannelOrgID(ctx, channelOrgID, pagination.PaginationParams{Page: page, PageSize: pageSize})
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, items...)
+		if meta == nil || page >= meta.Pages || len(items) == 0 {
+			break
+		}
+		page++
+	}
+	return out, nil
+}
+
+func (s *DistributionScopeService) listAllCommissionsByChannel(ctx context.Context, channelOrgID int64) ([]DistributionCommissionLedgerView, error) {
+	const pageSize = 500
+	page := 1
+	out := make([]DistributionCommissionLedgerView, 0, pageSize)
+	for {
+		items, meta, err := s.commissionRepo.ListByChannelOrgID(ctx, channelOrgID, pagination.PaginationParams{Page: page, PageSize: pageSize})
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, items...)
+		if meta == nil || page >= meta.Pages || len(items) == 0 {
+			break
+		}
+		page++
+	}
+	return out, nil
+}
+
+func distributionVisibleMemberIDs(channelOrgID int64, members []DistributionMemberView, userID int64) map[int64]struct{} {
+	children := make(map[int64][]int64, len(members))
+	roots := make([]int64, 0, 2)
+	for _, member := range members {
+		if member.ChannelOrgID != channelOrgID || !strings.EqualFold(strings.TrimSpace(member.Status), "active") {
+			continue
+		}
+		if member.ParentMemberID != nil && *member.ParentMemberID > 0 {
+			children[*member.ParentMemberID] = append(children[*member.ParentMemberID], member.MemberID)
+		}
+		if member.UserID == userID {
+			roots = append(roots, member.MemberID)
+		}
+	}
+	visible := make(map[int64]struct{}, len(roots))
+	queue := append([]int64(nil), roots...)
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		if _, seen := visible[current]; seen {
+			continue
+		}
+		visible[current] = struct{}{}
+		queue = append(queue, children[current]...)
+	}
+	return visible
+}
+
+func buildDistributionPaginationResult(total int64, params pagination.PaginationParams) *pagination.PaginationResult {
+	page := params.Page
+	if page < 1 {
+		page = 1
+	}
+	pageSize := params.Limit()
+	pages := 0
+	if total > 0 {
+		pages = int((total + int64(pageSize) - 1) / int64(pageSize))
+	}
+	return &pagination.PaginationResult{
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+		Pages:    pages,
+	}
+}
+
+func paginateDistributionViews[T any](items []T, params pagination.PaginationParams) []T {
+	offset := params.Offset()
+	if offset >= len(items) {
+		return []T{}
+	}
+	limit := params.Limit()
+	end := offset + limit
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[offset:end]
 }

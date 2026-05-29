@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/pagination"
@@ -53,8 +54,12 @@ func (h *DistributionHandler) GetOverview(c *gin.Context) {
 	if !ok {
 		return
 	}
-	summary, err := h.scopeService.GetOverviewForUser(c.Request.Context(), userID)
+	channelOrgID, err := h.scopeService.ResolveUserChannelOrgID(c.Request.Context(), userID)
 	if err != nil {
+		if errors.Is(err, service.ErrDistributionAttributionNotFound) {
+			response.Success(c, distributionOverviewPayload(userID, 0, false, nil))
+			return
+		}
 		response.ErrorFrom(c, err)
 		return
 	}
@@ -63,12 +68,25 @@ func (h *DistributionHandler) GetOverview(c *gin.Context) {
 		response.ErrorFrom(c, err)
 		return
 	}
-	response.Success(c, gin.H{
+	var summary any
+	if canManageChannel {
+		resolved, err := h.scopeService.GetOverviewForUser(c.Request.Context(), userID)
+		if err != nil {
+			response.ErrorFrom(c, err)
+			return
+		}
+		summary = resolved
+	}
+	response.Success(c, distributionOverviewPayload(userID, channelOrgID, canManageChannel, summary))
+}
+
+func distributionOverviewPayload(userID, channelOrgID int64, canManageChannel bool, summary any) gin.H {
+	return gin.H{
 		"user_id":            userID,
-		"channel_org_id":     summary.Organization.ID,
+		"channel_org_id":     channelOrgID,
 		"can_manage_channel": canManageChannel,
 		"summary":            summary,
-	})
+	}
 }
 
 func (h *DistributionHandler) ListMembers(c *gin.Context) {

@@ -353,6 +353,11 @@ export default {
     redeem: '兑换',
     distribution: '分销中心',
     distributionManagement: '分销体系',
+    workspaceSwitcherLabel: '切换工作区',
+    workspaceConsumer: '我的 API',
+    workspaceDistribution: '分销中心',
+    workspaceAdminPlatform: '管理后台',
+    workspaceAdminDistribution: '分销体系',
     affiliate: '邀请返利',
     affiliateManagement: '邀请返利',
     affiliateInviteRecords: '邀请记录',
@@ -1046,6 +1051,34 @@ export default {
     }
   },
 
+  distributionLevels: {
+    add: '添加等级',
+    empty: '尚未配置代理等级。创建代理商时可不选等级，按默认规则处理。',
+    dragHandle: '拖拽排序',
+    selectPlaceholder: '不指定等级',
+    advancedJson: '高级：JSON 编辑',
+    optionLabel: '{name}（{code}）· {rate}% · {source}',
+    source: {
+      channel: '本渠道',
+      global: '平台全局'
+    },
+    fields: {
+      code: '等级编码',
+      name: '等级名称',
+      commissionRate: '佣金比例',
+      active: '启用',
+      note: '备注',
+      notePlaceholder: '可选说明'
+    },
+    errors: {
+      required: '请填写等级编码和名称。',
+      duplicate: '等级编码不能重复。',
+      rate: '佣金比例需在 0–100% 之间。',
+      max: '最多配置 {max} 个等级。',
+      json: 'JSON 格式不正确。'
+    }
+  },
+
   distribution: {
     title: '分销中心',
     description: '查看当前渠道范围内的成员、归因用户和佣金流水。',
@@ -1107,7 +1140,11 @@ export default {
       parentMemberIdPlaceholder: '创建 KOL 时填写你的上级成员 ID',
       levelCode: '等级编码',
       levelCodePlaceholder: '可选，留空则按默认规则生成',
+      levelCodeDesc: '仅代理商可选等级；KOL 按上级设置的佣金比例结算，无等级之分。',
       commissionSettlementMethod: '默认结算方式',
+      levelsTitle: '渠道代理等级',
+      levelsDesc: '为本渠道配置代理商等级名称与默认佣金比例。',
+      levelsPlatformHint: '平台直推渠道使用系统设置中的全局等级，无需在此单独配置。',
       levelsJson: '渠道等级（JSON）',
       wholesaleDiscountRate: '批发价折扣',
       refundFeeRate: '退款手续费率',
@@ -1124,6 +1161,8 @@ export default {
       apiDomain: 'API 网关域名',
       commissionRate: '佣金比例',
       memberId: '成员 ID',
+      promotionMember: '推广成员',
+      promotionMemberPlaceholder: '搜索成员姓名、邮箱或 ID',
       code: '推广码',
       codePlaceholder: '留空则自动生成',
       targetType: '目标类型',
@@ -1148,11 +1187,13 @@ export default {
       trendTitle: '渠道趋势',
       trendDescription: '按时间查看充值、消耗与佣金变化。',
       memberRankingTitle: '下级成员排行',
+      roleBreakdownTitle: '角色维度统计',
       childRankingTitle: '直属下级排行',
       channelUnavailable: '当前账号没有渠道管理权限，暂不展示渠道整体看板。',
       personalUnavailable: '当前账号没有代理 / KOL 推广成员身份，暂不展示个人推广看板。',
       emptyTrend: '当前筛选范围内暂无趋势数据。',
       emptyRanking: '当前筛选范围内暂无成员排行数据。',
+      emptyRoleBreakdown: '当前筛选范围内暂无角色维度统计数据。',
       emptyChildRanking: '当前筛选范围内暂无直属下级排行数据。',
       topRanking: 'Top {count}',
       granularity: {
@@ -1161,6 +1202,9 @@ export default {
         month: '按月'
       },
       metrics: {
+        memberCount: '成员数',
+        totalUsers: '用户总数',
+        newUsers: '新增用户',
         registeredUsers: '注册用户',
         rechargeAmount: '充值金额',
         consumptionAmount: '消耗金额',
@@ -1312,11 +1356,15 @@ export default {
       loadFailed: '加载分销数据失败',
       createFailed: '创建分销记录失败',
       updateFailed: '更新分销记录失败',
-      levelsFormatError: '渠道分销等级 JSON 格式不正确。'
+      levelsFormatError: '渠道分销等级 JSON 格式不正确。',
+      levelsValidationError: '请检查渠道代理等级配置后再保存。'
     },
     messages: {
       memberCreated: '成员已创建',
       linkCreated: '推广链接已创建',
+      linkMemberAutoHint: '将使用你当前登录账号的推广身份创建链接，佣金会记在该身份下。',
+      linkMemberSelectRequired: '请选择要创建推广链接的成员',
+      linkMemberInvalid: '无法创建推广链接：未找到可用的推广身份',
       walletUpdated: '钱包已更新',
       walletRequestSubmitted: '申请已提交，等待平台审核',
       settingsUpdated: '渠道设置已更新',
@@ -2021,6 +2069,7 @@ export default {
         riskAlerts: '风控预警'
       },
       tabs: {
+        globalSettings: '全局设置',
         organizations: '渠道组织',
         members: '渠道成员',
       promotionLinks: '推广链接',
@@ -2030,6 +2079,20 @@ export default {
         walletTransactions: '钱包流水',
         attributions: '归因用户',
         commissions: '佣金流水'
+      },
+      globalSettings: {
+        title: '全局设置',
+        description: '配置分销体系的默认冻结期、2 级 KOL 比例、佣金上限和平台直推代理等级。',
+        freezeHours: '冻结期（小时）',
+        freezeHoursDesc: '当渠道未覆盖时，使用该默认冻结期。',
+        kol2Rate: '2 级 KOL 比例',
+        kol2RateDesc: '2 级 KOL 的全局佣金比例（0-100%）。',
+        commissionUpperRatio: '佣金上限',
+        commissionUpperRatioDesc: '单笔消耗允许产生的总佣金比例上限（0-100%）。',
+        levelsTitle: '全局代理等级',
+        levelsDesc: '用于平台直推（A）渠道下的代理商；包含编码、名称、佣金比例、启用状态、排序和备注。',
+        levelsValidationError: '请检查全局代理等级配置后再保存。',
+        saved: '分销全局设置已保存',
       },
       stats: {
         organizations: '渠道组织',
@@ -2056,7 +2119,7 @@ export default {
         reverseCommission: '冲正佣金'
       },
       filters: {
-      channelOrgId: '渠道组织 ID',
+      channelOrgId: '渠道组织',
       allRoles: '全部角色',
       allTransactionTypes: '全部流水类型',
       allAlertTypes: '全部预警类型',
@@ -2080,17 +2143,24 @@ export default {
       fields: {
         name: '名称',
         type: '类型',
-        ownerUserId: '负责人用户 ID',
+        ownerUser: '负责人',
+        ownerUserId: '负责人',
         wholesaleDiscountRate: '批发价折扣',
-        channelOrgId: '渠道组织 ID',
-        userId: '用户 ID',
+        channelOrgId: '渠道组织',
+        channelOrgIdPlaceholder: '搜索渠道组织名称或 ID…',
+        userId: '用户',
         role: '角色',
-        parentMemberId: '上级成员 ID',
+        parentMemberId: '上级成员',
+        promotionMember: '推广成员',
+        referrerMember: '推荐成员',
+        referrerMemberPlaceholder: '搜索成员姓名、邮箱…',
+        promotionLink: '推广链接',
+        promotionLinkPlaceholder: '搜索推广码…',
         levelCode: '等级编码',
-        levelCodeDesc: '填写后将优先匹配渠道等级或全局等级，并自动覆盖佣金比例。',
+        levelCodeDesc: '仅代理商可选等级；KOL 无等级，按上级授权佣金比例结算。',
         commissionRate: '佣金比例',
         status: '状态',
-        memberId: '成员 ID',
+        memberId: '推广成员',
         code: '推广码',
         codePlaceholder: '留空则自动生成',
         targetType: '目标类型',
@@ -2123,6 +2193,10 @@ export default {
         teamRewardThreshold: '团队奖励门槛',
         freezeHours: '冻结期（小时）',
         kol2Rate: '2级 KOL 比例',
+        levelsTitle: '渠道代理等级',
+        levelsDesc: '为 B/C 批发商配置本渠道内的代理商等级；平台直推请使用全局等级。',
+        levelsPlatformHint: '平台直推（A）使用系统设置中的全局代理等级，此处无需配置渠道等级。',
+        levelsPlatformLink: '前往系统设置配置全局等级',
         levelsJson: '渠道等级（JSON）',
         levelsJsonDesc: '使用 JSON 编辑当前渠道的代理等级数组。',
         logoUrl: 'Logo 地址',
@@ -2229,6 +2303,7 @@ export default {
         organizationCreated: '渠道组织已创建',
         organizationUpdated: '渠道组织已更新',
         memberCreated: '渠道成员已创建',
+        channelOrgRequired: '请选择渠道组织',
         linkCreated: '推广链接已创建',
         walletUpdated: '钱包已更新',
         walletRecharged: '预充值余额已更新',
@@ -2243,7 +2318,8 @@ export default {
         loadFailed: '加载分销数据失败',
         createFailed: '创建分销记录失败',
         updateFailed: '更新分销记录失败',
-        levelsFormatError: '渠道分销等级 JSON 格式不正确。'
+        levelsFormatError: '渠道分销等级 JSON 格式不正确。',
+        levelsValidationError: '请检查渠道代理等级配置后再保存。'
       },
       requestTypes: {
         recharge: '充值申请',
@@ -6019,9 +6095,12 @@ export default {
           kol2RateDesc: '2级 KOL 的全局佣金比例（0-100%）。',
           commissionUpperRatio: '佣金上限',
           commissionUpperRatioDesc: '单笔消耗允许产生的总佣金比例上限（0-100%）。',
+          levelsTitle: '全局代理等级',
+          levelsDesc: '用于平台直推（A）渠道下的代理商；包含编码、名称、佣金比例、启用状态、排序和备注。',
           levelsJson: '全局等级（JSON）',
           levelsJsonDesc: '使用 JSON 编辑全局代理等级数组，每项需包含 code、name、commission_rate、active、sort_order 和 note。',
           levelsFormatError: '全局分销等级 JSON 格式不正确。',
+          levelsValidationError: '请检查全局代理等级配置后再保存。',
         },
       },
       emailTabDisabledTitle: '邮箱验证未启用',

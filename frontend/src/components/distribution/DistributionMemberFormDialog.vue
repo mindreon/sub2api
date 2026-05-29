@@ -2,9 +2,48 @@
   <BaseDialog :show="show" :title="title" width="normal" @close="emit('close')">
     <form class="space-y-4" @submit.prevent="emit('submit')">
       <div class="grid gap-4 sm:grid-cols-2">
-        <label v-if="showChannelOrgField" class="block">
+        <label v-if="showChannelOrgField" class="block sm:col-span-2">
           <span class="input-label">{{ t(fieldKey('channelOrgId')) }}</span>
+          <div v-if="channelOrgLookup" class="relative mt-1">
+            <input
+              v-model="channelOrgLookup.keyword"
+              type="text"
+              class="input pr-8"
+              :placeholder="t(channelOrgSearchPlaceholderKey)"
+              required
+              @input="emit('channel-org-input')"
+              @focus="emit('channel-org-focus')"
+            />
+            <button
+              v-if="memberForm.channel_org_id && memberForm.channel_org_id > 0"
+              type="button"
+              class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              @click="emit('clear-channel-org')"
+            >
+              <Icon name="x" size="sm" :stroke-width="2" />
+            </button>
+            <div
+              v-if="channelOrgLookup.open && (channelOrgLookup.results.length > 0 || channelOrgLookup.keyword)"
+              class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div v-if="channelOrgLookup.loading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+              <div v-else-if="channelOrgLookup.results.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.noOptionsFound') }}</div>
+              <button
+                v-for="organization in channelOrgLookup.results"
+                :key="organization.id"
+                type="button"
+                class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="emit('select-channel-org', organization)"
+              >
+                <div class="font-medium text-gray-900 dark:text-white">{{ organization.name }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  #{{ organization.id }} · {{ t(`${namespace}.organizationTypes.${organization.type}`) }}
+                </div>
+              </button>
+            </div>
+          </div>
           <input
+            v-else
             v-model.number="memberForm.channel_org_id"
             type="number"
             min="1"
@@ -53,7 +92,7 @@
         </label>
         <label class="block">
           <span class="input-label">{{ t(`${namespace}.${roleFieldKey}`) }}</span>
-          <select v-model="memberForm.role_type" class="input mt-1">
+          <select v-model="memberForm.role_type" class="input mt-1" @change="handleRoleTypeChange">
             <option v-for="role in roleOptions" :key="role" :value="role">{{ t(`${namespace}.roles.${role}`) }}</option>
           </select>
         </label>
@@ -99,9 +138,19 @@
             </div>
           </div>
         </label>
-        <label class="block">
+        <label v-if="showLevelField" class="block">
           <span class="input-label">{{ t(fieldKey('levelCode')) }}</span>
-          <input v-model.trim="memberForm.level_code" class="input mt-1" :placeholder="levelCodePlaceholderKey ? t(levelCodePlaceholderKey) : undefined" />
+          <select
+            v-model="memberForm.level_code"
+            class="input mt-1"
+            :disabled="levelOptions.length === 0"
+            @change="handleLevelCodeChange"
+          >
+            <option value="">{{ t('distributionLevels.selectPlaceholder') }}</option>
+            <option v-for="option in levelOptions" :key="option.code" :value="option.code">
+              {{ option.label }}
+            </option>
+          </select>
           <p v-if="levelCodeDescriptionKey" class="mt-1 text-xs text-gray-500 dark:text-dark-400">
             {{ t(levelCodeDescriptionKey) }}
           </p>
@@ -128,11 +177,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
 import type { AdminUser } from '@/types'
-import type { DistributionMember, DistributionMemberRole } from '@/api/admin/distribution'
+import type { DistributionMember, DistributionMemberRole, DistributionOrganization } from '@/api/admin/distribution'
+import type { DistributionLevelSelectOption } from '@/utils/distributionLevels'
+import { levelCommissionRateToMemberRate } from '@/utils/distributionLevels'
 
 type DialogNamespace = 'distribution' | 'admin.distribution'
 
@@ -165,7 +217,9 @@ const props = withDefaults(defineProps<{
   parentMemberLabelKey?: string
   levelCodePlaceholderKey?: string
   levelCodeDescriptionKey?: string
+  channelOrgSearchPlaceholderKey?: string
   showChannelOrgField?: boolean
+  channelOrgLookup?: LookupState<DistributionOrganization>
   hideParentFieldForAgent?: boolean
   parentFieldRequiredForNonAgent?: boolean
   disableParentLookup?: boolean
@@ -173,20 +227,28 @@ const props = withDefaults(defineProps<{
   roleOptions: DistributionMemberRole[]
   memberUserLookup: LookupState<AdminUser>
   parentMemberLookup: LookupState<DistributionMember>
+  levelOptions?: DistributionLevelSelectOption[]
 }>(), {
   parentMemberLabelKey: undefined,
   levelCodePlaceholderKey: undefined,
   levelCodeDescriptionKey: undefined,
+  channelOrgSearchPlaceholderKey: 'admin.distribution.fields.channelOrgIdPlaceholder',
   showChannelOrgField: false,
+  channelOrgLookup: undefined,
   hideParentFieldForAgent: false,
   parentFieldRequiredForNonAgent: false,
   disableParentLookup: false,
+  levelOptions: () => [],
 })
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'submit'): void
   (e: 'channel-org-change'): void
+  (e: 'channel-org-input'): void
+  (e: 'channel-org-focus'): void
+  (e: 'clear-channel-org'): void
+  (e: 'select-channel-org', organization: DistributionOrganization): void
   (e: 'member-user-input'): void
   (e: 'member-user-focus'): void
   (e: 'clear-member-user'): void
@@ -199,7 +261,33 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+const showLevelField = computed(() => props.memberForm.role_type === 'agent')
+
+watch(
+  () => props.memberForm.role_type,
+  (role) => {
+    if (role !== 'agent') {
+      props.memberForm.level_code = ''
+    }
+  },
+)
+
 function fieldKey(name: string) {
   return `${props.namespace}.fields.${name}`
+}
+
+function handleRoleTypeChange() {
+  if (props.memberForm.role_type !== 'agent') {
+    props.memberForm.level_code = ''
+  }
+}
+
+function handleLevelCodeChange() {
+  const code = String(props.memberForm.level_code || '').trim().toUpperCase()
+  props.memberForm.level_code = code
+  const selected = props.levelOptions.find((option) => option.code === code)
+  if (selected) {
+    props.memberForm.commission_rate = levelCommissionRateToMemberRate(selected.commission_rate)
+  }
 }
 </script>

@@ -141,6 +141,122 @@ func TestDistributionPromotionServiceCreateLinkForUserRejectsForeignMember(t *te
 	require.True(t, errors.Is(err, ErrInvalidDistributionPromotionLink))
 }
 
+func TestDistributionPromotionServiceCreateLinkForUserAllowsDescendantMember(t *testing.T) {
+	var created DistributionPromotionLinkInput
+	svc := NewDistributionPromotionService(
+		&distributionPromotionLinkRepoStub{
+			createFn: func(ctx context.Context, input DistributionPromotionLinkInput) (*DistributionPromotionLink, error) {
+				created = input
+				return &DistributionPromotionLink{ID: 1, ChannelOrgID: 88, MemberID: input.MemberID, Code: input.Code}, nil
+			},
+		},
+		&distributionPromotionLinkMemberRepoStub{
+			listByUserIDFn: func(ctx context.Context, userID int64) ([]DistributionMemberView, error) {
+				return []DistributionMemberView{{MemberID: 20, UserID: userID, ChannelOrgID: 88, RoleType: "kol1", Status: "active"}}, nil
+			},
+			getByIDFn: func(ctx context.Context, memberID int64) (*DistributionMemberView, error) {
+				switch memberID {
+				case 21:
+					return &DistributionMemberView{MemberID: 21, ChannelOrgID: 88, RoleType: "kol2", ParentMemberID: ptrInt64(20), Status: "active"}, nil
+				case 20:
+					return &DistributionMemberView{MemberID: 20, ChannelOrgID: 88, RoleType: "kol1", Status: "active"}, nil
+				default:
+					return nil, ErrDistributionMemberNotFound
+				}
+			},
+		},
+		&distributionPromotionLinkAttributionRepoStub{
+			getByUserIDFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
+				return &DistributionAttribution{UserID: userID, ChannelOrgID: 88}, nil
+			},
+		},
+	)
+
+	out, err := svc.CreateLinkForUser(context.Background(), 7, DistributionPromotionLinkInput{
+		MemberID:   21,
+		TargetType: "registration",
+		Status:     "active",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Equal(t, int64(21), created.MemberID)
+}
+
+func TestDistributionPromotionServiceCreateLinkForManagerAllowsAnyChannelMember(t *testing.T) {
+	var created DistributionPromotionLinkInput
+	svc := NewDistributionPromotionService(
+		&distributionPromotionLinkRepoStub{
+			createFn: func(ctx context.Context, input DistributionPromotionLinkInput) (*DistributionPromotionLink, error) {
+				created = input
+				return &DistributionPromotionLink{ID: 1, ChannelOrgID: 88, MemberID: input.MemberID, Code: input.Code}, nil
+			},
+		},
+		&distributionPromotionLinkMemberRepoStub{
+			listByUserIDFn: func(ctx context.Context, userID int64) ([]DistributionMemberView, error) {
+				return []DistributionMemberView{
+					{MemberID: 90, UserID: userID, ChannelOrgID: 88, RoleType: "manager", Status: "active"},
+				}, nil
+			},
+			getByIDFn: func(ctx context.Context, memberID int64) (*DistributionMemberView, error) {
+				return &DistributionMemberView{MemberID: memberID, ChannelOrgID: 88, RoleType: "kol1", ParentMemberID: ptrInt64(10), Status: "active"}, nil
+			},
+		},
+		&distributionPromotionLinkAttributionRepoStub{
+			getByUserIDFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
+				return &DistributionAttribution{UserID: userID, ChannelOrgID: 88}, nil
+			},
+		},
+	)
+
+	out, err := svc.CreateLinkForUser(context.Background(), 7, DistributionPromotionLinkInput{
+		MemberID:   30,
+		TargetType: "registration",
+		Status:     "active",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Equal(t, int64(30), created.MemberID)
+	require.Equal(t, int64(88), created.ChannelOrgID)
+}
+
+func TestDistributionPromotionServiceCreateLinkForUserRejectsSameChannelNonDescendant(t *testing.T) {
+	svc := NewDistributionPromotionService(
+		&distributionPromotionLinkRepoStub{
+			createFn: func(ctx context.Context, input DistributionPromotionLinkInput) (*DistributionPromotionLink, error) {
+				t.Fatalf("Create should not be called for non-descendant member")
+				return nil, nil
+			},
+		},
+		&distributionPromotionLinkMemberRepoStub{
+			listByUserIDFn: func(ctx context.Context, userID int64) ([]DistributionMemberView, error) {
+				return []DistributionMemberView{{MemberID: 20, UserID: userID, ChannelOrgID: 88, RoleType: "kol1", Status: "active"}}, nil
+			},
+			getByIDFn: func(ctx context.Context, memberID int64) (*DistributionMemberView, error) {
+				switch memberID {
+				case 30:
+					return &DistributionMemberView{MemberID: 30, ChannelOrgID: 88, RoleType: "kol1", ParentMemberID: ptrInt64(10), Status: "active"}, nil
+				case 10:
+					return &DistributionMemberView{MemberID: 10, ChannelOrgID: 88, RoleType: "agent", Status: "active"}, nil
+				default:
+					return nil, ErrDistributionMemberNotFound
+				}
+			},
+		},
+		&distributionPromotionLinkAttributionRepoStub{
+			getByUserIDFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
+				return &DistributionAttribution{UserID: userID, ChannelOrgID: 88}, nil
+			},
+		},
+	)
+
+	_, err := svc.CreateLinkForUser(context.Background(), 7, DistributionPromotionLinkInput{
+		MemberID:   30,
+		TargetType: "registration",
+		Status:     "active",
+	})
+	require.ErrorIs(t, err, ErrInvalidDistributionPromotionLink)
+}
+
 func TestDistributionPromotionServiceListLinksForUserUsesChannelScope(t *testing.T) {
 	svc := NewDistributionPromotionService(
 		&distributionPromotionLinkRepoStub{
@@ -149,7 +265,16 @@ func TestDistributionPromotionServiceListLinksForUserUsesChannelScope(t *testing
 				return []DistributionPromotionLink{{ID: 1, ChannelOrgID: 88, MemberID: 11, Code: "LINK-1"}}, paginationResult(1, params), nil
 			},
 		},
-		&distributionPromotionLinkMemberRepoStub{},
+		&distributionPromotionLinkMemberRepoStub{
+			listByUserIDFn: func(ctx context.Context, userID int64) ([]DistributionMemberView, error) {
+				return []DistributionMemberView{
+					{MemberID: 99, UserID: userID, ChannelOrgID: 88, RoleType: "manager", Status: "active"},
+				}, nil
+			},
+			getByIDFn: func(ctx context.Context, memberID int64) (*DistributionMemberView, error) {
+				return nil, ErrDistributionMemberNotFound
+			},
+		},
 		&distributionPromotionLinkAttributionRepoStub{
 			getByUserIDFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
 				return &DistributionAttribution{UserID: userID, ChannelOrgID: 88}, nil
@@ -162,6 +287,55 @@ func TestDistributionPromotionServiceListLinksForUserUsesChannelScope(t *testing
 	require.Len(t, out, 1)
 	require.Equal(t, int64(1), page.Total)
 	require.Equal(t, "LINK-1", out[0].Code)
+}
+
+func TestDistributionPromotionServiceListLinksForUserFiltersByMemberTreeForNonManager(t *testing.T) {
+	svc := NewDistributionPromotionService(
+		&distributionPromotionLinkRepoStub{
+			listByChannelOrgIDFn: func(ctx context.Context, channelOrgID int64, params pagination.PaginationParams) ([]DistributionPromotionLink, *pagination.PaginationResult, error) {
+				require.Equal(t, int64(88), channelOrgID)
+				return []DistributionPromotionLink{
+					{ID: 1, ChannelOrgID: 88, MemberID: 20, Code: "OWN"},
+					{ID: 2, ChannelOrgID: 88, MemberID: 21, Code: "CHILD"},
+					{ID: 3, ChannelOrgID: 88, MemberID: 30, Code: "FOREIGN"},
+				}, paginationResult(3, params), nil
+			},
+		},
+		&distributionPromotionLinkMemberRepoStub{
+			listByUserIDFn: func(ctx context.Context, userID int64) ([]DistributionMemberView, error) {
+				return []DistributionMemberView{
+					{MemberID: 20, UserID: userID, ChannelOrgID: 88, RoleType: "kol1", Status: "active"},
+				}, nil
+			},
+			getByIDFn: func(ctx context.Context, memberID int64) (*DistributionMemberView, error) {
+				switch memberID {
+				case 20:
+					return &DistributionMemberView{MemberID: 20, ChannelOrgID: 88, RoleType: "kol1", Status: "active"}, nil
+				case 21:
+					return &DistributionMemberView{MemberID: 21, ChannelOrgID: 88, RoleType: "kol2", ParentMemberID: ptrInt64(20), Status: "active"}, nil
+				case 30:
+					return &DistributionMemberView{MemberID: 30, ChannelOrgID: 88, RoleType: "kol1", ParentMemberID: ptrInt64(10), Status: "active"}, nil
+				case 10:
+					return &DistributionMemberView{MemberID: 10, ChannelOrgID: 88, RoleType: "agent", Status: "active"}, nil
+				default:
+					return nil, ErrDistributionMemberNotFound
+				}
+			},
+		},
+		&distributionPromotionLinkAttributionRepoStub{
+			getByUserIDFn: func(ctx context.Context, userID int64) (*DistributionAttribution, error) {
+				return &DistributionAttribution{UserID: userID, ChannelOrgID: 88}, nil
+			},
+		},
+	)
+	svc.SetOrganizationRepository(&distributionMemberOrgRepoStub{})
+
+	out, page, err := svc.ListLinksForUser(context.Background(), 7, pagination.PaginationParams{Page: 1, PageSize: 20})
+	require.NoError(t, err)
+	require.Len(t, out, 2)
+	require.Equal(t, int64(2), page.Total)
+	require.Equal(t, "OWN", out[0].Code)
+	require.Equal(t, "CHILD", out[1].Code)
 }
 
 func TestDistributionPromotionServiceListLinksForUserUsesMemberScopeWhenNoAttribution(t *testing.T) {
@@ -189,9 +363,8 @@ func TestDistributionPromotionServiceListLinksForUserUsesMemberScopeWhenNoAttrib
 
 	out, page, err := svc.ListLinksForUser(context.Background(), 7, pagination.PaginationParams{Page: 1, PageSize: 20})
 	require.NoError(t, err)
-	require.Len(t, out, 1)
-	require.Equal(t, int64(1), page.Total)
-	require.Equal(t, "LINK-1", out[0].Code)
+	require.Empty(t, out)
+	require.Equal(t, int64(0), page.Total)
 }
 
 func paginationResult(total int64, params pagination.PaginationParams) *pagination.PaginationResult {

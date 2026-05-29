@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <DistributionLayout>
     <div class="space-y-6">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -132,6 +132,35 @@
                 </div>
                 <div v-else class="p-6 text-sm text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.emptyRanking') }}</div>
               </div>
+
+              <div class="rounded-lg border border-gray-200 dark:border-dark-700">
+                <div class="border-b border-gray-200 px-4 py-3 dark:border-dark-700">
+                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('distribution.analytics.roleBreakdownTitle') }}</h3>
+                </div>
+                <div v-if="analytics?.channel?.role_breakdown?.length" class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
+                    <thead class="bg-gray-50 dark:bg-dark-800">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('distribution.columns.role') }}</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.metrics.memberCount') }}</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.metrics.registeredUsers') }}</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.metrics.consumptionAmount') }}</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.metrics.commissionAmount') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-dark-800">
+                      <tr v-for="item in analytics.channel.role_breakdown" :key="item.role_type">
+                        <td class="px-4 py-3"><StatusPill :label="roleLabel(item.role_type)" tone="blue" /></td>
+                        <td class="px-4 py-3 text-right text-sm text-gray-700 dark:text-dark-300">{{ item.member_count }}</td>
+                        <td class="px-4 py-3 text-right text-sm text-gray-700 dark:text-dark-300">{{ item.registered_users }}</td>
+                        <td class="px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">${{ formatAmount(item.consumption_amount) }}</td>
+                        <td class="px-4 py-3 text-right text-sm text-gray-700 dark:text-dark-300">${{ formatAmount(item.commission_amount) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div v-else class="p-6 text-sm text-gray-500 dark:text-dark-400">{{ t('distribution.analytics.emptyRoleBreakdown') }}</div>
+              </div>
             </section>
 
             <section class="space-y-4">
@@ -194,7 +223,7 @@
       </TablePageLayout>
     </div>
 
-    <BaseDialog :show="settingsDialog" :title="t('distribution.dialogs.settingsTitle')" width="normal" @close="settingsDialog = false">
+    <BaseDialog :show="settingsDialog" :title="t('distribution.dialogs.settingsTitle')" width="wide" @close="settingsDialog = false">
       <form class="space-y-4" @submit.prevent="submitSettings">
         <label class="block">
           <span class="input-label">{{ t('distribution.fields.channelName') }}</span>
@@ -209,10 +238,17 @@
             <option value="offline">{{ t('distribution.settlementMethods.offline') }}</option>
           </select>
         </label>
-        <label class="block">
-          <span class="input-label">{{ t('distribution.fields.levelsJson') }}</span>
-          <textarea v-model="settingsForm.distribution_levels_json" class="input mt-1 min-h-[180px] font-mono text-xs" spellcheck="false" />
-        </label>
+        <div v-if="isPlatformOrganization" class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-dark-700 dark:bg-dark-900/40 dark:text-dark-300">
+          {{ t('distribution.fields.levelsPlatformHint') }}
+        </div>
+        <div v-else>
+          <DistributionLevelsEditor
+            ref="settingsLevelsEditorRef"
+            v-model="settingsForm.distribution_levels"
+            :title="t('distribution.fields.levelsTitle')"
+            :description="t('distribution.fields.levelsDesc')"
+          />
+        </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
             <span class="input-label">{{ t('distribution.fields.wholesaleDiscountRate') }}</span>
@@ -275,21 +311,27 @@
         </div>
       </form>
     </BaseDialog>
-  </AppLayout>
+  </DistributionLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import DistributionLayout from '@/components/layout/DistributionLayout.vue'
+import DistributionLevelsEditor from '@/components/distribution/DistributionLevelsEditor.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
+import type { DistributionLevelConfig } from '@/api/admin/settings'
 import DateRangePicker from '@/components/common/DateRangePicker.vue'
 import DistributionAnalyticsTrendChart from '@/components/charts/DistributionAnalyticsTrendChart.vue'
 import Icon from '@/components/icons/Icon.vue'
 import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import { useAppStore } from '@/stores/app'
 import { extractI18nErrorMessage } from '@/utils/apiError'
+import {
+  normalizeDistributionLevelConfigs,
+  parseDistributionLevelsFromConfig,
+} from '@/utils/distributionLevels'
 import {
   getDistributionOverview,
   getMyDistributionAnalytics,
@@ -314,7 +356,7 @@ const analyticsRankingLimit = ref(10)
 const settingsForm = reactive({
   name: '',
   commission_settlement_method: 'manual',
-  distribution_levels_json: '[]',
+  distribution_levels: [] as DistributionLevelConfig[],
   wholesale_discount_rate: 0.5,
   refund_fee_rate: 0,
   first_recharge_min_amount: 0,
@@ -331,6 +373,8 @@ const settingsForm = reactive({
 })
 
 const summary = computed(() => overview.value?.summary ?? null)
+const settingsLevelsEditorRef = ref<InstanceType<typeof DistributionLevelsEditor> | null>(null)
+const isPlatformOrganization = computed(() => summary.value?.organization?.type === 'platform')
 
 const stats = computed(() => [
   { key: 'walletBalance', label: t('distribution.stats.walletBalance'), value: formatMoney(summary.value?.wallet?.prepaid_balance ?? 0) },
@@ -357,8 +401,11 @@ const analyticsChannelCards = computed(() => {
 
 const analyticsPersonalCards = computed(() => {
   const personalSummary = analytics.value?.personal?.summary
+  const userStats = analytics.value?.personal?.user_stats
   if (!personalSummary) return []
   return [
+    { key: 'totalUsers', label: t('distribution.analytics.metrics.totalUsers'), value: String(userStats?.total_users ?? 0) },
+    { key: 'newUsers', label: t('distribution.analytics.metrics.newUsers'), value: String(userStats?.new_users ?? 0) },
     { key: 'registeredUsers', label: t('distribution.analytics.metrics.registeredUsers'), value: String(personalSummary.registered_users ?? 0) },
     { key: 'rechargeAmount', label: t('distribution.analytics.metrics.rechargeAmount'), value: formatMoney(personalSummary.recharge_amount) },
     { key: 'consumptionAmount', label: t('distribution.analytics.metrics.consumptionAmount'), value: formatMoney(personalSummary.consumption_amount) },
@@ -481,7 +528,7 @@ function openSettingsDialog() {
   const wallet = summary.value?.wallet
   settingsForm.name = organization?.name || ''
   settingsForm.commission_settlement_method = String(organization?.config?.commission_settlement_method ?? 'manual')
-  settingsForm.distribution_levels_json = JSON.stringify(organization?.config?.distribution_levels ?? [], null, 2)
+  settingsForm.distribution_levels = parseDistributionLevelsFromConfig(organization?.config?.distribution_levels)
   settingsForm.wholesale_discount_rate = Number(organization?.config?.wholesale_discount_rate ?? 0.5)
   settingsForm.refund_fee_rate = Number(organization?.config?.refund_fee_rate ?? 0)
   settingsForm.first_recharge_min_amount = Number(organization?.config?.first_recharge_min_amount ?? 0)
@@ -501,19 +548,19 @@ function openSettingsDialog() {
 async function submitSettings() {
   saving.value = true
   try {
-    let distributionLevels: Array<Record<string, unknown>> = []
-    try {
-      const parsed = JSON.parse(settingsForm.distribution_levels_json || '[]')
-      distributionLevels = Array.isArray(parsed) ? parsed : []
-    } catch {
-      appStore.showError(t('distribution.errors.levelsFormatError'))
-      return
+    let distributionLevels: DistributionLevelConfig[] = []
+    if (!isPlatformOrganization.value) {
+      if (!settingsLevelsEditorRef.value?.validate()) {
+        appStore.showError(t('distribution.errors.levelsValidationError'))
+        return
+      }
+      distributionLevels = normalizeDistributionLevelConfigs(settingsForm.distribution_levels) ?? []
     }
     await updateMyDistributionOrganization({
       name: settingsForm.name || undefined,
       config: {
         commission_settlement_method: settingsForm.commission_settlement_method,
-        distribution_levels: distributionLevels,
+        ...(isPlatformOrganization.value ? {} : { distribution_levels: distributionLevels }),
       },
       brand_config: {
         logo_url: settingsForm.logo_url || '',

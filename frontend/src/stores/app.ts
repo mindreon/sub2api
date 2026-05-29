@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Toast, ToastType, PublicSettings } from '@/types'
+import type { NavWorkspace } from '@/nav/types'
 import { i18n } from '@/i18n'
 import {
   checkUpdates as checkUpdatesAPI,
@@ -14,11 +15,23 @@ import {
 } from '@/api/admin/system'
 import { getPublicSettings as fetchPublicSettingsAPI } from '@/api/auth'
 
+const NAV_WORKSPACE_STORAGE_KEY = 'sub2api-nav-workspace'
+const ADMIN_NAV_WORKSPACE_STORAGE_KEY = 'sub2api-admin-nav-workspace'
+
+function readStoredNavWorkspace(storageKey: string): NavWorkspace {
+  if (typeof localStorage === 'undefined') {
+    return 'consumer'
+  }
+  return localStorage.getItem(storageKey) === 'distribution' ? 'distribution' : 'consumer'
+}
+
 export const useAppStore = defineStore('app', () => {
   // ==================== State ====================
 
   const sidebarCollapsed = ref<boolean>(false)
   const mobileOpen = ref<boolean>(false)
+  const navWorkspace = ref<NavWorkspace>(readStoredNavWorkspace(NAV_WORKSPACE_STORAGE_KEY))
+  const adminNavWorkspace = ref<NavWorkspace>(readStoredNavWorkspace(ADMIN_NAV_WORKSPACE_STORAGE_KEY))
   const loading = ref<boolean>(false)
   const toasts = ref<Toast[]>([])
 
@@ -82,6 +95,20 @@ export const useAppStore = defineStore('app', () => {
    */
   function setMobileOpen(open: boolean): void {
     mobileOpen.value = open
+  }
+
+  function setNavWorkspace(workspace: NavWorkspace): void {
+    navWorkspace.value = workspace
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(NAV_WORKSPACE_STORAGE_KEY, workspace)
+    }
+  }
+
+  function setAdminNavWorkspace(workspace: NavWorkspace): void {
+    adminNavWorkspace.value = workspace
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(ADMIN_NAV_WORKSPACE_STORAGE_KEY, workspace)
+    }
   }
 
   /**
@@ -227,6 +254,12 @@ export const useAppStore = defineStore('app', () => {
    */
   function reset(): void {
     sidebarCollapsed.value = false
+    navWorkspace.value = 'consumer'
+    adminNavWorkspace.value = 'consumer'
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(NAV_WORKSPACE_STORAGE_KEY, 'consumer')
+      localStorage.setItem(ADMIN_NAV_WORKSPACE_STORAGE_KEY, 'consumer')
+    }
     loading.value = false
     loadingCount.value = 0
     toasts.value = []
@@ -407,6 +440,8 @@ export const useAppStore = defineStore('app', () => {
     // State
     sidebarCollapsed,
     mobileOpen,
+    navWorkspace,
+    adminNavWorkspace,
     loading,
     toasts,
 
@@ -438,6 +473,8 @@ export const useAppStore = defineStore('app', () => {
     setSidebarCollapsed,
     toggleMobileSidebar,
     setMobileOpen,
+    setNavWorkspace,
+    setAdminNavWorkspace,
     setLoading,
     showToast,
     showSuccess,

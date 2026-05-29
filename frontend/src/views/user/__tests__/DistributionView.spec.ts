@@ -31,6 +31,12 @@ const {
   settleMyDistributionCommission,
   submitMyDistributionWalletRequest,
   updateMyDistributionOrganization,
+  canManageDistributionChannel,
+  canAccessPromotionNav,
+  canManageMembersNav,
+  canAccessChannelFinanceNav,
+  myPromoterMembers,
+  syncDistributionNavAccess,
 } = vi.hoisted(() => ({
   createMyDistributionMember: vi.fn(),
   createMyDistributionPromotionLink: vi.fn(),
@@ -47,6 +53,12 @@ const {
   settleMyDistributionCommission: vi.fn(),
   submitMyDistributionWalletRequest: vi.fn(),
   updateMyDistributionOrganization: vi.fn(),
+  canManageDistributionChannel: { value: true },
+  canAccessPromotionNav: { value: true },
+  canManageMembersNav: { value: true },
+  canAccessChannelFinanceNav: { value: true },
+  myPromoterMembers: { value: [] as Array<Record<string, unknown>> },
+  syncDistributionNavAccess: vi.fn(),
 }))
 
 const showError = vi.fn()
@@ -116,6 +128,25 @@ vi.mock('@/stores/app', () => ({
   }),
 }))
 
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: () => ({
+    user: { id: 1 },
+    isAdmin: false,
+  }),
+}))
+
+vi.mock('@/composables/useDistributionNavAccess', () => ({
+  useDistributionNavAccess: () => ({
+    canManageDistributionChannel,
+    canAccessPromotionNav,
+    canManageMembersNav,
+    canAccessChannelFinanceNav,
+    myPromoterMembers,
+    hasPromoterAccess: { value: myPromoterMembers.value.length > 0 },
+    syncDistributionNavAccess,
+  }),
+}))
+
 vi.mock('@/api/admin', () => ({
   usersAPI: {
     list: listAdminUsers,
@@ -174,6 +205,12 @@ describe('DistributionView', () => {
     submitMyDistributionWalletRequest.mockReset()
     updateMyDistributionOrganization.mockReset()
     listAdminUsers.mockReset().mockResolvedValue({ items: [] })
+    canManageDistributionChannel.value = true
+    canAccessPromotionNav.value = true
+    canManageMembersNav.value = true
+    canAccessChannelFinanceNav.value = true
+    myPromoterMembers.value = []
+    syncDistributionNavAccess.mockReset().mockResolvedValue(undefined)
 
     getDistributionOverview.mockResolvedValue({
       user_id: 1,
@@ -303,7 +340,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -326,7 +363,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -354,7 +391,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -380,6 +417,7 @@ describe('DistributionView', () => {
     expect(memberForm.findAll('input[type="number"]')).toHaveLength(1)
     expect(memberForm.text()).toContain('distribution.fields.userId')
     expect(memberForm.text()).toContain('distribution.columns.parentMemberId')
+    expect(memberForm.text()).not.toContain('distribution.roles.manager')
   })
 
   it('keeps warning banners out of the distribution center page', async () => {
@@ -438,7 +476,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -505,7 +543,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -526,7 +564,7 @@ describe('DistributionView', () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,
@@ -569,11 +607,80 @@ describe('DistributionView', () => {
     expect(showSuccess).toHaveBeenCalledWith('distribution.messages.walletRequestSubmitted')
   })
 
+  it('auto-fills promoter identity in the promotion link dialog for kol users', async () => {
+    canManageDistributionChannel.value = false
+    canAccessChannelFinanceNav.value = false
+    canManageMembersNav.value = false
+    myPromoterMembers.value = [
+      {
+        member_id: 22,
+        user_id: 1,
+        user_email: 'kol@example.com',
+        username: 'kol-user',
+        channel_org_id: 88,
+        role_type: 'kol1',
+        status: 'active',
+        level_code: '',
+        commission_rate: 0,
+        created_at: '2026-05-24T00:00:00Z',
+        updated_at: '2026-05-24T00:00:00Z',
+      },
+    ]
+
+    getDistributionOverview.mockResolvedValueOnce({
+      user_id: 1,
+      channel_org_id: 88,
+      can_manage_channel: false,
+      summary: null,
+    })
+
+    routeState.hash = '#promotion-links'
+
+    const wrapper = mount(DistributionView, {
+      global: {
+        stubs: {
+          DistributionLayout: { template: '<div><slot /></div>' },
+          TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
+          Pagination: true,
+          BaseDialog: BaseDialogStub,
+          Icon: true,
+          DataTable: true,
+          DateRangePicker: true,
+          DistributionAnalyticsTrendChart: true,
+        },
+      },
+    })
+
+    await flushPromises()
+
+    const createButton = wrapper.findAll('button').find((button) => button.text() === 'distribution.actions.createPromotionLink')
+    expect(createButton).toBeDefined()
+
+    await createButton!.trigger('click')
+    await flushPromises()
+
+    const forms = wrapper.findAll('form')
+    const linkForm = forms[forms.length - 1]
+
+    expect(linkForm.text()).toContain('distribution.messages.linkMemberAutoHint')
+    expect(linkForm.find('input[type="number"]').exists()).toBe(false)
+
+    await linkForm.trigger('submit.prevent')
+    await flushPromises()
+
+    expect(createMyDistributionPromotionLink).toHaveBeenCalledWith({
+      member_id: 22,
+      code: undefined,
+      target_type: 'registration',
+      status: 'active',
+    })
+  })
+
   it('loads distribution alert events when the alert tab is selected', async () => {
     const wrapper = mount(DistributionView, {
       global: {
         stubs: {
-          AppLayout: { template: '<div><slot /></div>' },
+          DistributionLayout: { template: '<div><slot /></div>' },
           TablePageLayout: { template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>' },
           Pagination: true,
           BaseDialog: BaseDialogStub,

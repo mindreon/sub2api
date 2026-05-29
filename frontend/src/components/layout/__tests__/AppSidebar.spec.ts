@@ -31,36 +31,59 @@ describe('AppSidebar header styles', () => {
   })
 })
 
-describe('AppSidebar distribution navigation', () => {
-  it('renders distribution management as grouped submenu sections', () => {
-    expect(componentSource).toContain("path: '/admin/distribution'")
-    expect(componentSource).toContain("expandOnly: true")
-    expect(componentSource).toContain("t('admin.distribution.groups.organizationManagement')")
-    expect(componentSource).toContain("t('admin.distribution.groups.promotionManagement')")
-    expect(componentSource).toContain("t('admin.distribution.groups.commissionSettlement')")
-    expect(componentSource).toContain("t('admin.distribution.groups.riskAlerts')")
-    expect(componentSource).toContain("path: '/admin/distribution/organizations'")
-    expect(componentSource).toContain("path: '/admin/distribution/members'")
-    expect(componentSource).toContain("path: '/admin/distribution/promotion-links'")
-    expect(componentSource).toContain("path: '/admin/distribution/wallets'")
-    expect(componentSource).toContain("path: '/admin/distribution/alert-events'")
-    expect(componentSource).toContain("path: '/admin/distribution/wallet-requests'")
-    expect(componentSource).toContain("path: '/admin/distribution/wallet-transactions'")
-    expect(componentSource).toContain("path: '/admin/distribution/attributions'")
-    expect(componentSource).toContain("path: '/admin/distribution/commissions'")
+describe('AppSidebar workspace navigation', () => {
+  it('uses workspace switching for user distribution navigation', () => {
+    expect(componentSource).toContain('showUserWorkspaceSwitcher')
+    expect(componentSource).toContain('activeUserNavItems')
+    expect(componentSource).toContain('distributionNavItems')
+    expect(componentSource).not.toContain('function buildUserDistributionNavItem')
   })
 
-  it('renders user distribution navigation with a dedicated channel overview entry', () => {
-    expect(componentSource).toContain("path: '/distribution'")
-    expect(componentSource).toContain("expandOnly: true")
-    expect(componentSource).toContain("t('distribution.groups.organizationManagement')")
-    expect(componentSource).toContain("t('distribution.groups.promotionManagement')")
-    expect(componentSource).toContain("t('distribution.groups.commissionSettlement')")
-    expect(componentSource).toContain("t('distribution.groups.riskAlerts')")
-    expect(componentSource).toContain("path: '/distribution/overview'")
-    expect(componentSource).toContain("t('distribution.overview.title')")
-    expect(componentSource).toContain("path: '/distribution#members'")
-    expect(componentSource).toContain("path: '/distribution#wallet'")
-    expect(componentSource).toContain("path: '/distribution#commissions'")
+  it('uses workspace switching for admin platform and distribution navigation', () => {
+    expect(componentSource).toContain('showAdminWorkspaceSwitcher')
+    expect(componentSource).toContain('activeAdminNavItems')
+    expect(componentSource).toContain('adminDistributionNavItems')
+    expect(componentSource).toContain('adminPlatformNavItems')
+    expect(componentSource).toContain("adminNavWorkspace === 'distribution'")
+    expect(componentSource).not.toContain("path: '/admin/distribution/organizations'")
+  })
+
+  it('supports personal distribution workspace for admins with channel access', () => {
+    expect(componentSource).toContain('showAdminPersonalWorkspaceSwitcher')
+    expect(componentSource).toContain('hasPersonalDistributionAccess')
+    expect(componentSource).toContain('activePersonalNavItems')
+  })
+})
+
+describe('distribution navigation builders', () => {
+  const distributionNavPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../nav/distributionNav.ts')
+  const adminDistributionNavPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../nav/adminDistributionNav.ts')
+  const distributionNavSource = readFileSync(distributionNavPath, 'utf8')
+  const adminDistributionNavSource = readFileSync(adminDistributionNavPath, 'utf8')
+
+  it('renders user distribution groups as top-level sidebar entries', () => {
+    expect(distributionNavSource).not.toContain("t('nav.distribution')")
+    expect(distributionNavSource).toContain("path: '/distribution/group/organization-management'")
+    expect(distributionNavSource).toContain("t('distribution.groups.organizationManagement')")
+    expect(distributionNavSource).toContain("path: '/distribution/overview'")
+    expect(distributionNavSource).toContain("path: '/distribution#members'")
+    expect(distributionNavSource).toContain("path: '/distribution#wallet'")
+    expect(distributionNavSource).toContain("path: '/distribution#commissions'")
+    expect(distributionNavSource).toContain("path: '/distribution#alert-events'")
+    expect(distributionNavSource).not.toContain("path: '/distribution/group/risk-alerts'")
+  })
+
+  it('renders admin distribution groups as top-level sidebar entries', () => {
+    expect(adminDistributionNavSource).not.toContain("t('nav.distributionManagement')")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/group/organization-management'")
+    expect(adminDistributionNavSource).toContain("t('admin.distribution.groups.organizationManagement')")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/global-settings'")
+    expect(adminDistributionNavSource).toContain("t('admin.distribution.tabs.globalSettings')")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/organizations'")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/members'")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/promotion-links'")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/wallets'")
+    expect(adminDistributionNavSource).toContain("path: '/admin/distribution/alert-events'")
+    expect(adminDistributionNavSource).not.toContain("path: '/admin/distribution/group/risk-alerts'")
   })
 })

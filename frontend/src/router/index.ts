@@ -16,6 +16,8 @@ import {
   buildOAuthCallbackRecoveryTargetFromLocation,
   recoverOAuthCallbackHashFromLoginRedirect,
 } from '@/utils/oauthRedirectRecovery'
+import { isAdminDistributionRoutePath } from '@/nav/adminDistributionNav'
+import { isDistributionRoutePath } from '@/nav/distributionNav'
 
 /**
  * Route definitions with lazy loading
@@ -650,6 +652,18 @@ const routes: RouteRecordRaw[] = [
     redirect: '/admin/distribution/alert-events',
   },
   {
+    path: '/admin/distribution/global-settings',
+    name: 'AdminDistributionGlobalSettings',
+    component: () => import('@/views/admin/distribution/AdminDistributionGlobalSettingsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Distribution Global Settings',
+      titleKey: 'admin.distribution.globalSettings.title',
+      descriptionKey: 'admin.distribution.globalSettings.description',
+    },
+  },
+  {
     path: '/admin/distribution/:tab(organizations|members|promotion-links|wallets|alert-events|wallet-requests|wallet-transactions|attributions|commissions)',
     name: 'AdminDistribution',
     component: () => import('@/views/admin/distribution/AdminDistributionView.vue'),
@@ -956,6 +970,20 @@ router.beforeEach(async (to, _from, next) => {
  * Navigation guard: End loading and trigger prefetch
  */
 router.afterEach((to) => {
+  const appStore = useAppStore()
+
+  if (isAdminDistributionRoutePath(to.path)) {
+    appStore.setAdminNavWorkspace('distribution')
+  } else if (to.path.startsWith('/admin')) {
+    appStore.setAdminNavWorkspace('consumer')
+  }
+
+  if (isDistributionRoutePath(to.path)) {
+    appStore.setNavWorkspace('distribution')
+  } else if (!to.path.startsWith('/admin')) {
+    appStore.setNavWorkspace('consumer')
+  }
+
   // 结束导航加载状态
   navigationLoading.endNavigation()
 

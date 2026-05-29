@@ -158,6 +158,7 @@ func (s *DistributionMemberService) CreateMemberForUser(ctx context.Context, cur
 			canCreateAgent = true
 		}
 	}
+	canManageKOL := canCreateAgent
 
 	input.ChannelOrgID = channelOrgID
 	input.RoleType = strings.ToLower(strings.TrimSpace(input.RoleType))
@@ -181,7 +182,10 @@ func (s *DistributionMemberService) CreateMemberForUser(ctx context.Context, cur
 			}
 			return nil, err
 		}
-		if parent == nil || parent.ChannelOrgID != channelOrgID || parent.UserID != currentUserID || !strings.EqualFold(strings.TrimSpace(parent.Status), "active") {
+		if parent == nil || parent.ChannelOrgID != channelOrgID || !strings.EqualFold(strings.TrimSpace(parent.Status), "active") {
+			return nil, ErrDistributionMemberPermissionDenied
+		}
+		if !canManageKOL && parent.UserID != currentUserID {
 			return nil, ErrDistributionMemberPermissionDenied
 		}
 		if !distributionMemberParentAllowsRole(parent.RoleType, input.RoleType) {

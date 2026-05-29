@@ -284,6 +284,22 @@ func (r *distributionAnalyticsRepository) ListChildMemberRanking(ctx context.Con
 	return scanDistributionAnalyticsRankingRows(rows, "scan distribution child member ranking")
 }
 
+func (r *distributionAnalyticsRepository) GetAttributedUserStats(ctx context.Context, memberIDs []int64, filter service.DistributionAnalyticsFilter) (*service.DistributionAttributedUserStats, error) {
+	if err := validateDistributionAnalyticsMemberIDs(memberIDs, r.db); err != nil {
+		return nil, err
+	}
+	query := `
+SELECT
+	COALESCE((SELECT COUNT(*) FROM user_attributions ua WHERE ua.referrer_member_id = ANY($1) AND ua.bound_at < $3), 0) AS total_users,
+	COALESCE((SELECT COUNT(*) FROM user_attributions ua WHERE ua.referrer_member_id = ANY($1) AND ua.bound_at >= $2 AND ua.bound_at < $3), 0) AS new_users
+`
+	stats := &service.DistributionAttributedUserStats{}
+	if err := r.db.QueryRowContext(ctx, query, pq.Array(memberIDs), filter.StartTime, filter.EndTime).Scan(&stats.TotalUsers, &stats.NewUsers); err != nil {
+		return nil, fmt.Errorf("get distribution attributed user stats: %w", err)
+	}
+	return stats, nil
+}
+
 func distributionAnalyticsRankingQuery(memberFilterCondition string) string {
 	return fmt.Sprintf(`
 WITH attributed_users AS (

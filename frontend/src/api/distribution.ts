@@ -17,7 +17,7 @@ export interface DistributionOverview {
   user_id: number
   channel_org_id: number
   can_manage_channel: boolean
-  summary: DistributionChannelSummary
+  summary: DistributionChannelSummary | null
 }
 
 export type MyDistributionMembersResponse = BasePaginationResponse<DistributionMember>
@@ -83,6 +83,20 @@ export interface DistributionAnalyticsRankingItem {
   settled_commission_amount: number
 }
 
+export interface DistributionAnalyticsRoleBreakdownItem {
+  role_type: 'agent' | 'kol1' | 'kol2' | string
+  member_count: number
+  registered_users: number
+  consumption_amount: number
+  commission_amount: number
+  settled_commission_amount: number
+}
+
+export interface DistributionAttributedUserStats {
+  total_users: number
+  new_users: number
+}
+
 export interface DistributionAnalyticsFilter {
   start_date: string
   end_date: string
@@ -94,12 +108,14 @@ export interface DistributionAnalyticsChannel {
   summary: DistributionAnalyticsSummary
   trend: DistributionAnalyticsTrendPoint[]
   member_ranking: DistributionAnalyticsRankingItem[]
+  role_breakdown: DistributionAnalyticsRoleBreakdownItem[]
 }
 
 export interface DistributionAnalyticsPersonal {
   role_types: string[]
   summary: DistributionAnalyticsSummary
   child_member_ranking: DistributionAnalyticsRankingItem[]
+  user_stats: DistributionAttributedUserStats
 }
 
 export interface MyDistributionAnalyticsResponse {

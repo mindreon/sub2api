@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <AdminDistributionLayout>
     <div class="space-y-6">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -28,16 +28,47 @@
       <TablePageLayout>
         <template #filters>
           <div class="flex flex-wrap items-center gap-3">
-            <input
+            <div
               v-if="activeTab !== 'organizations'"
-              v-model.number="filters.channel_org_id"
-              type="number"
-              min="1"
-              class="input w-full sm:w-48"
-              :placeholder="t('admin.distribution.filters.channelOrgId')"
-              @keyup.enter="reloadFromFirstPage"
-              @change="reloadFromFirstPage"
-            />
+              class="relative w-full sm:w-72"
+            >
+              <input
+                v-model="filterChannelOrgLookup.keyword"
+                type="text"
+                class="input w-full pr-8"
+                :placeholder="t('admin.distribution.fields.channelOrgIdPlaceholder')"
+                @input="scheduleFilterChannelOrgLookup"
+                @focus="filterChannelOrgLookup.open = true"
+                @keyup.enter="reloadFromFirstPage"
+              />
+              <button
+                v-if="filters.channel_org_id"
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                @click="clearFilterChannelOrgSelection(); reloadFromFirstPage()"
+              >
+                <Icon name="x" size="sm" :stroke-width="2" />
+              </button>
+              <div
+                v-if="filterChannelOrgLookup.open && (filterChannelOrgLookup.results.length > 0 || filterChannelOrgLookup.keyword)"
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div v-if="filterChannelOrgLookup.loading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+                <div v-else-if="filterChannelOrgLookup.results.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.noOptionsFound') }}</div>
+                <button
+                  v-for="organization in filterChannelOrgLookup.results"
+                  :key="organization.id"
+                  type="button"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  @click="selectFilterChannelOrg(organization)"
+                >
+                  <div class="font-medium text-gray-900 dark:text-white">{{ organization.name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    #{{ organization.id }} · {{ organizationTypeLabel(organization.type) }}
+                  </div>
+                </button>
+              </div>
+            </div>
             <div
               v-if="usesUserFilter(activeTab)"
               class="relative w-full sm:w-72"
@@ -208,7 +239,8 @@
               <span class="font-mono text-sm">{{ row.parent_member_id ? `#${row.parent_member_id}` : '-' }}</span>
             </template>
             <template #cell-level_code="{ row }">
-              <span class="font-mono text-sm">{{ row.level_code || '-' }}</span>
+              <span v-if="row.role_type === 'agent'" class="font-mono text-sm">{{ row.level_code || '-' }}</span>
+              <span v-else class="text-sm text-gray-400">-</span>
             </template>
             <template #cell-referrer_member_id="{ row }">
               <span class="font-mono text-sm">{{ row.referrer_member_id ? `#${row.referrer_member_id}` : '-' }}</span>
@@ -367,7 +399,7 @@
       </TablePageLayout>
     </div>
 
-    <BaseDialog :show="organizationDialog" :title="selectedOrganization ? t('admin.distribution.dialogs.organizationEditTitle') : t('admin.distribution.dialogs.organizationTitle')" width="normal" @close="organizationDialog = false">
+    <BaseDialog :show="organizationDialog" :title="selectedOrganization ? t('admin.distribution.dialogs.organizationEditTitle') : t('admin.distribution.dialogs.organizationTitle')" width="wide" @close="organizationDialog = false">
       <form class="space-y-4" @submit.prevent="submitOrganization">
         <label class="block">
           <span class="input-label">{{ t('admin.distribution.fields.name') }}</span>
@@ -382,7 +414,7 @@
           </select>
         </label>
         <label class="block">
-          <span class="input-label">{{ t('admin.distribution.fields.ownerUserId') }}</span>
+          <span class="input-label">{{ t('admin.distribution.fields.ownerUser') }}</span>
           <div class="relative mt-1">
             <input
               v-model="ownerUserLookup.keyword"
@@ -512,17 +544,20 @@
             <option value="offline">{{ t('admin.distribution.settlementMethods.offline') }}</option>
           </select>
         </label>
-        <label class="block sm:col-span-2">
-          <span class="input-label">{{ t('admin.distribution.fields.levelsJson') }}</span>
-          <textarea
-            v-model="organizationConfigForm.distribution_levels_json"
-            class="input mt-1 min-h-[180px] font-mono text-xs"
-            spellcheck="false"
+        <div v-if="organizationForm.type === 'platform'" class="sm:col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-dark-700 dark:bg-dark-900/40 dark:text-dark-300">
+          <p>{{ t('admin.distribution.fields.levelsPlatformHint') }}</p>
+          <RouterLink to="/admin/settings" class="mt-1 inline-block text-primary-600 hover:underline dark:text-primary-400">
+            {{ t('admin.distribution.fields.levelsPlatformLink') }}
+          </RouterLink>
+        </div>
+        <div v-else class="sm:col-span-2">
+          <DistributionLevelsEditor
+            ref="organizationLevelsEditorRef"
+            v-model="organizationConfigForm.distribution_levels"
+            :title="t('admin.distribution.fields.levelsTitle')"
+            :description="t('admin.distribution.fields.levelsDesc')"
           />
-          <p class="mt-1 text-xs text-gray-500 dark:text-dark-400">
-            {{ t('admin.distribution.fields.levelsJsonDesc') }}
-          </p>
-        </label>
+        </div>
         <label class="block">
           <span class="input-label">{{ t('admin.distribution.fields.logoUrl') }}</span>
           <input v-model.trim="organizationBrandForm.logo_url" class="input mt-1" />
@@ -554,17 +589,24 @@
       role-field-key="fields.role"
       parent-member-label-key="admin.distribution.fields.parentMemberId"
       user-search-placeholder-key="admin.usage.searchUserPlaceholder"
-      parent-search-placeholder-key="admin.usage.searchUserPlaceholder"
+      parent-search-placeholder-key="admin.distribution.fields.referrerMemberPlaceholder"
+      channel-org-search-placeholder-key="admin.distribution.fields.channelOrgIdPlaceholder"
       level-code-description-key="admin.distribution.fields.levelCodeDesc"
       :show-channel-org-field="true"
+      :channel-org-lookup="channelOrgLookup"
       :disable-parent-lookup="memberForm.channel_org_id <= 0"
+      :level-options="memberLevelOptions"
       :member-form="memberForm"
       :role-options="roleOptions"
       :member-user-lookup="memberUserLookup"
       :parent-member-lookup="parentMemberLookup"
       @close="memberDialog = false"
       @submit="submitMember"
-      @channel-org-change="clearParentMemberSelection"
+      @channel-org-change="handleMemberChannelOrgChange"
+      @channel-org-input="scheduleChannelOrgLookup"
+      @channel-org-focus="channelOrgLookup.open = true"
+      @clear-channel-org="clearChannelOrgSelection"
+      @select-channel-org="selectChannelOrg"
       @member-user-input="scheduleUserLookup(memberUserLookup, clearMemberUserSelection)"
       @member-user-focus="memberUserLookup.open = true"
       @clear-member-user="clearMemberUserSelection"
@@ -579,14 +621,14 @@
       <form class="space-y-4" @submit.prevent="submitLink">
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
-            <span class="input-label">{{ t('admin.distribution.fields.memberId') }}</span>
+            <span class="input-label">{{ t('admin.distribution.fields.promotionMember') }}</span>
             <div class="relative mt-1">
               <input
                 v-model="linkMemberLookup.keyword"
                 type="text"
                 class="input pr-8"
-                :placeholder="t('admin.usage.searchUserPlaceholder')"
-                @input="scheduleMemberLookup(linkMemberLookup, clearLinkMemberSelection)"
+                :placeholder="t('admin.distribution.fields.referrerMemberPlaceholder')"
+                @input="scheduleMemberLookup(linkMemberLookup, clearLinkMemberSelection, filters.channel_org_id || undefined)"
                 @focus="linkMemberLookup.open = true"
               />
               <button
@@ -611,7 +653,7 @@
                   @click="selectLinkMember(member)"
                 >
                   <div class="font-medium text-gray-900 dark:text-white">{{ member.username || member.user_email }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ member.user_email }} · #{{ member.member_id }} · Org #{{ member.channel_org_id }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ member.user_email }} · {{ roleLabel(member.role_type) }}</div>
                 </button>
               </div>
             </div>
@@ -723,18 +765,56 @@
     <BaseDialog :show="attributionDialog" :title="t('admin.distribution.dialogs.attributionTitle')" width="normal" @close="attributionDialog = false">
       <form class="space-y-4" @submit.prevent="submitAttribution">
         <div class="grid gap-4 sm:grid-cols-2">
-          <label class="block">
+          <label class="block sm:col-span-2">
             <span class="input-label">{{ t('admin.distribution.fields.channelOrgId') }}</span>
-            <input v-model.number="attributionForm.channel_org_id" type="number" min="1" class="input mt-1" required @change="clearReferrerMemberSelection" />
+            <div class="relative mt-1">
+              <input
+                v-model="attributionChannelOrgLookup.keyword"
+                type="text"
+                class="input pr-8"
+                :placeholder="t('admin.distribution.fields.channelOrgIdPlaceholder')"
+                required
+                @input="scheduleAttributionChannelOrgLookup"
+                @focus="attributionChannelOrgLookup.open = true"
+              />
+              <button
+                v-if="attributionForm.channel_org_id > 0"
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                @click="clearAttributionChannelOrgSelection"
+              >
+                <Icon name="x" size="sm" :stroke-width="2" />
+              </button>
+              <div
+                v-if="attributionChannelOrgLookup.open && (attributionChannelOrgLookup.results.length > 0 || attributionChannelOrgLookup.keyword)"
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div v-if="attributionChannelOrgLookup.loading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+                <div v-else-if="attributionChannelOrgLookup.results.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.noOptionsFound') }}</div>
+                <button
+                  v-for="organization in attributionChannelOrgLookup.results"
+                  :key="organization.id"
+                  type="button"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  @click="selectAttributionChannelOrg(organization)"
+                >
+                  <div class="font-medium text-gray-900 dark:text-white">{{ organization.name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    #{{ organization.id }} · {{ organizationTypeLabel(organization.type) }}
+                  </div>
+                </button>
+              </div>
+            </div>
           </label>
           <label class="block">
-            <span class="input-label">{{ t('admin.distribution.fields.referrerMemberId') }}</span>
+            <span class="input-label">{{ t('admin.distribution.fields.referrerMember') }}</span>
             <div class="relative mt-1">
               <input
                 v-model="referrerMemberLookup.keyword"
                 type="text"
                 class="input pr-8"
-                :placeholder="t('admin.usage.searchUserPlaceholder')"
+                :placeholder="t('admin.distribution.fields.referrerMemberPlaceholder')"
+                :disabled="attributionForm.channel_org_id <= 0"
                 @input="scheduleMemberLookup(referrerMemberLookup, clearReferrerMemberSelection, attributionForm.channel_org_id)"
                 @focus="referrerMemberLookup.open = true"
               />
@@ -760,14 +840,51 @@
                   @click="selectReferrerMember(member)"
                 >
                   <div class="font-medium text-gray-900 dark:text-white">{{ member.username || member.user_email }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ member.user_email }} · #{{ member.member_id }} · {{ roleLabel(member.role_type) }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ member.user_email }} · {{ roleLabel(member.role_type) }}</div>
                 </button>
               </div>
             </div>
           </label>
           <label class="block">
-            <span class="input-label">{{ t('admin.distribution.fields.promotionLinkId') }}</span>
-            <input v-model.number="attributionForm.promotion_link_id" type="number" min="1" class="input mt-1" />
+            <span class="input-label">{{ t('admin.distribution.fields.promotionLink') }}</span>
+            <div class="relative mt-1">
+              <input
+                v-model="attributionPromotionLinkLookup.keyword"
+                type="text"
+                class="input pr-8"
+                :placeholder="t('admin.distribution.fields.promotionLinkPlaceholder')"
+                :disabled="attributionForm.channel_org_id <= 0"
+                @input="scheduleAttributionPromotionLinkLookup"
+                @focus="attributionPromotionLinkLookup.open = true"
+              />
+              <button
+                v-if="attributionForm.promotion_link_id"
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                @click="clearAttributionPromotionLinkSelection"
+              >
+                <Icon name="x" size="sm" :stroke-width="2" />
+              </button>
+              <div
+                v-if="attributionPromotionLinkLookup.open && (attributionPromotionLinkLookup.results.length > 0 || attributionPromotionLinkLookup.keyword)"
+                class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              >
+                <div v-if="attributionPromotionLinkLookup.loading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.loading') }}</div>
+                <div v-else-if="attributionPromotionLinkLookup.results.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ t('common.noOptionsFound') }}</div>
+                <button
+                  v-for="link in attributionPromotionLinkLookup.results"
+                  :key="link.id"
+                  type="button"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  @click="selectAttributionPromotionLink(link)"
+                >
+                  <div class="font-medium text-gray-900 dark:text-white">{{ link.code }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ link.username || link.user_email }} · {{ roleLabel(link.role_type) }} · {{ targetTypeLabel(link.target_type) }}
+                  </div>
+                </button>
+              </div>
+            </div>
           </label>
           <label class="block sm:col-span-2">
             <span class="input-label">{{ t('admin.distribution.fields.note') }}</span>
@@ -832,25 +949,33 @@
         </div>
       </div>
     </BaseDialog>
-  </AppLayout>
+  </AdminDistributionLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, reactive, ref, watch } from 'vue'
+import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
-import { usersAPI } from '@/api/admin'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import { RouterLink, useRoute } from 'vue-router'
+import { adminAPI, usersAPI } from '@/api/admin'
+import AdminDistributionLayout from '@/components/layout/AdminDistributionLayout.vue'
 import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import DistributionMemberFormDialog from '@/components/distribution/DistributionMemberFormDialog.vue'
+import DistributionLevelsEditor from '@/components/distribution/DistributionLevelsEditor.vue'
+import type { DistributionLevelConfig } from '@/api/admin/settings'
 import Icon from '@/components/icons/Icon.vue'
 import type { Column } from '@/components/common/types'
 import { useAppStore } from '@/stores/app'
 import type { AdminUser } from '@/types'
 import { extractI18nErrorMessage } from '@/utils/apiError'
+import {
+  buildLevelSelectOptions,
+  formatLevelCommissionPercent,
+  normalizeDistributionLevelConfigs,
+  parseDistributionLevelsFromConfig,
+} from '@/utils/distributionLevels'
 import { formatDateTime as formatDisplayDateTime } from '@/utils/format'
 import {
   createDistributionMember,
@@ -882,6 +1007,7 @@ import {
   type DistributionAlertEvent,
   type DistributionCommission,
   type DistributionMember,
+  type DistributionPromotionLink,
   type DistributionOrganization,
   type DistributionWallet,
   type DistributionWalletRequest,
@@ -918,9 +1044,18 @@ function formatUserLookupLabel(user: Pick<AdminUser, 'username' | 'email'>) {
   return user.username ? `${user.username} (${user.email})` : user.email
 }
 
-function formatMemberLookupLabel(member: Pick<DistributionMember, 'username' | 'user_email' | 'member_id' | 'role_type' | 'channel_org_id'>) {
+function formatMemberLookupLabel(member: Pick<DistributionMember, 'username' | 'user_email' | 'role_type'>) {
   const primary = member.username ? `${member.username} (${member.user_email})` : member.user_email
-  return `${primary} · #${member.member_id} · ${member.role_type} · Org #${member.channel_org_id}`
+  return `${primary} · ${roleLabel(member.role_type)}`
+}
+
+function formatPromotionLinkLookupLabel(link: Pick<DistributionPromotionLink, 'code' | 'username' | 'user_email' | 'target_type' | 'role_type'>) {
+  const owner = link.username ? `${link.username} (${link.user_email})` : link.user_email
+  return `${link.code} · ${owner} · ${targetTypeLabel(link.target_type)}`
+}
+
+function formatOrganizationLookupLabel(org: Pick<DistributionOrganization, 'id' | 'name' | 'type'>) {
+  return `${org.name} · #${org.id} · ${org.type}`
 }
 
 function usesUserFilter(tab: AdminDistributionTab) {
@@ -954,12 +1089,67 @@ const linkDialog = ref(false)
 const selectedOrganization = ref<DistributionOrganization | null>(null)
 const ownerUserLookup = createLookupState<AdminUser>()
 const filterUserLookup = createLookupState<AdminUser>()
+const filterChannelOrgLookup = createLookupState<DistributionOrganization>()
 const memberUserLookup = createLookupState<AdminUser>()
 const parentMemberLookup = createLookupState<DistributionMember>()
+const channelOrgLookup = createLookupState<DistributionOrganization>()
+const attributionChannelOrgLookup = createLookupState<DistributionOrganization>()
 const linkMemberLookup = createLookupState<DistributionMember>()
+const attributionPromotionLinkLookup = createLookupState<DistributionPromotionLink>()
 const referrerMemberLookup = createLookupState<DistributionMember>()
 
 const roleOptions: DistributionMemberRole[] = ['manager', 'agent', 'kol1', 'kol2']
+
+const memberLevelOptions = computed(() =>
+  buildLevelSelectOptions(
+    organizationLevelsById.value[memberForm.channel_org_id] ?? [],
+    globalDistributionLevels.value,
+    (level, source) =>
+      t('distributionLevels.optionLabel', {
+        name: level.name,
+        code: level.code,
+        rate: formatLevelCommissionPercent(level.commission_rate),
+        source: t(`distributionLevels.source.${source}`),
+      }),
+  ),
+)
+
+function cacheOrganizationLevels(org: Pick<DistributionOrganization, 'id' | 'config'>) {
+  organizationLevelsById.value[org.id] = parseDistributionLevelsFromConfig(org.config?.distribution_levels)
+}
+
+async function loadGlobalDistributionLevels() {
+  try {
+    const settings = await adminAPI.settings.getSettings()
+    globalDistributionLevels.value =
+      normalizeDistributionLevelConfigs(settings.distribution_global_levels ?? []) ?? []
+  } catch {
+    globalDistributionLevels.value = []
+  }
+}
+
+async function ensureOrganizationLevels(channelOrgId: number) {
+  if (channelOrgId <= 0 || organizationLevelsById.value[channelOrgId]) return
+  try {
+    const result = await listDistributionOrganizations({ page: 1, page_size: 200 })
+    for (const org of result.items || []) {
+      cacheOrganizationLevels(org)
+    }
+  } catch {
+    organizationLevelsById.value[channelOrgId] = []
+  }
+}
+
+function handleMemberChannelOrgChange() {
+  clearParentMemberSelection()
+  memberForm.level_code = ''
+  memberForm.commission_rate = 0
+  void ensureOrganizationLevels(memberForm.channel_org_id)
+}
+
+onMounted(() => {
+  void loadGlobalDistributionLevels()
+})
 const walletRequestTypeOptions = ['recharge', 'refund']
 const walletRequestStatusOptions = ['pending', 'approved', 'rejected']
 const walletTransactionTypeOptions = ['recharge', 'refund', 'consume', 'commission_reserve', 'commission_release', 'commission_settle', 'commission_deduct', 'commission_refund']
@@ -1011,6 +1201,160 @@ function scheduleUserLookup(state: LookupState<AdminUser>, clearSelection: () =>
   state.timer = setTimeout(() => {
     void searchAdminUsers(state)
   }, 250)
+}
+
+async function searchDistributionOrganizationsForLookup(state: LookupState<DistributionOrganization>) {
+  const keyword = state.keyword.trim()
+  if (!keyword) {
+    state.results = []
+    return
+  }
+  state.loading = true
+  try {
+    const response = await listDistributionOrganizations({
+      page: 1,
+      page_size: 10,
+      q: keyword,
+    })
+    state.results = response.items || []
+  } catch {
+    state.results = []
+  } finally {
+    state.loading = false
+  }
+}
+
+function scheduleOrganizationLookup(
+  state: LookupState<DistributionOrganization>,
+  clearSelection: () => void,
+) {
+  const keyword = state.keyword
+  if (state.selected && keyword !== formatOrganizationLookupLabel(state.selected)) {
+    clearSelection()
+    state.keyword = keyword
+    state.open = true
+  }
+  if (state.timer) clearTimeout(state.timer)
+  state.timer = setTimeout(() => {
+    void searchDistributionOrganizationsForLookup(state)
+  }, 250)
+}
+
+function scheduleChannelOrgLookup() {
+  scheduleOrganizationLookup(channelOrgLookup, clearChannelOrgSelection)
+}
+
+function scheduleFilterChannelOrgLookup() {
+  scheduleOrganizationLookup(filterChannelOrgLookup, clearFilterChannelOrgSelection)
+}
+
+function scheduleAttributionChannelOrgLookup() {
+  scheduleOrganizationLookup(attributionChannelOrgLookup, clearAttributionChannelOrgSelection)
+}
+
+function selectChannelOrg(organization: DistributionOrganization) {
+  channelOrgLookup.selected = organization
+  channelOrgLookup.keyword = formatOrganizationLookupLabel(organization)
+  channelOrgLookup.open = false
+  memberForm.channel_org_id = organization.id
+  cacheOrganizationLevels(organization)
+  handleMemberChannelOrgChange()
+}
+
+function clearChannelOrgSelection() {
+  resetLookupState(channelOrgLookup)
+  memberForm.channel_org_id = 0
+  memberForm.level_code = ''
+  memberForm.commission_rate = 0
+}
+
+async function primeOrganizationLookupState(
+  state: LookupState<DistributionOrganization>,
+  channelOrgId: number,
+  onResolved?: (organization: DistributionOrganization | null) => void,
+) {
+  resetLookupState(state)
+  if (channelOrgId <= 0) {
+    onResolved?.(null)
+    return
+  }
+  try {
+    const response = await listDistributionOrganizations({
+      page: 1,
+      page_size: 1,
+      channel_org_id: channelOrgId,
+    })
+    const organization = response.items?.[0]
+    if (organization) {
+      state.selected = organization
+      state.keyword = formatOrganizationLookupLabel(organization)
+      cacheOrganizationLevels(organization)
+      onResolved?.(organization)
+      return
+    }
+  } catch {
+    // fall through to keyword fallback
+  }
+  state.keyword = `#${channelOrgId}`
+  onResolved?.(null)
+}
+
+async function primeChannelOrgLookup(channelOrgId: number) {
+  await primeOrganizationLookupState(channelOrgLookup, channelOrgId, (organization) => {
+    memberForm.channel_org_id = organization?.id || channelOrgId
+  })
+}
+
+async function primeMemberLookupState(
+  state: LookupState<DistributionMember>,
+  memberId: number | null | undefined,
+  channelOrgId?: number,
+) {
+  resetLookupState(state)
+  if (!memberId || memberId <= 0) return
+  try {
+    const response = await listDistributionMembers({
+      page: 1,
+      page_size: 20,
+      channel_org_id: channelOrgId || undefined,
+      q: String(memberId),
+    })
+    const member = response.items?.find((item) => item.member_id === memberId) || response.items?.[0]
+    if (member) {
+      state.selected = member
+      state.keyword = formatMemberLookupLabel(member)
+      return
+    }
+  } catch {
+    // fall through
+  }
+  state.keyword = `#${memberId}`
+}
+
+async function primePromotionLinkLookupState(
+  state: LookupState<DistributionPromotionLink>,
+  linkId: number | null | undefined,
+  channelOrgId?: number,
+) {
+  resetLookupState(state)
+  if (!linkId || linkId <= 0) return
+  try {
+    const response = await listDistributionPromotionLinks({
+      page: 1,
+      page_size: 20,
+      channel_org_id: channelOrgId || undefined,
+      q: String(linkId),
+    })
+    const link = response.items?.find((item) => item.id === linkId) || response.items?.[0]
+    if (link) {
+      state.selected = link
+      state.keyword = formatPromotionLinkLookupLabel(link)
+      return
+    }
+  } catch {
+    // fall through
+  }
+  state.keyword = `#${linkId}`
 }
 
 async function searchDistributionMembersForLookup(state: LookupState<DistributionMember>, channelOrgID?: number) {
@@ -1089,8 +1433,12 @@ const organizationConfigForm = reactive({
   freeze_hours: 168,
   kol2_rate: 0.05,
   commission_settlement_method: 'balance',
-  distribution_levels_json: '[]',
+  distribution_levels: [] as DistributionLevelConfig[],
 })
+
+const organizationLevelsEditorRef = ref<InstanceType<typeof DistributionLevelsEditor> | null>(null)
+const globalDistributionLevels = ref<DistributionLevelConfig[]>([])
+const organizationLevelsById = ref<Record<number, DistributionLevelConfig[]>>({})
 
 const organizationBrandForm = reactive({
   logo_url: '',
@@ -1305,6 +1653,11 @@ async function loadActiveTab() {
               : await listDistributionCommissions(params)
 
     rows.value = result.items || []
+    if (activeTab.value === 'organizations') {
+      for (const item of rows.value) {
+        cacheOrganizationLevels(item as DistributionOrganization)
+      }
+    }
     pagination.total = result.total || 0
     const totalKey = activeTab.value === 'promotion-links' ? 'promotionLinks' : activeTab.value === 'alert-events' ? 'alertEvents' : activeTab.value === 'wallet-requests' ? 'walletRequests' : activeTab.value === 'wallet-transactions' ? 'walletTransactions' : activeTab.value
     if (totalKey in totals) {
@@ -1344,6 +1697,90 @@ function selectFilterUser(user: AdminUser) {
 function clearFilterUserSelection() {
   resetLookupState(filterUserLookup)
   filters.user_id = null
+}
+
+function selectFilterChannelOrg(organization: DistributionOrganization) {
+  filterChannelOrgLookup.selected = organization
+  filterChannelOrgLookup.keyword = formatOrganizationLookupLabel(organization)
+  filterChannelOrgLookup.open = false
+  filters.channel_org_id = organization.id
+  cacheOrganizationLevels(organization)
+  reloadFromFirstPage()
+}
+
+function clearFilterChannelOrgSelection() {
+  resetLookupState(filterChannelOrgLookup)
+  filters.channel_org_id = null
+}
+
+function selectAttributionChannelOrg(organization: DistributionOrganization) {
+  attributionChannelOrgLookup.selected = organization
+  attributionChannelOrgLookup.keyword = formatOrganizationLookupLabel(organization)
+  attributionChannelOrgLookup.open = false
+  attributionForm.channel_org_id = organization.id
+  cacheOrganizationLevels(organization)
+  clearReferrerMemberSelection()
+  clearAttributionPromotionLinkSelection()
+}
+
+function clearAttributionChannelOrgSelection() {
+  resetLookupState(attributionChannelOrgLookup)
+  attributionForm.channel_org_id = 0
+  clearReferrerMemberSelection()
+  clearAttributionPromotionLinkSelection()
+}
+
+async function searchPromotionLinksForLookup(
+  state: LookupState<DistributionPromotionLink>,
+  channelOrgID?: number,
+) {
+  const keyword = state.keyword.trim()
+  if (!keyword) {
+    state.results = []
+    return
+  }
+  state.loading = true
+  try {
+    const response = await listDistributionPromotionLinks({
+      page: 1,
+      page_size: 10,
+      channel_org_id: channelOrgID || undefined,
+      q: keyword,
+    })
+    state.results = response.items || []
+  } catch {
+    state.results = []
+  } finally {
+    state.loading = false
+  }
+}
+
+function scheduleAttributionPromotionLinkLookup() {
+  const keyword = attributionPromotionLinkLookup.keyword
+  if (
+    attributionPromotionLinkLookup.selected &&
+    keyword !== formatPromotionLinkLookupLabel(attributionPromotionLinkLookup.selected)
+  ) {
+    clearAttributionPromotionLinkSelection()
+    attributionPromotionLinkLookup.keyword = keyword
+    attributionPromotionLinkLookup.open = true
+  }
+  if (attributionPromotionLinkLookup.timer) clearTimeout(attributionPromotionLinkLookup.timer)
+  attributionPromotionLinkLookup.timer = setTimeout(() => {
+    void searchPromotionLinksForLookup(attributionPromotionLinkLookup, attributionForm.channel_org_id)
+  }, 250)
+}
+
+function selectAttributionPromotionLink(link: DistributionPromotionLink) {
+  attributionPromotionLinkLookup.selected = link
+  attributionPromotionLinkLookup.keyword = formatPromotionLinkLookupLabel(link)
+  attributionPromotionLinkLookup.open = false
+  attributionForm.promotion_link_id = link.id
+}
+
+function clearAttributionPromotionLinkSelection() {
+  resetLookupState(attributionPromotionLinkLookup)
+  attributionForm.promotion_link_id = null
 }
 
 function selectOwnerUser(user: AdminUser) {
@@ -1433,7 +1870,10 @@ function openOrganizationDialog(row?: DistributionOrganization) {
   organizationConfigForm.freeze_hours = Number(row?.config?.freeze_hours ?? 168)
   organizationConfigForm.kol2_rate = Number(row?.config?.kol2_rate ?? 0.05)
   organizationConfigForm.commission_settlement_method = String(row?.config?.commission_settlement_method ?? 'balance')
-  organizationConfigForm.distribution_levels_json = JSON.stringify(row?.config?.distribution_levels ?? [], null, 2)
+  organizationConfigForm.distribution_levels = parseDistributionLevelsFromConfig(row?.config?.distribution_levels)
+  if (row?.id) {
+    cacheOrganizationLevels(row)
+  }
   organizationBrandForm.logo_url = String(row?.brand_config?.logo_url ?? '')
   organizationBrandForm.primary_color = String(row?.brand_config?.primary_color ?? row?.brand_config?.theme_color ?? '')
   organizationBrandForm.domain = String(row?.brand_config?.domain ?? '')
@@ -1443,7 +1883,7 @@ function openOrganizationDialog(row?: DistributionOrganization) {
 }
 
 function openMemberDialog() {
-  memberForm.channel_org_id = filters.channel_org_id || 0
+  memberForm.channel_org_id = 0
   memberForm.user_id = 0
   memberForm.role_type = 'agent'
   memberForm.parent_member_id = null
@@ -1452,6 +1892,13 @@ function openMemberDialog() {
   memberForm.status = 'active'
   resetLookupState(memberUserLookup)
   resetLookupState(parentMemberLookup)
+  resetLookupState(channelOrgLookup)
+  const presetChannelOrgId = filters.channel_org_id || 0
+  if (presetChannelOrgId > 0) {
+    memberForm.channel_org_id = presetChannelOrgId
+    void primeChannelOrgLookup(presetChannelOrgId)
+  }
+  void ensureOrganizationLevels(memberForm.channel_org_id)
   memberDialog.value = true
 }
 
@@ -1498,10 +1945,11 @@ function openAttributionDialog(row: DistributionAttribution) {
   attributionForm.referrer_member_id = row.referrer_member_id ?? null
   attributionForm.promotion_link_id = row.promotion_link_id ?? null
   attributionForm.note = ''
-  resetLookupState(referrerMemberLookup)
-  if (row.referrer_member_id) {
-    referrerMemberLookup.keyword = `#${row.referrer_member_id}`
-  }
+  void primeOrganizationLookupState(attributionChannelOrgLookup, row.channel_org_id, (organization) => {
+    attributionForm.channel_org_id = organization?.id || row.channel_org_id
+  })
+  void primeMemberLookupState(referrerMemberLookup, row.referrer_member_id, row.channel_org_id)
+  void primePromotionLinkLookupState(attributionPromotionLinkLookup, row.promotion_link_id, row.channel_org_id)
   attributionDialog.value = true
 }
 
@@ -1537,13 +1985,14 @@ function reloadAttributionAudits() {
 async function submitOrganization() {
   saving.value = true
   try {
-    let distributionLevels: Array<Record<string, unknown>> = []
-    try {
-      const parsed = JSON.parse(organizationConfigForm.distribution_levels_json || '[]')
-      distributionLevels = Array.isArray(parsed) ? parsed : []
-    } catch {
-      appStore.showError(t('admin.distribution.errors.levelsFormatError'))
-      return
+    let distributionLevels: DistributionLevelConfig[] = []
+    if (organizationForm.type !== 'platform') {
+      if (!organizationLevelsEditorRef.value?.validate()) {
+        appStore.showError(t('admin.distribution.errors.levelsValidationError'))
+        return
+      }
+      distributionLevels =
+        normalizeDistributionLevelConfigs(organizationConfigForm.distribution_levels) ?? []
     }
     const payload = {
       type: organizationForm.type,
@@ -1582,10 +2031,12 @@ async function submitOrganization() {
       },
     }
     if (selectedOrganization.value) {
-      await updateDistributionOrganization(selectedOrganization.value.id, payload)
+      const updated = await updateDistributionOrganization(selectedOrganization.value.id, payload)
+      cacheOrganizationLevels(updated)
       appStore.showSuccess(t('admin.distribution.messages.organizationUpdated'))
     } else {
-      await createDistributionOrganization(payload)
+      const created = await createDistributionOrganization(payload)
+      cacheOrganizationLevels(created)
       appStore.showSuccess(t('admin.distribution.messages.organizationCreated'))
     }
     organizationDialog.value = false
@@ -1599,8 +2050,16 @@ async function submitOrganization() {
 }
 
 async function submitMember() {
+  if (memberForm.channel_org_id <= 0) {
+    appStore.showError(t('admin.distribution.messages.channelOrgRequired'))
+    return
+  }
   if (memberForm.user_id <= 0) {
     appStore.showError(t('admin.distribution.fields.userId'))
+    return
+  }
+  if (memberForm.role_type === 'agent' && !memberForm.level_code) {
+    appStore.showError(t('distributionLevels.selectPlaceholder'))
     return
   }
   saving.value = true
@@ -1610,7 +2069,7 @@ async function submitMember() {
       user_id: memberForm.user_id,
       role_type: memberForm.role_type,
       parent_member_id: memberForm.parent_member_id || undefined,
-      level_code: memberForm.level_code || undefined,
+      level_code: memberForm.role_type === 'agent' ? memberForm.level_code || undefined : undefined,
       commission_rate: memberForm.commission_rate,
       status: memberForm.status,
     })
@@ -1738,6 +2197,10 @@ async function submitSettle() {
 
 async function submitAttribution() {
   if (!selectedAttribution.value) return
+  if (attributionForm.channel_org_id <= 0) {
+    appStore.showError(t('admin.distribution.messages.channelOrgRequired'))
+    return
+  }
   saving.value = true
   try {
     await updateDistributionAttribution(selectedAttribution.value.user_id, {

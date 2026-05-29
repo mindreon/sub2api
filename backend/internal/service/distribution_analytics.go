@@ -45,6 +45,20 @@ type DistributionAnalyticsRankingItem struct {
 	SettledCommissionAmount float64 `json:"settled_commission_amount"`
 }
 
+type DistributionAnalyticsRoleBreakdownItem struct {
+	RoleType                string  `json:"role_type"`
+	MemberCount             int64   `json:"member_count"`
+	RegisteredUsers         int64   `json:"registered_users"`
+	ConsumptionAmount       float64 `json:"consumption_amount"`
+	CommissionAmount        float64 `json:"commission_amount"`
+	SettledCommissionAmount float64 `json:"settled_commission_amount"`
+}
+
+type DistributionAttributedUserStats struct {
+	TotalUsers int64 `json:"total_users"`
+	NewUsers   int64 `json:"new_users"`
+}
+
 type DistributionAnalyticsFilter struct {
 	StartTime   time.Time `json:"-"`
 	EndTime     time.Time `json:"-"`
@@ -63,12 +77,14 @@ type DistributionAnalyticsChannel struct {
 	Summary       DistributionAnalyticsSummary       `json:"summary"`
 	Trend         []DistributionAnalyticsTrendPoint  `json:"trend"`
 	MemberRanking []DistributionAnalyticsRankingItem `json:"member_ranking"`
+	RoleBreakdown []DistributionAnalyticsRoleBreakdownItem `json:"role_breakdown"`
 }
 
 type DistributionAnalyticsPersonal struct {
 	RoleTypes          []string                           `json:"role_types"`
 	Summary            DistributionAnalyticsSummary       `json:"summary"`
 	ChildMemberRanking []DistributionAnalyticsRankingItem `json:"child_member_ranking"`
+	UserStats          DistributionAttributedUserStats    `json:"user_stats"`
 }
 
 type DistributionAnalyticsResponse struct {
@@ -84,6 +100,7 @@ type DistributionAnalyticsRepository interface {
 	ListChannelMemberRanking(ctx context.Context, channelOrgID int64, filter DistributionAnalyticsFilter, limit int) ([]DistributionAnalyticsRankingItem, error)
 	GetMemberAnalyticsSummary(ctx context.Context, memberIDs []int64, filter DistributionAnalyticsFilter) (*DistributionAnalyticsSummary, error)
 	ListChildMemberRanking(ctx context.Context, parentMemberIDs []int64, filter DistributionAnalyticsFilter, limit int) ([]DistributionAnalyticsRankingItem, error)
+	GetAttributedUserStats(ctx context.Context, memberIDs []int64, filter DistributionAnalyticsFilter) (*DistributionAttributedUserStats, error)
 }
 
 type DistributionAnalyticsService struct {
@@ -142,7 +159,7 @@ func (s *DistributionAnalyticsService) GetAnalyticsForUser(
 	if err != nil {
 		return nil, err
 	}
-	promoterMemberIDs, roleTypes, kol1MemberIDs := collectDistributionAnalyticsMemberIDs(members, channelOrgID)
+	promoterMemberIDs, roleTypes, childRankingParentIDs := collectDistributionAnalyticsMemberIDs(members, channelOrgID)
 
 	if canManageChannel {
 		channel := &DistributionAnalyticsChannel{}
@@ -158,6 +175,7 @@ func (s *DistributionAnalyticsService) GetAnalyticsForUser(
 		if err != nil {
 			return nil, err
 		}
+		channel.RoleBreakdown = buildDistributionRoleBreakdown(channel.MemberRanking)
 		resp.Channel = channel
 	}
 
@@ -169,8 +187,15 @@ func (s *DistributionAnalyticsService) GetAnalyticsForUser(
 		if err != nil {
 			return nil, err
 		}
-		if len(kol1MemberIDs) > 0 {
-			personal.ChildMemberRanking, err = s.analyticsRepo.ListChildMemberRanking(ctx, kol1MemberIDs, filter, filter.Limit)
+		userStats, err := s.analyticsRepo.GetAttributedUserStats(ctx, promoterMemberIDs, filter)
+		if err != nil {
+			return nil, err
+		}
+		if userStats != nil {
+			personal.UserStats = *userStats
+		}
+		if len(childRankingParentIDs) > 0 {
+			personal.ChildMemberRanking, err = s.analyticsRepo.ListChildMemberRanking(ctx, childRankingParentIDs, filter, filter.Limit)
 			if err != nil {
 				return nil, err
 			}
@@ -266,7 +291,7 @@ func normalizeDistributionAnalyticsFilter(filter DistributionAnalyticsFilter) (D
 
 func collectDistributionAnalyticsMemberIDs(members []DistributionMemberView, channelOrgID int64) ([]int64, []string, []int64) {
 	memberIDs := make([]int64, 0, len(members))
-	kol1MemberIDs := make([]int64, 0, len(members))
+	childRankingParentIDs := make([]int64, 0, len(members))
 	roleSet := make(map[string]struct{}, 3)
 	for _, member := range members {
 		if member.ChannelOrgID != channelOrgID || !strings.EqualFold(strings.TrimSpace(member.Status), "active") {
@@ -277,18 +302,50 @@ func collectDistributionAnalyticsMemberIDs(members []DistributionMemberView, cha
 		case "agent", "kol1", "kol2":
 			memberIDs = append(memberIDs, member.MemberID)
 			roleSet[role] = struct{}{}
-			if role == "kol1" {
-				kol1MemberIDs = append(kol1MemberIDs, member.MemberID)
+			if role == "agent" || role == "kol1" {
+				childRankingParentIDs = append(childRankingParentIDs, member.MemberID)
 			}
 		}
 	}
 	sort.Slice(memberIDs, func(i, j int) bool { return memberIDs[i] < memberIDs[j] })
-	sort.Slice(kol1MemberIDs, func(i, j int) bool { return kol1MemberIDs[i] < kol1MemberIDs[j] })
+	sort.Slice(childRankingParentIDs, func(i, j int) bool { return childRankingParentIDs[i] < childRankingParentIDs[j] })
 	roleTypes := make([]string, 0, len(roleSet))
 	for _, role := range []string{"agent", "kol1", "kol2"} {
 		if _, ok := roleSet[role]; ok {
 			roleTypes = append(roleTypes, role)
 		}
 	}
-	return memberIDs, roleTypes, kol1MemberIDs
+	return memberIDs, roleTypes, childRankingParentIDs
+}
+
+func buildDistributionRoleBreakdown(items []DistributionAnalyticsRankingItem) []DistributionAnalyticsRoleBreakdownItem {
+	if len(items) == 0 {
+		return []DistributionAnalyticsRoleBreakdownItem{}
+	}
+	byRole := map[string]*DistributionAnalyticsRoleBreakdownItem{
+		"agent": {RoleType: "agent"},
+		"kol1":  {RoleType: "kol1"},
+		"kol2":  {RoleType: "kol2"},
+	}
+	for _, item := range items {
+		role := strings.ToLower(strings.TrimSpace(item.RoleType))
+		bucket, ok := byRole[role]
+		if !ok {
+			continue
+		}
+		bucket.MemberCount++
+		bucket.RegisteredUsers += item.RegisteredUsers
+		bucket.ConsumptionAmount += item.ConsumptionAmount
+		bucket.CommissionAmount += item.CommissionAmount
+		bucket.SettledCommissionAmount += item.SettledCommissionAmount
+	}
+	out := make([]DistributionAnalyticsRoleBreakdownItem, 0, 3)
+	for _, role := range []string{"agent", "kol1", "kol2"} {
+		bucket := byRole[role]
+		if bucket.MemberCount == 0 {
+			continue
+		}
+		out = append(out, *bucket)
+	}
+	return out
 }

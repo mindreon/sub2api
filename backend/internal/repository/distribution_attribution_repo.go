@@ -46,7 +46,14 @@ WHERE user_id = $1`, userID)
 		return nil, fmt.Errorf("get distribution attribution: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
-	return scanDistributionAttribution(rows)
+	attribution, err := scanDistributionAttribution(rows)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, service.ErrDistributionAttributionNotFound
+		}
+		return nil, err
+	}
+	return attribution, nil
 }
 
 func (r *distributionAttributionRepository) ListByChannelOrgID(ctx context.Context, channelOrgID int64, params pagination.PaginationParams) ([]service.DistributionAttributionView, *pagination.PaginationResult, error) {

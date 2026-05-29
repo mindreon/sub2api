@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"strings"
 )
@@ -65,8 +66,8 @@ func resolveDistributionUserChannelOrgID(
 	if attributionRepo != nil {
 		attribution, err := attributionRepo.GetByUserID(ctx, userID)
 		if err != nil {
-			if errors.Is(err, ErrDistributionAttributionNotFound) {
-				return 0, err
+			if errors.Is(err, ErrDistributionAttributionNotFound) || errors.Is(err, sql.ErrNoRows) {
+				return 0, ErrDistributionAttributionNotFound
 			}
 			return 0, err
 		}

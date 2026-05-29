@@ -6,6 +6,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 
 import DistributionMemberFormDialog from '../DistributionMemberFormDialog.vue'
+import type { DistributionOrganization } from '@/api/admin/distribution'
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -88,6 +89,31 @@ describe('DistributionMemberFormDialog', () => {
         parentSearchPlaceholderKey: 'admin.usage.searchUserPlaceholder',
         levelCodeDescriptionKey: 'admin.distribution.fields.levelCodeDesc',
         showChannelOrgField: true,
+        channelOrgLookup: {
+          keyword: 'Demo Org · #1 · reseller',
+          loading: false,
+          open: false,
+          results: [],
+          selected: {
+            id: 1,
+            name: 'Demo Org',
+            type: 'reseller',
+            status: 'active',
+            config: {},
+            brand_config: {},
+            created_at: '',
+            updated_at: '',
+          } satisfies DistributionOrganization,
+        },
+        memberForm: {
+          channel_org_id: 1,
+          user_id: 0,
+          role_type: 'agent',
+          parent_member_id: null,
+          level_code: '',
+          commission_rate: 0,
+          status: 'active',
+        },
       }),
       global: {
         stubs: {
@@ -98,7 +124,77 @@ describe('DistributionMemberFormDialog', () => {
     })
 
     expect(adminWrapper.text()).toContain('admin.distribution.fields.channelOrgId')
+    expect(adminWrapper.find('input[placeholder="admin.distribution.fields.channelOrgIdPlaceholder"]').exists()).toBe(true)
     expect(adminWrapper.text()).toContain('admin.distribution.fields.levelCodeDesc')
+  })
+
+  it('hides level field for KOL roles', () => {
+    const wrapper = mount(DistributionMemberFormDialog, {
+      props: buildProps({
+        memberForm: {
+          channel_org_id: 0,
+          user_id: 0,
+          role_type: 'kol1',
+          parent_member_id: 1,
+          level_code: 'GOLD',
+          commission_rate: 0.1,
+          status: 'active',
+        },
+        levelOptions: [
+          {
+            code: 'GOLD',
+            name: 'Gold',
+            commission_rate: 12,
+            source: 'channel',
+            label: 'Gold',
+          },
+        ],
+      }),
+      global: {
+        stubs: {
+          BaseDialog: BaseDialogStub,
+          Icon: true,
+        },
+      },
+    })
+
+    expect(wrapper.text()).not.toContain('distribution.fields.levelCode')
+  })
+
+  it('renders level select when options are provided for agent role', () => {
+    const wrapper = mount(DistributionMemberFormDialog, {
+      props: buildProps({
+        memberForm: {
+          channel_org_id: 1,
+          user_id: 0,
+          role_type: 'agent',
+          parent_member_id: null,
+          level_code: '',
+          commission_rate: 0,
+          status: 'active',
+        },
+        levelOptions: [
+          {
+            code: 'GOLD',
+            name: 'Gold',
+            commission_rate: 12,
+            source: 'channel',
+            label: 'Gold (GOLD) · 12% · channel',
+          },
+        ],
+      }),
+      global: {
+        stubs: {
+          BaseDialog: BaseDialogStub,
+          Icon: true,
+        },
+      },
+    })
+
+    const levelSelect = wrapper.findAll('select').find((node) =>
+      node.findAll('option').some((option) => option.attributes('value') === 'GOLD'),
+    )
+    expect(levelSelect).toBeTruthy()
   })
 
   it('is used by both admin and user distribution views', () => {

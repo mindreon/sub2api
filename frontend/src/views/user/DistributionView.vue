@@ -1,5 +1,5 @@
 <template>
-  <AppLayout>
+  <DistributionLayout>
     <div class="space-y-6">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -35,7 +35,7 @@
             {{ t('distribution.actions.requestWalletRefund') }}
           </button>
           <button
-            v-if="activeTab === 'members'"
+            v-if="activeTab === 'members' && canManageMembersNav"
             type="button"
             class="btn btn-primary btn-md"
             @click="openMemberDialog"
@@ -44,7 +44,7 @@
             {{ t('distribution.actions.createMember') }}
           </button>
           <button
-            v-if="activeTab === 'promotion-links'"
+            v-if="activeTab === 'promotion-links' && canCreatePromotionLink"
             type="button"
             class="btn btn-primary btn-md"
             @click="openLinkDialog"
@@ -142,6 +142,12 @@
               <template #cell-member_id="{ row }">
                 <span class="font-mono text-sm">#{{ row.member_id }}</span>
               </template>
+              <template #cell-promotion_member="{ row }">
+                <div class="space-y-0.5">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ row.username || row.user_email || '-' }}</div>
+                  <div class="text-xs text-gray-500 dark:text-dark-400">{{ roleLabel(row.role_type) }}</div>
+                </div>
+              </template>
               <template #cell-id="{ row }">
                 <span class="font-mono text-sm">#{{ row.id }}</span>
               </template>
@@ -164,7 +170,8 @@
                 <span class="font-mono text-sm">{{ row.parent_member_id ? `#${row.parent_member_id}` : '-' }}</span>
               </template>
               <template #cell-level_code="{ row }">
-                <span class="font-mono text-sm">{{ row.level_code || '-' }}</span>
+                <span v-if="row.role_type === 'agent'" class="font-mono text-sm">{{ row.level_code || '-' }}</span>
+                <span v-else class="text-sm text-gray-400">-</span>
               </template>
               <template #cell-referrer_member_id="{ row }">
                 <span class="font-mono text-sm">{{ row.referrer_member_id ? `#${row.referrer_member_id}` : '-' }}</span>
@@ -355,6 +362,8 @@
       user-search-placeholder-key="admin.usage.searchUserPlaceholder"
       parent-search-placeholder-key="distribution.fields.parentMemberIdPlaceholder"
       level-code-placeholder-key="distribution.fields.levelCodePlaceholder"
+      level-code-description-key="distribution.fields.levelCodeDesc"
+      :level-options="memberLevelOptions"
       :hide-parent-field-for-agent="true"
       :parent-field-required-for-non-agent="true"
       :member-form="memberForm"
@@ -376,9 +385,61 @@
     <BaseDialog :show="linkDialog" :title="t('distribution.dialogs.linkTitle')" width="normal" @close="linkDialog = false">
       <form class="space-y-4" @submit.prevent="submitLink">
         <div class="grid gap-4 sm:grid-cols-2">
-          <label class="block">
-            <span class="input-label">{{ t('distribution.fields.memberId') }}</span>
-            <input v-model.number="linkForm.member_id" type="number" min="1" class="input mt-1" required />
+          <div v-if="linkMemberMode === 'auto'" class="block sm:col-span-2">
+            <span class="input-label">{{ t('distribution.fields.promotionMember') }}</span>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ linkMemberAutoLabel }}</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-dark-400">{{ t('distribution.messages.linkMemberAutoHint') }}</p>
+          </div>
+          <label v-else-if="linkMemberMode === 'role-picker'" class="block sm:col-span-2">
+            <span class="input-label">{{ t('distribution.fields.promotionMember') }}</span>
+            <select v-model.number="linkForm.member_id" class="input mt-1" required>
+              <option v-for="member in myPromoterMembers" :key="member.member_id" :value="member.member_id">
+                {{ formatPromoterMemberOption(member) }}
+              </option>
+            </select>
+          </label>
+          <label v-else-if="linkMemberMode === 'select'" class="relative block sm:col-span-2">
+            <span class="input-label">{{ t('distribution.fields.promotionMember') }}</span>
+            <div class="relative mt-1">
+              <input
+                v-model="linkMemberLookup.keyword"
+                class="input pr-10"
+                :placeholder="t('distribution.fields.promotionMemberPlaceholder')"
+                autocomplete="off"
+                required
+                @input="scheduleLinkMemberLookup"
+                @focus="linkMemberLookup.open = true"
+              />
+              <button
+                v-if="linkMemberLookup.selected"
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                @click="clearLinkMemberSelection"
+              >
+                <Icon name="x" size="sm" :stroke-width="2" />
+              </button>
+            </div>
+            <div
+              v-if="linkMemberLookup.open && (linkMemberLookup.loading || linkMemberLookup.results.length > 0 || linkMemberLookup.keyword.trim())"
+              class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-dark-700 dark:bg-dark-900"
+            >
+              <div v-if="linkMemberLookup.loading" class="px-3 py-2 text-sm text-gray-500 dark:text-dark-400">{{ t('common.loading') }}</div>
+              <button
+                v-for="member in linkMemberLookup.results"
+                :key="member.member_id"
+                type="button"
+                class="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-dark-800"
+                @click="selectLinkMember(member)"
+              >
+                {{ formatMemberLookupLabel(member) }} · {{ roleLabel(member.role_type) }}
+              </button>
+              <div
+                v-if="!linkMemberLookup.loading && linkMemberLookup.results.length === 0"
+                class="px-3 py-2 text-sm text-gray-500 dark:text-dark-400"
+              >
+                {{ t('common.noOptionsFound') }}
+              </div>
+            </div>
           </label>
           <label class="block">
             <span class="input-label">{{ t('distribution.fields.code') }}</span>
@@ -403,7 +464,7 @@
         </div>
         <div class="flex justify-end gap-2">
           <button type="button" class="btn btn-secondary" @click="linkDialog = false">{{ t('common.cancel') }}</button>
-          <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? t('common.saving') : t('common.create') }}</button>
+          <button type="submit" class="btn btn-primary" :disabled="saving || !canSubmitPromotionLink">{{ saving ? t('common.saving') : t('common.create') }}</button>
         </div>
       </form>
     </BaseDialog>
@@ -455,14 +516,14 @@
         </div>
       </form>
     </BaseDialog>
-  </AppLayout>
+  </DistributionLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import DistributionLayout from '@/components/layout/DistributionLayout.vue'
 import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -472,8 +533,20 @@ import Icon from '@/components/icons/Icon.vue'
 import type { Column } from '@/components/common/types'
 import { usersAPI } from '@/api/admin'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
+import { useDistributionNavAccess } from '@/composables/useDistributionNavAccess'
+import {
+  formatDistributionMemberIdentity,
+  isActiveDistributionMemberStatus,
+  isDistributionPromoterRole,
+} from '@/utils/distributionPromoter'
 import type { AdminUser } from '@/types'
 import { extractI18nErrorMessage } from '@/utils/apiError'
+import {
+  buildLevelSelectOptions,
+  formatLevelCommissionPercent,
+  parseDistributionLevelsFromConfig,
+} from '@/utils/distributionLevels'
 import { formatDateTime as formatDisplayDateTime } from '@/utils/format'
 import { formatScaled } from '@/utils/pricing'
 import {
@@ -530,6 +603,15 @@ function formatMemberLookupLabel(member: Pick<DistributionMember, 'username' | '
 const { t } = useI18n()
 const route = useRoute()
 const appStore = useAppStore()
+const authStore = useAuthStore()
+const {
+  canManageDistributionChannel,
+  canAccessPromotionNav,
+  canManageMembersNav,
+  canAccessChannelFinanceNav,
+  myPromoterMembers,
+  syncDistributionNavAccess,
+} = useDistributionNavAccess()
 const overview = ref<DistributionOverview | null>(null)
 const notAttributed = ref(false)
 const activeTab = ref<DistributionTab>('wallet')
@@ -556,6 +638,7 @@ const selectedCommissionIds = ref<number[]>([])
 const hasInitializedDistributionPage = ref(false)
 const memberUserLookup = createLookupState<AdminUser>()
 const parentMemberLookup = createLookupState<DistributionMember>()
+const linkMemberLookup = createLookupState<DistributionMember>()
 const memberForm = reactive({
   user_id: 0,
   role_type: 'kol1' as 'agent' | 'kol1' | 'kol2',
@@ -581,7 +664,7 @@ const settleForm = reactive({
   settlement_reference_no: '',
   settlement_note: '',
 })
-const roleOptions: DistributionMemberRole[] = ['manager', 'agent', 'kol1', 'kol2']
+const roleOptions: DistributionMemberRole[] = ['agent', 'kol1', 'kol2']
 const walletRequestTypeOptions = ['recharge', 'refund']
 const walletRequestStatusOptions = ['pending', 'approved', 'rejected']
 const walletTransactionTypeOptions = ['recharge', 'refund', 'consume', 'commission_reserve', 'commission_release', 'commission_settle', 'commission_deduct', 'commission_refund']
@@ -589,6 +672,48 @@ const alertTypeOptions = ['low_balance', 'balance_exhausted', 'consumption_warni
 const alertStatusOptions = ['active', 'resolved']
 const alertSeverityOptions = ['warning', 'critical']
 const summary = computed(() => overview.value?.summary ?? null)
+
+type LinkMemberMode = 'auto' | 'role-picker' | 'select' | 'none'
+
+const linkMemberMode = computed<LinkMemberMode>(() => {
+  if (canManageDistributionChannel.value) return 'select'
+  if (myPromoterMembers.value.length === 1) return 'auto'
+  if (myPromoterMembers.value.length > 1) return 'role-picker'
+  return 'none'
+})
+
+const canCreatePromotionLink = computed(
+  () => canAccessPromotionNav.value && (canManageDistributionChannel.value || myPromoterMembers.value.length > 0),
+)
+
+const linkMemberAutoLabel = computed(() => {
+  const member = myPromoterMembers.value[0]
+  if (!member) return ''
+  return formatPromoterMemberOption(member)
+})
+
+const canSubmitPromotionLink = computed(() => {
+  if (linkMemberMode.value === 'none') return false
+  if (linkMemberMode.value === 'select') {
+    return linkForm.member_id > 0 && !!linkMemberLookup.selected
+  }
+  return linkForm.member_id > 0
+})
+
+const memberLevelOptions = computed(() =>
+  buildLevelSelectOptions(
+    parseDistributionLevelsFromConfig(summary.value?.organization?.config?.distribution_levels),
+    [],
+    (level, source) =>
+      t('distributionLevels.optionLabel', {
+        name: level.name,
+        code: level.code,
+        rate: formatLevelCommissionPercent(level.commission_rate),
+        source: t(`distributionLevels.source.${source}`),
+      }),
+  ),
+)
+
 const distributionTabValues = new Set<DistributionTab>([
   'wallet',
   'alert-events',
@@ -694,12 +819,91 @@ function scheduleParentMemberLookup(state: LookupState<DistributionMember>, clea
   }, 250)
 }
 
+async function searchLinkMembers(state: LookupState<DistributionMember>) {
+  const keyword = state.keyword.trim()
+  if (!keyword) {
+    state.results = []
+    return
+  }
+  state.loading = true
+  try {
+    const response = await listMyDistributionMembers({
+      page: 1,
+      page_size: 10,
+      q: keyword,
+    })
+    state.results = (response.items || []).filter(
+      (member) => isDistributionPromoterRole(member.role_type) && isActiveDistributionMemberStatus(member.status),
+    )
+  } catch {
+    state.results = []
+  } finally {
+    state.loading = false
+  }
+}
+
+function scheduleLinkMemberLookup() {
+  const keyword = linkMemberLookup.keyword
+  if (linkMemberLookup.selected && keyword !== formatMemberLookupLabel(linkMemberLookup.selected)) {
+    clearLinkMemberSelection()
+    linkMemberLookup.keyword = keyword
+    linkMemberLookup.open = true
+  }
+  if (linkMemberLookup.timer) clearTimeout(linkMemberLookup.timer)
+  linkMemberLookup.timer = setTimeout(() => {
+    void searchLinkMembers(linkMemberLookup)
+  }, 250)
+}
+
+function selectLinkMember(member: DistributionMember) {
+  linkMemberLookup.selected = member
+  linkMemberLookup.keyword = formatMemberLookupLabel(member)
+  linkMemberLookup.open = false
+  linkForm.member_id = member.member_id
+}
+
+function clearLinkMemberSelection() {
+  resetLookupState(linkMemberLookup)
+  linkForm.member_id = 0
+}
+
+function formatPromoterMemberOption(member: DistributionMember) {
+  return formatDistributionMemberIdentity(member, roleLabel(member.role_type))
+}
+
+function isTabAccessible(tab: DistributionTab): boolean {
+  if (tab === 'wallet' || tab === 'wallet-requests' || tab === 'wholesale-pricing' || tab === 'alert-events') {
+    return canAccessChannelFinanceNav.value
+  }
+  if (tab === 'promotion-links' || tab === 'attributions') {
+    return canAccessPromotionNav.value
+  }
+  if (tab === 'members') {
+    return canManageMembersNav.value
+  }
+  if (tab === 'commissions') {
+    return canAccessPromotionNav.value || canAccessChannelFinanceNav.value
+  }
+  return false
+}
+
+function defaultDistributionTab(): DistributionTab {
+  if (canAccessPromotionNav.value) return 'promotion-links'
+  if (canManageDistributionChannel.value) return 'members'
+  if (canAccessPromotionNav.value || canAccessChannelFinanceNav.value) return 'commissions'
+  return 'commissions'
+}
+
+function resolveAccessibleTab(tab: DistributionTab): DistributionTab {
+  return isTabAccessible(tab) ? tab : defaultDistributionTab()
+}
+
 function tabFromHash(hash: string): DistributionTab {
   const value = hash.replace(/^#/, '')
   if (value && distributionTabValues.has(value as DistributionTab)) {
-    return value as DistributionTab
+    return resolveAccessibleTab(value as DistributionTab)
   }
-  return 'wallet'
+  return defaultDistributionTab()
 }
 
 const walletRequestDialogTitle = computed(() =>
@@ -736,9 +940,7 @@ const columns = computed<Column[]>(() => {
     return [
       { key: 'id', label: t('distribution.columns.id') },
       { key: 'code', label: t('distribution.columns.code') },
-      { key: 'user', label: t('distribution.columns.user') },
-      { key: 'member_id', label: t('distribution.columns.memberId') },
-      { key: 'role_type', label: t('distribution.columns.role') },
+      { key: 'promotion_member', label: t('distribution.fields.promotionMember') },
       { key: 'target_type', label: t('distribution.columns.targetType') },
       { key: 'status', label: t('distribution.columns.status') },
       { key: 'created_at', label: t('distribution.columns.createdAt') },
@@ -902,10 +1104,22 @@ function clearParentMemberSelection() {
 }
 
 function openLinkDialog() {
-  linkForm.member_id = 0
   linkForm.code = ''
   linkForm.target_type = 'registration'
   linkForm.status = 'active'
+  resetLookupState(linkMemberLookup)
+
+  if (linkMemberMode.value === 'auto') {
+    linkForm.member_id = myPromoterMembers.value[0]?.member_id || 0
+  } else if (linkMemberMode.value === 'role-picker') {
+    linkForm.member_id = myPromoterMembers.value[0]?.member_id || 0
+  } else if (linkMemberMode.value === 'select') {
+    linkForm.member_id = 0
+  } else {
+    appStore.showError(t('distribution.messages.linkMemberInvalid'))
+    return
+  }
+
   linkDialog.value = true
 }
 
@@ -962,6 +1176,15 @@ function handlePageSizeChange(pageSize: number) {
 }
 
 async function submitLink() {
+  if (!canSubmitPromotionLink.value) {
+    appStore.showError(
+      linkMemberMode.value === 'select'
+        ? t('distribution.messages.linkMemberSelectRequired')
+        : t('distribution.messages.linkMemberInvalid'),
+    )
+    return
+  }
+
   saving.value = true
   try {
     await createMyDistributionPromotionLink({
@@ -987,7 +1210,7 @@ async function submitMember() {
       user_id: memberForm.user_id,
       role_type: memberForm.role_type,
       parent_member_id: memberForm.role_type === 'agent' ? undefined : memberForm.parent_member_id || undefined,
-      level_code: memberForm.level_code || undefined,
+      level_code: memberForm.role_type === 'agent' ? memberForm.level_code || undefined : undefined,
       commission_rate: memberForm.commission_rate,
       status: memberForm.status,
     })
@@ -1248,7 +1471,9 @@ watch(
 )
 
 onMounted(async () => {
+  await syncDistributionNavAccess(!!authStore.user, authStore.isAdmin)
   await loadOverview()
+  activeTab.value = tabFromHash(route.hash)
   await loadCurrentTab()
   hasInitializedDistributionPage.value = true
 })

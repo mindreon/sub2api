@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -121,7 +122,7 @@ LIMIT 1`, userID)
 
 	org, err := scanDistributionOrganization(rows)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, service.ErrInvalidDistributionOrganization) {
 			return nil, nil
 		}
 		return nil, err

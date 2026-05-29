@@ -21,13 +21,24 @@
       </div>
     </a>
 
+    <NavWorkspaceSwitcher
+      v-if="showAdminWorkspaceSwitcher"
+      :collapsed="sidebarCollapsed"
+      scope="admin"
+    />
+    <NavWorkspaceSwitcher
+      v-else-if="showUserWorkspaceSwitcher"
+      :collapsed="sidebarCollapsed"
+      scope="user"
+    />
+
     <!-- Navigation -->
     <nav class="sidebar-nav scrollbar-hide">
       <!-- Admin View: Admin menu first, then personal menu -->
       <template v-if="isAdmin">
         <!-- Admin Section -->
         <div class="sidebar-section">
-          <template v-for="item in adminNavItems" :key="item.path">
+          <template v-for="item in activeAdminNavItems" :key="item.path">
             <!-- Collapsible group (has children) -->
             <template v-if="item.children?.length">
               <button
@@ -118,27 +129,89 @@
             </span>
           </div>
 
-          <router-link
-            v-for="item in personalNavItems"
-            :key="item.path"
-            :to="item.path"
-            class="sidebar-link mb-1"
-            :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
-            :title="sidebarCollapsed ? item.label : undefined"
-            :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
-            @click="handleMenuItemClick(item.path)"
-          >
-            <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
-            <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
-            <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
-          </router-link>
+          <NavWorkspaceSwitcher
+            v-if="showAdminPersonalWorkspaceSwitcher"
+            :collapsed="sidebarCollapsed"
+            scope="user"
+          />
+
+          <template v-for="item in activePersonalNavItems" :key="item.path">
+            <template v-if="item.children?.length">
+              <button
+                type="button"
+                class="sidebar-link mb-1 w-full"
+                :class="{
+                  'sidebar-link-active': isGroupActive(item) && !isGroupExpanded(item),
+                  'sidebar-link-collapsed': sidebarCollapsed
+                }"
+                :title="sidebarCollapsed ? item.label : undefined"
+                @click="handleGroupClick(item)"
+              >
+                <component :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+                <span
+                  class="sidebar-label sidebar-label-flex"
+                  :class="{ 'sidebar-label-collapsed': sidebarCollapsed }"
+                  :aria-hidden="sidebarCollapsed ? 'true' : 'false'"
+                >
+                  <span class="min-w-0 truncate">{{ item.label }}</span>
+                  <ChevronDownIcon
+                    class="h-4 w-4 flex-shrink-0 transition-transform duration-200"
+                    :class="isGroupExpanded(item) ? 'rotate-180' : ''"
+                  />
+                </span>
+              </button>
+              <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
+                <template v-for="child in item.children" :key="child.path">
+                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
+                    <div class="sidebar-subsection-title">
+                      {{ child.label }}
+                    </div>
+                    <router-link
+                      v-for="grandchild in child.children"
+                      :key="grandchild.path"
+                      :to="grandchild.path"
+                      class="sidebar-link mb-0.5 py-1.5 text-sm"
+                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
+                      @click="handleMenuItemClick(grandchild.path)"
+                    >
+                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
+                      <span>{{ grandchild.label }}</span>
+                    </router-link>
+                  </div>
+                  <router-link
+                    v-else
+                    :to="child.path"
+                    class="sidebar-link mb-0.5 py-1.5 text-sm"
+                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                    @click="handleMenuItemClick(child.path)"
+                  >
+                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                    <span>{{ child.label }}</span>
+                  </router-link>
+                </template>
+              </div>
+            </template>
+            <router-link
+              v-else
+              :to="item.path"
+              class="sidebar-link mb-1"
+              :class="{ 'sidebar-link-active': isActive(item.path), 'sidebar-link-collapsed': sidebarCollapsed }"
+              :title="sidebarCollapsed ? item.label : undefined"
+              :data-tour="item.path === '/keys' ? 'sidebar-my-keys' : undefined"
+              @click="handleMenuItemClick(item.path)"
+            >
+              <span v-if="item.iconSvg" class="h-5 w-5 flex-shrink-0 sidebar-svg-icon" v-html="sanitizeSvg(item.iconSvg)"></span>
+              <component v-else :is="item.icon" class="h-5 w-5 flex-shrink-0" />
+              <span class="sidebar-label" :class="{ 'sidebar-label-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">{{ item.label }}</span>
+            </router-link>
+          </template>
         </div>
       </template>
 
       <!-- Regular User View -->
       <template v-else-if="!appStore.backendModeEnabled">
         <div class="sidebar-section">
-          <template v-for="item in userNavItems" :key="item.path">
+          <template v-for="item in activeUserNavItems" :key="item.path">
             <template v-if="item.children?.length">
               <button
                 type="button"
@@ -257,31 +330,16 @@ import { computed, h, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
-import { getDistributionOverview } from '@/api/distribution'
 import VersionBadge from '@/components/common/VersionBadge.vue'
+import NavWorkspaceSwitcher from '@/components/layout/NavWorkspaceSwitcher.vue'
+import { useDistributionNavAccess } from '@/composables/useDistributionNavAccess'
+import { useNavWorkspace } from '@/composables/useNavWorkspace'
+import { buildAdminDistributionNavItems } from '@/nav/adminDistributionNav'
+import { buildUserDistributionNavItems } from '@/nav/distributionNav'
+import { isSidebarGroupExpanded, toggleSidebarGroup } from '@/nav/sidebarGroupExpand'
+import type { NavItem } from '@/nav/types'
 import { sanitizeSvg } from '@/utils/sanitize'
 import { FeatureFlags, makeSidebarFlag } from '@/utils/featureFlags'
-
-interface NavItem {
-  path: string
-  label: string
-  icon?: unknown
-  iconSvg?: string
-  hideInSimpleMode?: boolean
-  children?: NavItem[]
-  /**
-   * When true, the parent item only toggles the expand/collapse state and
-   * does NOT navigate to its `path`. The `path` is purely a stable key.
-   */
-  expandOnly?: boolean
-  /**
-   * 可选的功能开关 getter。返回 false 时菜单项被隐藏；返回 undefined/true 时显示。
-   * 宽容策略（undefined → 显示）避免 public settings 未加载完成时菜单闪烁消失。
-   * Getter 里访问的 reactive 来源（store / composable）会被 computed 自动追踪，
-   * 开关切换时菜单自动更新。
-   */
-  featureFlag?: () => boolean | undefined
-}
 
 // applyFeatureFlags 递归过滤掉 featureFlag() === false 的节点（含子节点）。
 // 使用 `!== false` 宽容语义：undefined（设置未加载）或 true 都视为显示。
@@ -311,10 +369,20 @@ const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
 const mobileOpen = computed(() => appStore.mobileOpen)
 const isAdmin = computed(() => authStore.isAdmin)
 const isDark = ref(document.documentElement.classList.contains('dark'))
-const canManageDistributionChannel = ref(false)
+const {
+  hasDistributionAccess,
+  hasPersonalDistributionAccess,
+  canManageDistributionChannel,
+  canAccessPromotionNav,
+  canManageMembersNav,
+  canAccessChannelFinanceNav,
+  syncDistributionNavAccess,
+} = useDistributionNavAccess()
+const { syncAllWorkspacesFromRoute } = useNavWorkspace()
 
-// Track which parent nav groups are expanded
+// Track which parent nav groups are expanded or explicitly collapsed by the user.
 const expandedGroups = ref<Set<string>>(new Set())
+const collapsedGroups = ref<Set<string>>(new Set())
 
 // Site settings from appStore (cached, no flicker)
 const siteName = computed(() => appStore.siteName)
@@ -769,9 +837,6 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
     { path: '/orders', label: t('nav.myOrders'), icon: OrderListIcon, hideInSimpleMode: true, featureFlag: flagPayment },
     { path: '/redeem', label: t('nav.redeem'), icon: GiftIcon, hideInSimpleMode: true },
     { path: '/affiliate', label: t('nav.affiliate'), icon: UsersIcon, hideInSimpleMode: true, featureFlag: flagAffiliate },
-    withDashboard
-      ? buildUserDistributionNavItem()
-      : { path: '/distribution', label: t('nav.distribution'), icon: ChannelIcon, hideInSimpleMode: true },
     { path: '/profile', label: t('nav.profile'), icon: UserIcon },
     ...customMenuItemsForUser.value.map((item): NavItem => ({
       path: `/custom/${item.id}`,
@@ -783,51 +848,6 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
   return items
 }
 
-function buildUserDistributionNavItem(): NavItem {
-  return {
-    path: '/distribution',
-    label: t('nav.distribution'),
-    icon: ChannelIcon,
-    hideInSimpleMode: true,
-    expandOnly: true,
-    children: [
-      {
-        path: '/distribution/group/organization-management',
-        label: t('distribution.groups.organizationManagement'),
-        children: [
-          { path: '/distribution/overview', label: t('distribution.overview.title'), icon: ChartIcon, featureFlag: () => canManageDistributionChannel.value },
-          { path: '/distribution#members', label: t('distribution.tabs.members'), icon: UsersIcon },
-        ],
-      },
-      {
-        path: '/distribution/group/promotion-management',
-        label: t('distribution.groups.promotionManagement'),
-        children: [
-          { path: '/distribution#promotion-links', label: t('distribution.tabs.promotionLinks'), icon: GlobeIcon },
-          { path: '/distribution#attributions', label: t('distribution.tabs.attributions'), icon: UserIcon },
-        ],
-      },
-      {
-        path: '/distribution/group/commission-settlement',
-        label: t('distribution.groups.commissionSettlement'),
-        children: [
-          { path: '/distribution#wallet', label: t('distribution.tabs.wallet'), icon: CreditCardIcon },
-          { path: '/distribution#wallet-requests', label: t('distribution.tabs.walletRequests'), icon: OrderIcon },
-          { path: '/distribution#wholesale-pricing', label: t('distribution.tabs.wholesalePricing'), icon: PriceTagIcon },
-          { path: '/distribution#commissions', label: t('distribution.tabs.commissions'), icon: ChartIcon },
-        ],
-      },
-      {
-        path: '/distribution/group/risk-alerts',
-        label: t('distribution.groups.riskAlerts'),
-        children: [
-          { path: '/distribution#alert-events', label: t('distribution.tabs.alertEvents'), icon: BellIcon },
-        ],
-      },
-    ],
-  }
-}
-
 // finalizeNav 合并三重过滤：featureFlag 过滤 + simple 模式过滤。
 function finalizeNav(items: NavItem[]): NavItem[] {
   const visible = applyFeatureFlags(items)
@@ -837,10 +857,54 @@ function finalizeNav(items: NavItem[]): NavItem[] {
 // User navigation items (for regular users)
 const userNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(true)))
 
+const distributionNavItems = computed((): NavItem[] =>
+  finalizeNav(
+    buildUserDistributionNavItems(t, {
+      ChartIcon,
+      UsersIcon,
+      GlobeIcon,
+      UserIcon,
+      CreditCardIcon,
+      OrderIcon,
+      PriceTagIcon,
+      BellIcon,
+    }, {
+      canManageChannel: canManageDistributionChannel.value,
+      canAccessPromotionNav: canAccessPromotionNav.value,
+      canManageMembersNav: canManageMembersNav.value,
+      canAccessChannelFinanceNav: canAccessChannelFinanceNav.value,
+    }),
+  ),
+)
+
+const showUserWorkspaceSwitcher = computed(
+  () => hasDistributionAccess.value && !isAdmin.value && !appStore.backendModeEnabled,
+)
+
+const showAdminWorkspaceSwitcher = computed(() => isAdmin.value && !authStore.isSimpleMode)
+
+const showAdminPersonalWorkspaceSwitcher = computed(
+  () => isAdmin.value && !authStore.isSimpleMode && hasPersonalDistributionAccess.value,
+)
+
+const activeUserNavItems = computed((): NavItem[] => {
+  if (!showUserWorkspaceSwitcher.value) {
+    return userNavItems.value
+  }
+  return appStore.navWorkspace === 'distribution' ? distributionNavItems.value : userNavItems.value
+})
+
 // Personal navigation items (for admin's "My Account" section, without Dashboard).
 // Admins access 可用渠道 from this section just like regular users — there is no
 // separate admin entry, since the page is purely a user-facing view.
 const personalNavItems = computed((): NavItem[] => finalizeNav(buildSelfNavItems(false)))
+
+const activePersonalNavItems = computed((): NavItem[] => {
+  if (!showAdminPersonalWorkspaceSwitcher.value) {
+    return personalNavItems.value
+  }
+  return appStore.navWorkspace === 'distribution' ? distributionNavItems.value : personalNavItems.value
+})
 
 // Custom menu items filtered by visibility
 const customMenuItemsForUser = computed(() => {
@@ -882,48 +946,6 @@ const adminNavItems = computed((): NavItem[] => {
     { path: '/admin/risk-control', label: t('nav.riskControl'), icon: ShieldIcon, hideInSimpleMode: true, featureFlag: flagRiskControl },
     { path: '/admin/redeem', label: t('nav.redeemCodes'), icon: TicketIcon, hideInSimpleMode: true },
     { path: '/admin/promo-codes', label: t('nav.promoCodes'), icon: GiftIcon, hideInSimpleMode: true },
-    {
-      path: '/admin/distribution',
-      label: t('nav.distributionManagement'),
-      icon: ChannelIcon,
-      hideInSimpleMode: true,
-      expandOnly: true,
-      children: [
-        {
-          path: '/admin/distribution/group/organization-management',
-          label: t('admin.distribution.groups.organizationManagement'),
-          children: [
-            { path: '/admin/distribution/organizations', label: t('admin.distribution.tabs.organizations'), icon: ChannelIcon },
-            { path: '/admin/distribution/members', label: t('admin.distribution.tabs.members'), icon: UsersIcon },
-          ],
-        },
-        {
-          path: '/admin/distribution/group/promotion-management',
-          label: t('admin.distribution.groups.promotionManagement'),
-          children: [
-            { path: '/admin/distribution/promotion-links', label: t('admin.distribution.tabs.promotionLinks'), icon: GlobeIcon },
-            { path: '/admin/distribution/attributions', label: t('admin.distribution.tabs.attributions'), icon: UserIcon },
-          ],
-        },
-        {
-          path: '/admin/distribution/group/commission-settlement',
-          label: t('admin.distribution.groups.commissionSettlement'),
-          children: [
-            { path: '/admin/distribution/wallets', label: t('admin.distribution.tabs.wallets'), icon: CreditCardIcon },
-            { path: '/admin/distribution/wallet-requests', label: t('admin.distribution.tabs.walletRequests'), icon: OrderIcon },
-            { path: '/admin/distribution/wallet-transactions', label: t('admin.distribution.tabs.walletTransactions'), icon: OrderListIcon },
-            { path: '/admin/distribution/commissions', label: t('admin.distribution.tabs.commissions'), icon: ChartIcon },
-          ],
-        },
-        {
-          path: '/admin/distribution/group/risk-alerts',
-          label: t('admin.distribution.groups.riskAlerts'),
-          children: [
-            { path: '/admin/distribution/alert-events', label: t('admin.distribution.tabs.alertEvents'), icon: BellIcon },
-          ],
-        },
-      ],
-    },
     {
       path: '/admin/affiliates',
       label: t('nav.affiliateManagement'),
@@ -971,6 +993,34 @@ const adminNavItems = computed((): NavItem[] => {
     visible.push({ path: `/custom/${cm.id}`, label: cm.label, icon: null, iconSvg: cm.icon_svg })
   }
   return visible
+})
+
+const adminPlatformNavItems = computed((): NavItem[] => adminNavItems.value)
+
+const adminDistributionNavItems = computed((): NavItem[] =>
+  finalizeNav(
+    buildAdminDistributionNavItems(t, {
+      ChannelIcon,
+      UsersIcon,
+      GlobeIcon,
+      UserIcon,
+      CreditCardIcon,
+      OrderIcon,
+      OrderListIcon,
+      ChartIcon,
+      BellIcon,
+      SettingsIcon: CogIcon,
+    }),
+  ),
+)
+
+const activeAdminNavItems = computed((): NavItem[] => {
+  if (!showAdminWorkspaceSwitcher.value) {
+    return adminPlatformNavItems.value
+  }
+  return appStore.adminNavWorkspace === 'distribution'
+    ? adminDistributionNavItems.value
+    : adminPlatformNavItems.value
 })
 
 function toggleSidebar() {
@@ -1035,16 +1085,52 @@ function isGroupActive(item: NavItem): boolean {
   return item.children.some(child => isTargetActive(child.path) || isGroupActive(child))
 }
 
+function collectNavGroups(items: NavItem[]): NavItem[] {
+  const groups: NavItem[] = []
+  for (const item of items) {
+    if (item.children?.length) {
+      groups.push(item)
+      for (const child of item.children) {
+        if (child.children?.length) {
+          groups.push(child)
+        }
+      }
+    }
+  }
+  return groups
+}
+
+function visibleNavGroups(): NavItem[] {
+  if (isAdmin.value) {
+    return [
+      ...collectNavGroups(activeAdminNavItems.value),
+      ...collectNavGroups(activePersonalNavItems.value),
+    ]
+  }
+  if (!appStore.backendModeEnabled) {
+    return collectNavGroups(activeUserNavItems.value)
+  }
+  return []
+}
+
 function isGroupExpanded(item: NavItem): boolean {
-  return expandedGroups.value.has(item.path) || isGroupActive(item)
+  return isSidebarGroupExpanded(
+    item.path,
+    expandedGroups.value,
+    collapsedGroups.value,
+    isGroupActive(item),
+  )
 }
 
 function toggleGroup(item: NavItem) {
-  if (expandedGroups.value.has(item.path)) {
-    expandedGroups.value.delete(item.path)
-  } else {
-    expandedGroups.value.add(item.path)
-  }
+  const next = toggleSidebarGroup(
+    item.path,
+    expandedGroups.value,
+    collapsedGroups.value,
+    isGroupExpanded(item),
+  )
+  expandedGroups.value = next.expandedGroups
+  collapsedGroups.value = next.collapsedGroups
 }
 
 /**
@@ -1093,14 +1179,28 @@ watch(
 watch(
   [() => authStore.isAuthenticated, isAdmin],
   ([isAuthenticated, isAdminUser]) => {
-    if (!isAuthenticated || isAdminUser) {
-      canManageDistributionChannel.value = false
-      return
-    }
-
-    void syncDistributionNavState()
+    void syncDistributionNavAccess(isAuthenticated, isAdminUser)
   },
-  { immediate: true }
+  { immediate: true },
+)
+
+watch(
+  () => route.path,
+  (path) => {
+    syncAllWorkspacesFromRoute(path)
+  },
+  { immediate: true },
+)
+
+watch(
+  () => route.fullPath,
+  () => {
+    for (const group of visibleNavGroups()) {
+      if (isGroupActive(group)) {
+        collapsedGroups.value.delete(group.path)
+      }
+    }
+  },
 )
 
 onMounted(() => {
@@ -1108,16 +1208,6 @@ onMounted(() => {
     adminSettingsStore.fetch()
   }
 })
-
-async function syncDistributionNavState() {
-  try {
-    const overview = await getDistributionOverview()
-    canManageDistributionChannel.value = overview.can_manage_channel
-  } catch (error) {
-    canManageDistributionChannel.value = false
-    console.error('Failed to load distribution navigation state:', error)
-  }
-}
 </script>
 
 <style scoped>

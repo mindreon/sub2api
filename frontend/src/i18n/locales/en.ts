@@ -353,6 +353,11 @@ export default {
     redeem: 'Redeem',
     distribution: 'Distribution',
     distributionManagement: 'Distribution',
+    workspaceSwitcherLabel: 'Switch workspace',
+    workspaceConsumer: 'My API',
+    workspaceDistribution: 'Distribution',
+    workspaceAdminPlatform: 'Admin Console',
+    workspaceAdminDistribution: 'Distribution Ops',
     affiliate: 'Affiliate Rebates',
     affiliateManagement: 'Affiliate Rebates',
     affiliateInviteRecords: 'Invite Records',
@@ -1042,6 +1047,34 @@ export default {
     }
   },
 
+  distributionLevels: {
+    add: 'Add Level',
+    empty: 'No agent levels configured yet. Leave blank when creating agents to use default rules.',
+    dragHandle: 'Drag to reorder',
+    selectPlaceholder: 'No level',
+    advancedJson: 'Advanced: JSON editor',
+    optionLabel: '{name} ({code}) · {rate}% · {source}',
+    source: {
+      channel: 'Channel',
+      global: 'Platform global'
+    },
+    fields: {
+      code: 'Level code',
+      name: 'Level name',
+      commissionRate: 'Commission rate',
+      active: 'Active',
+      note: 'Note',
+      notePlaceholder: 'Optional note'
+    },
+    errors: {
+      required: 'Level code and name are required.',
+      duplicate: 'Level codes must be unique.',
+      rate: 'Commission rate must be between 0 and 100%.',
+      max: 'You can configure up to {max} levels.',
+      json: 'Invalid JSON format.'
+    }
+  },
+
   distribution: {
     title: 'Distribution',
     description: 'View your channel-scoped members, attributed users, and commission records.',
@@ -1102,7 +1135,11 @@ export default {
       parentMemberIdPlaceholder: 'Enter your parent member ID when creating KOLs',
       levelCode: 'Level Code',
       levelCodePlaceholder: 'Optional, leave blank to use the default rule',
+      levelCodeDesc: 'Agent levels only. KOLs have no tier; commission is set by their parent.',
       commissionSettlementMethod: 'Default Settlement Method',
+      levelsTitle: 'Channel Agent Levels',
+      levelsDesc: 'Configure agent level names and default commission rates for this channel.',
+      levelsPlatformHint: 'Platform-direct channels use global levels from system settings.',
       levelsJson: 'Channel Levels (JSON)',
       wholesaleDiscountRate: 'Wholesale Discount',
       refundFeeRate: 'Refund Fee Rate',
@@ -1119,6 +1156,8 @@ export default {
       apiDomain: 'API Gateway Domain',
       commissionRate: 'Commission Rate',
       memberId: 'Member ID',
+      promotionMember: 'Promotion member',
+      promotionMemberPlaceholder: 'Search by name, email, or member ID',
       code: 'Code',
       codePlaceholder: 'Leave blank to auto-generate',
       targetType: 'Target Type',
@@ -1143,11 +1182,13 @@ export default {
       trendTitle: 'Channel Trend',
       trendDescription: 'Track recharge, consumption, and commission changes over time.',
       memberRankingTitle: 'Member Ranking',
+      roleBreakdownTitle: 'Role Breakdown',
       childRankingTitle: 'Direct Child Ranking',
       channelUnavailable: 'This account cannot manage the channel, so the channel-wide analytics panel is hidden.',
       personalUnavailable: 'This account has no agent / KOL promoter membership, so the personal analytics panel is hidden.',
       emptyTrend: 'No trend data is available for the selected range.',
       emptyRanking: 'No member ranking data is available for the selected range.',
+      emptyRoleBreakdown: 'No role breakdown data is available for the selected range.',
       emptyChildRanking: 'No direct child ranking data is available for the selected range.',
       topRanking: 'Top {count}',
       granularity: {
@@ -1156,6 +1197,9 @@ export default {
         month: 'Monthly'
       },
       metrics: {
+        memberCount: 'Member Count',
+        totalUsers: 'Total Users',
+        newUsers: 'New Users',
         registeredUsers: 'Registered Users',
         rechargeAmount: 'Recharge Amount',
         consumptionAmount: 'Consumption Amount',
@@ -1301,11 +1345,15 @@ export default {
       loadFailed: 'Failed to load distribution data',
       createFailed: 'Failed to create distribution record',
       updateFailed: 'Failed to update distribution record',
-      levelsFormatError: 'Invalid channel distribution levels JSON.'
+      levelsFormatError: 'Invalid channel distribution levels JSON.',
+      levelsValidationError: 'Please fix channel agent level settings before saving.'
     },
     messages: {
       memberCreated: 'Member created',
       linkCreated: 'Promotion link created',
+      linkMemberAutoHint: 'This link will be created for your signed-in promotion identity. Commissions will accrue to that identity.',
+      linkMemberSelectRequired: 'Select the member who should own this promotion link',
+      linkMemberInvalid: 'Cannot create a promotion link because no active promotion identity was found',
       walletRequestSubmitted: 'Request submitted and waiting for review',
       settingsUpdated: 'Channel settings updated',
       commissionSettled: 'Commission settled',
@@ -1992,6 +2040,7 @@ export default {
         riskAlerts: 'Risk Alerts'
       },
       tabs: {
+        globalSettings: 'Global Settings',
         organizations: 'Organizations',
         members: 'Members',
       promotionLinks: 'Promotion Links',
@@ -2000,6 +2049,20 @@ export default {
       walletRequests: 'Recharge / Refund Requests',
         attributions: 'Attributed Users',
         commissions: 'Commissions'
+      },
+      globalSettings: {
+        title: 'Global Settings',
+        description: 'Configure default freeze period, KOL2 rate, commission cap, and platform-direct agent levels for the distribution system.',
+        freezeHours: 'Freeze Period (hours)',
+        freezeHoursDesc: 'Used as the default freeze period when a channel does not override it.',
+        kol2Rate: 'KOL2 Rate',
+        kol2RateDesc: 'Global commission rate for level-2 KOLs (0-100%).',
+        commissionUpperRatio: 'Commission Cap',
+        commissionUpperRatioDesc: 'Maximum total commission ratio for a single usage (0-100%).',
+        levelsTitle: 'Global Agent Levels',
+        levelsDesc: 'Used for platform-direct (A) channel agents: code, name, commission rate, active flag, sort order, and note.',
+        levelsValidationError: 'Please fix global agent level settings before saving.',
+        saved: 'Distribution global settings saved',
       },
       stats: {
         organizations: 'Organizations',
@@ -2027,7 +2090,7 @@ export default {
         reverseCommission: 'Reverse Commission'
       },
       filters: {
-      channelOrgId: 'Channel org ID',
+      channelOrgId: 'Channel organization',
       allRoles: 'All roles',
       allTransactionTypes: 'All transaction types',
       allAlertTypes: 'All alert types',
@@ -2051,17 +2114,24 @@ export default {
       fields: {
         name: 'Name',
         type: 'Type',
-        ownerUserId: 'Owner User ID',
+        ownerUser: 'Owner',
+        ownerUserId: 'Owner',
         wholesaleDiscountRate: 'Wholesale Discount',
-        channelOrgId: 'Channel Org ID',
-        userId: 'User ID',
+        channelOrgId: 'Channel organization',
+        channelOrgIdPlaceholder: 'Search by organization name or ID…',
+        userId: 'User',
         role: 'Role',
-        parentMemberId: 'Parent Member ID',
-        levelCode: 'Level Code',
-        levelCodeDesc: 'When provided, the backend resolves the channel or global level and overrides the commission rate.',
+        parentMemberId: 'Parent member',
+        promotionMember: 'Promotion member',
+        referrerMember: 'Referrer member',
+        referrerMemberPlaceholder: 'Search by member name or email…',
+        promotionLink: 'Promotion link',
+        promotionLinkPlaceholder: 'Search by promotion code…',
+        levelCode: 'Level code',
+        levelCodeDesc: 'Agent levels only. KOLs have no tier; commission is set by their parent.',
         commissionRate: 'Commission Rate',
         status: 'Status',
-        memberId: 'Member ID',
+        memberId: 'Promotion member',
         code: 'Code',
         codePlaceholder: 'Leave blank to auto-generate',
         targetType: 'Target Type',
@@ -2094,6 +2164,10 @@ export default {
         teamRewardThreshold: 'Team Reward Threshold',
         freezeHours: 'Freeze Period (hours)',
         kol2Rate: 'KOL2 Rate',
+        levelsTitle: 'Channel Agent Levels',
+        levelsDesc: 'Configure agent levels for reseller/OEM channels. Platform-direct channels use global levels.',
+        levelsPlatformHint: 'Platform-direct (A) channels use global agent levels from system settings.',
+        levelsPlatformLink: 'Open system settings for global levels',
         levelsJson: 'Channel Levels (JSON)',
         levelsJsonDesc: 'Edit the channel-specific agent level list as JSON.',
         logoUrl: 'Logo URL',
@@ -2200,6 +2274,7 @@ export default {
         organizationCreated: 'Organization created',
         organizationUpdated: 'Organization updated',
         memberCreated: 'Member created',
+        channelOrgRequired: 'Select a channel organization',
         linkCreated: 'Promotion link created',
         walletUpdated: 'Wallet updated',
         walletRecharged: 'Prepaid balance updated',
@@ -2214,7 +2289,8 @@ export default {
         loadFailed: 'Failed to load distribution data',
         createFailed: 'Failed to create distribution record',
         updateFailed: 'Failed to update distribution record',
-        levelsFormatError: 'Invalid channel distribution levels JSON.'
+        levelsFormatError: 'Invalid channel distribution levels JSON.',
+        levelsValidationError: 'Please fix channel agent level settings before saving.'
       },
       requestTypes: {
         recharge: 'Recharge Request',
@@ -5848,9 +5924,12 @@ export default {
           kol2RateDesc: 'Global commission rate for level-2 KOLs (0-100%).',
           commissionUpperRatio: 'Commission Cap',
           commissionUpperRatioDesc: 'Maximum total commission ratio for a single usage (0-100%).',
+          levelsTitle: 'Global Agent Levels',
+          levelsDesc: 'Used for platform-direct (A) channel agents: code, name, commission rate, active flag, sort order, and note.',
           levelsJson: 'Global Levels (JSON)',
           levelsJsonDesc: 'Edit the global agent level list as JSON. Each item needs code, name, commission_rate, active, sort_order, and note.',
           levelsFormatError: 'Invalid global distribution levels JSON.',
+          levelsValidationError: 'Please fix global agent level settings before saving.',
         },
       },
       emailTabDisabledTitle: 'Email Verification Not Enabled',

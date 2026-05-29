@@ -360,6 +360,32 @@ func TestDistributionMemberServiceCreateMemberForUserRejectsCreatingAgentWithout
 	require.Nil(t, repo.createdInput)
 }
 
+func TestDistributionMemberServiceCreateMemberForUserAllowsManagerToCreateKolUnderChannelParent(t *testing.T) {
+	repo := &distributionMemberCreateRepoStub{
+		membersByUser: map[int64][]DistributionMemberView{
+			9: {
+				{MemberID: 90, UserID: 9, ChannelOrgID: 100, RoleType: "manager", Status: "active"},
+			},
+		},
+		membersByID: map[int64]*DistributionMemberView{
+			20: {MemberID: 20, UserID: 2, ChannelOrgID: 100, RoleType: "agent", LevelCode: "agent", Status: "active"},
+		},
+	}
+	svc := NewDistributionMemberService(repo)
+
+	out, err := svc.CreateMemberForUser(context.Background(), 9, DistributionMemberInput{
+		UserID:         7,
+		RoleType:       "kol1",
+		ParentMemberID: ptrInt64(20),
+		CommissionRate: 0.12,
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, int64(100), out.ChannelOrgID)
+	require.NotNil(t, repo.createdInput)
+	require.Equal(t, "agent/kol1", repo.createdInput.LevelCode)
+}
+
 type distributionMemberCreateRepoFunc struct {
 	listByUserID func(ctx context.Context, userID int64) ([]DistributionMemberView, error)
 	getByID      func(ctx context.Context, memberID int64) (*DistributionMemberView, error)

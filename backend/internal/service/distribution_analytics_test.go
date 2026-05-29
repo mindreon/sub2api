@@ -18,6 +18,8 @@ type distributionAnalyticsRepoStub struct {
 	channelSummaryOrgID int64
 	personalMemberIDs   []int64
 	childParentIDs      []int64
+	userStatsMemberIDs  []int64
+	attributedUserStats *DistributionAttributedUserStats
 }
 
 func (s *distributionAnalyticsRepoStub) GetChannelAnalyticsSummary(ctx context.Context, channelOrgID int64, filter DistributionAnalyticsFilter) (*DistributionAnalyticsSummary, error) {
@@ -41,6 +43,14 @@ func (s *distributionAnalyticsRepoStub) GetMemberAnalyticsSummary(ctx context.Co
 func (s *distributionAnalyticsRepoStub) ListChildMemberRanking(ctx context.Context, parentMemberIDs []int64, filter DistributionAnalyticsFilter, limit int) ([]DistributionAnalyticsRankingItem, error) {
 	s.childParentIDs = append([]int64(nil), parentMemberIDs...)
 	return append([]DistributionAnalyticsRankingItem(nil), s.childMemberRanking...), nil
+}
+
+func (s *distributionAnalyticsRepoStub) GetAttributedUserStats(ctx context.Context, memberIDs []int64, filter DistributionAnalyticsFilter) (*DistributionAttributedUserStats, error) {
+	s.userStatsMemberIDs = append([]int64(nil), memberIDs...)
+	if s.attributedUserStats != nil {
+		return s.attributedUserStats, nil
+	}
+	return &DistributionAttributedUserStats{}, nil
 }
 
 func TestDistributionAnalyticsService_GetAnalyticsForChannelManager(t *testing.T) {
@@ -70,6 +80,7 @@ func TestDistributionAnalyticsService_GetAnalyticsForChannelManager(t *testing.T
 		childMemberRanking: []DistributionAnalyticsRankingItem{
 			{MemberID: 31, RoleType: "kol2", ConsumptionAmount: 8.8},
 		},
+		attributedUserStats: &DistributionAttributedUserStats{TotalUsers: 33, NewUsers: 6},
 	}
 
 	svc := NewDistributionAnalyticsService(memberRepo, orgRepo, analyticsRepo)
@@ -87,11 +98,15 @@ func TestDistributionAnalyticsService_GetAnalyticsForChannelManager(t *testing.T
 	require.Equal(t, int64(88), analyticsRepo.channelSummaryOrgID)
 	require.Equal(t, []int64{12}, analyticsRepo.personalMemberIDs)
 	require.Equal(t, []int64{12}, analyticsRepo.childParentIDs)
+	require.Equal(t, []int64{12}, analyticsRepo.userStatsMemberIDs)
 	require.Equal(t, int64(18), out.Channel.Summary.RegisteredUsers)
 	require.Len(t, out.Channel.Trend, 1)
 	require.Len(t, out.Channel.MemberRanking, 1)
+	require.Empty(t, out.Channel.RoleBreakdown)
 	require.Equal(t, int64(6), out.Personal.Summary.RegisteredUsers)
 	require.Len(t, out.Personal.ChildMemberRanking, 1)
+	require.Equal(t, int64(33), out.Personal.UserStats.TotalUsers)
+	require.Equal(t, int64(6), out.Personal.UserStats.NewUsers)
 	require.Equal(t, []string{"kol1"}, out.Personal.RoleTypes)
 }
 
@@ -110,6 +125,7 @@ func TestDistributionAnalyticsService_GetAnalyticsForPromoterOnly(t *testing.T) 
 	}
 	analyticsRepo := &distributionAnalyticsRepoStub{
 		personalSummary: &DistributionAnalyticsSummary{RegisteredUsers: 4, ConsumptionAmount: 9.9},
+		attributedUserStats: &DistributionAttributedUserStats{TotalUsers: 12, NewUsers: 4},
 	}
 
 	svc := NewDistributionAnalyticsService(memberRepo, orgRepo, analyticsRepo)
@@ -125,6 +141,58 @@ func TestDistributionAnalyticsService_GetAnalyticsForPromoterOnly(t *testing.T) 
 	require.Nil(t, out.Channel)
 	require.NotNil(t, out.Personal)
 	require.Equal(t, []int64{15}, analyticsRepo.personalMemberIDs)
+	require.Equal(t, []int64{15}, analyticsRepo.userStatsMemberIDs)
 	require.Empty(t, out.Personal.ChildMemberRanking)
+	require.Equal(t, int64(12), out.Personal.UserStats.TotalUsers)
+	require.Equal(t, int64(4), out.Personal.UserStats.NewUsers)
 	require.Equal(t, []string{"agent"}, out.Personal.RoleTypes)
+	require.Equal(t, []int64{15}, analyticsRepo.childParentIDs)
+}
+
+func TestDistributionAnalyticsService_GetAnalyticsForKol2HasNoChildRanking(t *testing.T) {
+	memberRepo := &distributionUserManageMemberRepoStub{
+		byUser: map[int64][]DistributionMemberView{
+			7: {
+				{MemberID: 18, UserID: 7, ChannelOrgID: 88, RoleType: "kol2", Status: "active"},
+			},
+		},
+	}
+	orgRepo := &distributionUserManageOrgRepoStub{
+		orgByID: map[int64]*DistributionOrganization{
+			88: {ID: 88, Type: "reseller", Name: "Channel A", Status: "active"},
+		},
+	}
+	analyticsRepo := &distributionAnalyticsRepoStub{
+		personalSummary: &DistributionAnalyticsSummary{RegisteredUsers: 2, ConsumptionAmount: 3.3},
+	}
+
+	svc := NewDistributionAnalyticsService(memberRepo, orgRepo, analyticsRepo)
+	out, err := svc.GetAnalyticsForUser(context.Background(), 7, DistributionAnalyticsFilter{
+		StartTime:   time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+		EndTime:     time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC),
+		Granularity: "day",
+		Limit:       5,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.NotNil(t, out.Personal)
+	require.Equal(t, []int64{18}, analyticsRepo.personalMemberIDs)
+	require.Equal(t, []int64{18}, analyticsRepo.userStatsMemberIDs)
+	require.Empty(t, analyticsRepo.childParentIDs)
+	require.Empty(t, out.Personal.ChildMemberRanking)
+}
+
+func TestBuildDistributionRoleBreakdown(t *testing.T) {
+	out := buildDistributionRoleBreakdown([]DistributionAnalyticsRankingItem{
+		{RoleType: "agent", RegisteredUsers: 5, ConsumptionAmount: 100, CommissionAmount: 10, SettledCommissionAmount: 6},
+		{RoleType: "agent", RegisteredUsers: 3, ConsumptionAmount: 80, CommissionAmount: 8, SettledCommissionAmount: 4},
+		{RoleType: "kol1", RegisteredUsers: 4, ConsumptionAmount: 50, CommissionAmount: 5, SettledCommissionAmount: 3},
+	})
+	require.Len(t, out, 2)
+	require.Equal(t, "agent", out[0].RoleType)
+	require.Equal(t, int64(2), out[0].MemberCount)
+	require.Equal(t, int64(8), out[0].RegisteredUsers)
+	require.InDelta(t, 180, out[0].ConsumptionAmount, 0.0001)
+	require.Equal(t, "kol1", out[1].RoleType)
+	require.Equal(t, int64(1), out[1].MemberCount)
 }

@@ -5226,84 +5226,6 @@
                 </p>
               </div>
 
-              <div class="border-t border-gray-100 pt-6 dark:border-dark-700">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  {{ t('admin.settings.features.distribution.title') }}
-                </h3>
-                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                  {{ t('admin.settings.features.distribution.description') }}
-                </p>
-                <div class="mt-4 space-y-5">
-                  <div>
-                    <label class="input-label">
-                      {{ t('admin.settings.features.distribution.freezeHours') }}
-                    </label>
-                    <input
-                      v-model.number="form.distribution_freeze_hours"
-                      type="number"
-                      step="1"
-                      min="0"
-                      max="720"
-                      class="input"
-                    />
-                    <p class="mt-1 text-xs text-gray-400">
-                      {{ t('admin.settings.features.distribution.freezeHoursDesc') }}
-                    </p>
-                  </div>
-                  <div>
-                    <label class="input-label">
-                      {{ t('admin.settings.features.distribution.kol2Rate') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        v-model.number="form.distribution_kol2_rate"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        class="input pr-8"
-                      />
-                      <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
-                    </div>
-                    <p class="mt-1 text-xs text-gray-400">
-                      {{ t('admin.settings.features.distribution.kol2RateDesc') }}
-                    </p>
-                  </div>
-                  <div>
-                    <label class="input-label">
-                      {{ t('admin.settings.features.distribution.commissionUpperRatio') }}
-                    </label>
-                    <div class="relative">
-                      <input
-                        v-model.number="form.distribution_commission_upper_ratio"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        class="input pr-8"
-                      />
-                      <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
-                    </div>
-                    <p class="mt-1 text-xs text-gray-400">
-                      {{ t('admin.settings.features.distribution.commissionUpperRatioDesc') }}
-                    </p>
-                  </div>
-                  <div>
-                    <label class="input-label">
-                      {{ t('admin.settings.features.distribution.levelsJson') }}
-                    </label>
-                    <textarea
-                      v-model="distributionGlobalLevelsText"
-                      class="input min-h-[180px] font-mono text-xs"
-                      spellcheck="false"
-                    />
-                    <p class="mt-1 text-xs text-gray-400">
-                      {{ t('admin.settings.features.distribution.levelsJsonDesc') }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <!-- 专属用户管理 -->
               <div class="border-t border-gray-100 pt-6 dark:border-dark-700">
                 <div class="mb-3 flex items-center justify-between">
@@ -6616,7 +6538,6 @@ import {
 import type {
   AuthSourceDefaultsState,
   AuthSourceType,
-  DistributionLevelConfig,
   SystemSettings,
   UpdateSettingsRequest,
   DefaultSubscriptionSetting,
@@ -7922,36 +7843,6 @@ function findDuplicateDefaultSubscription(
   });
 }
 
-function normalizeDistributionLevelConfigs(
-  raw: unknown,
-): DistributionLevelConfig[] | null {
-  if (!Array.isArray(raw)) return null;
-  const out: DistributionLevelConfig[] = [];
-  for (const item of raw) {
-    if (!item || typeof item !== "object") return null;
-    const cfg = item as Partial<DistributionLevelConfig> & {
-      commission_rate?: unknown;
-      sort_order?: unknown;
-      active?: unknown;
-    };
-    const code = String(cfg.code || "").trim().toUpperCase();
-    const name = String(cfg.name || "").trim();
-    if (!code || !name) continue;
-    out.push({
-      code,
-      name,
-      commission_rate: Math.min(
-        100,
-        Math.max(0, Number(cfg.commission_rate) || 0),
-      ),
-      active: cfg.active !== false,
-      sort_order: Math.max(0, Math.floor(Number(cfg.sort_order) || 0)),
-      note: String(cfg.note || "").trim(),
-    });
-  }
-  return out;
-}
-
 async function saveSettings() {
   saving.value = true;
   try {
@@ -8062,22 +7953,6 @@ async function saveSettings() {
       }
     }
 
-    let parsedDistributionLevels: DistributionLevelConfig[] = [];
-    try {
-      const normalized = normalizeDistributionLevelConfigs(
-        JSON.parse(distributionGlobalLevelsText.value || "[]"),
-      );
-      if (!normalized) {
-        throw new Error("invalid distribution levels");
-      }
-      parsedDistributionLevels = normalized;
-    } catch {
-      appStore.showError(
-        t("admin.settings.features.distribution.levelsFormatError"),
-      );
-      return;
-    }
-
     if (form.wechat_connect_mp_enabled && form.wechat_connect_mobile_enabled) {
       appStore.showError(
         localText(
@@ -8131,10 +8006,6 @@ async function saveSettings() {
       affiliate_rebate_freeze_hours: Math.max(0, Math.min(720, Number(form.affiliate_rebate_freeze_hours) || 0)),
       affiliate_rebate_duration_days: Math.max(0, Math.min(3650, Math.floor(Number(form.affiliate_rebate_duration_days) || 0))),
       affiliate_rebate_per_invitee_cap: Math.max(0, Number(form.affiliate_rebate_per_invitee_cap) || 0),
-      distribution_freeze_hours: Math.max(0, Math.min(720, Math.floor(Number(form.distribution_freeze_hours) || 0))),
-      distribution_kol2_rate: Math.max(0, Number(form.distribution_kol2_rate) || 0),
-      distribution_commission_upper_ratio: Math.max(0, Number(form.distribution_commission_upper_ratio) || 0),
-      distribution_global_levels: parsedDistributionLevels,
       default_concurrency: form.default_concurrency,
       default_subscriptions: normalizedDefaultSubscriptions,
       force_email_on_third_party_signup: form.force_email_on_third_party_signup,
