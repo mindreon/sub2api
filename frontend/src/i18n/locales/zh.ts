@@ -6174,6 +6174,14 @@ export default {
           enabled: '启用风控中心',
           enabledHint: '关闭后管理员侧边栏入口隐藏，网关内容审计不会执行。',
         },
+        voucher: {
+          title: 'KVoucher 卡密充值',
+          description: '启用卡密批发补货与 C 端 PIN 销售。默认关闭。',
+          configureLink: '前往 KVoucher 设置 配置 API 凭证与运营参数',
+          enabled: '启用 KVoucher 后端集成',
+          enabledHint: '开启后显示管理员「卡密管理」菜单；关闭后隐藏菜单并停用相关接口。API 凭证请在 KVoucher 设置页配置。',
+          unavailableHint: '当前环境未部署 KVoucher 模块，或接口暂不可用。',
+        },
         affiliate: {
           title: '邀请返利',
           description: '老用户邀请新用户注册，新用户充值后老用户按比例获得返利额度。默认关闭。',
@@ -6765,6 +6773,8 @@ export default {
         panelHint: '以下配置保存在数据库中，保存后立即生效。API Secret 不会回显，留空表示不修改。',
         saved: 'KVoucher 配置已保存',
         envHint: '商品目录需保存凭证后，在下方订单卡片中点击「同步商品目录」。',
+        masterSwitchHint: '「后端集成」总开关已移至',
+        masterSwitchLink: '系统设置 → 功能开关',
         backendEnabled: '后端集成',
         frontendTab: '用户端 Tab',
         sandbox: '沙箱模式',

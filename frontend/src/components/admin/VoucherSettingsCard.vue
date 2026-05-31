@@ -16,11 +16,17 @@
         <p v-if="saveError" class="text-sm text-red-600 dark:text-red-400">{{ saveError }}</p>
         <p v-if="saveOk" class="text-sm text-green-700 dark:text-green-300">{{ t('admin.settings.voucher.saved') }}</p>
 
+        <p class="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-300">
+          {{ t('admin.settings.voucher.masterSwitchHint') }}
+          <router-link
+            to="/admin/settings?tab=features"
+            class="ml-1 text-primary-600 hover:underline dark:text-primary-400"
+          >
+            {{ t('admin.settings.voucher.masterSwitchLink') }}
+          </router-link>
+        </p>
+
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <label class="flex items-center gap-2 text-sm">
-            <input v-model="form.enabled" type="checkbox" class="rounded border-gray-300" />
-            {{ t('admin.settings.voucher.backendEnabled') }}
-          </label>
           <label class="flex items-center gap-2 text-sm">
             <input v-model="form.ui_enabled" type="checkbox" class="rounded border-gray-300" />
             {{ t('admin.settings.voucher.frontendTab') }}
@@ -118,7 +124,6 @@ const { t } = useI18n()
 const emit = defineEmits<{ saved: [] }>()
 
 interface VoucherSettingsForm {
-  enabled: boolean
   ui_enabled: boolean
   sandbox: boolean
   api_key: string
@@ -146,7 +151,6 @@ const saveOk = ref(false)
 function applySettings(data: VoucherAdminSettings) {
   settings.value = data
   form.value = {
-    enabled: data.enabled,
     ui_enabled: data.ui_enabled,
     sandbox: data.sandbox,
     api_key: '',
@@ -179,7 +183,6 @@ async function load() {
 function buildUpdatePayload(): VoucherAdminSettingsUpdate {
   if (!form.value) return {}
   const payload: VoucherAdminSettingsUpdate = {
-    enabled: form.value.enabled,
     ui_enabled: form.value.ui_enabled,
     sandbox: form.value.sandbox,
     api_base: form.value.api_base,

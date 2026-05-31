@@ -6006,6 +6006,14 @@ export default {
           enabled: 'Enable Risk Control',
           enabledHint: 'When off, the admin sidebar entry is hidden and gateway moderation is skipped.',
         },
+        voucher: {
+          title: 'KVoucher PIN Recharge',
+          description: 'Enable wholesale PIN replenishment and retail PIN sales. Disabled by default.',
+          configureLink: 'Configure API credentials and rules in KVoucher Settings',
+          enabled: 'Enable KVoucher backend integration',
+          enabledHint: 'When on, the admin PIN Vouchers menu appears. When off, the menu and related APIs are hidden. Configure API credentials on the KVoucher Settings page.',
+          unavailableHint: 'The KVoucher module is not deployed or the API is unavailable.',
+        },
         affiliate: {
           title: 'Affiliate (Invite Rebate)',
           description: 'Existing users invite new ones; the inviter earns a percentage rebate on the invitee’s recharges. Disabled by default.',
@@ -6601,6 +6609,8 @@ export default {
         panelHint: 'Settings are stored in the database and apply immediately after save. API Secret is never echoed; leave blank to keep the current value.',
         saved: 'KVoucher settings saved',
         envHint: 'After saving credentials, use Sync catalog in the orders card below.',
+        masterSwitchHint: 'The backend integration master switch lives in',
+        masterSwitchLink: 'System Settings → Feature Switches',
         backendEnabled: 'Backend integration',
         frontendTab: 'User purchase tab',
         sandbox: 'Sandbox mode',

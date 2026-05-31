@@ -5271,6 +5271,42 @@
           </div>
         </div>
 
+        <div class="card">
+          <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ t('admin.settings.features.voucher.title') }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('admin.settings.features.voucher.description') }}
+            </p>
+            <p class="mt-1.5 text-xs">
+              <router-link
+                to="/admin/voucher/settings"
+                class="inline-flex items-center gap-1 text-primary-600 hover:underline dark:text-primary-400"
+              >
+                {{ t('admin.settings.features.voucher.configureLink') }}
+                <span aria-hidden="true">→</span>
+              </router-link>
+            </p>
+          </div>
+          <div class="space-y-5 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ t('admin.settings.features.voucher.enabled') }}
+                </label>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('admin.settings.features.voucher.enabledHint') }}
+                </p>
+              </div>
+              <Toggle v-model="form.voucher_enabled" :disabled="!voucherSettingsAvailable" />
+            </div>
+            <p v-if="!voucherSettingsAvailable" class="text-xs text-amber-600 dark:text-amber-400">
+              {{ t('admin.settings.features.voucher.unavailableHint') }}
+            </p>
+          </div>
+        </div>
+
         <!-- Affiliate (邀请返利) feature card -->
         <div class="card">
           <div class="border-b border-gray-100 px-6 py-4 dark:border-dark-700">
@@ -6666,6 +6702,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { adminAPI } from "@/api";
 import {
@@ -6713,6 +6750,7 @@ import BackupSettings from "@/views/admin/BackupView.vue";
 import EmailTemplateEditor from "@/views/admin/settings/EmailTemplateEditor.vue";
 import { useClipboard } from "@/composables/useClipboard";
 import { affiliatesAPI, type AffiliateAdminEntry, type SimpleUser as AffiliateSimpleUser } from "@/api/admin/affiliates";
+import { voucherAdminAPI } from "@/api/admin/voucher";
 import { extractApiErrorMessage, extractI18nErrorMessage } from "@/utils/apiError";
 import { useAppStore } from "@/stores";
 import { useAdminSettingsStore } from "@/stores/adminSettings";
@@ -6756,6 +6794,7 @@ type SettingsTab =
   | "email"
   | "backup";
 const activeTab = ref<SettingsTab>("general");
+const route = useRoute();
 const settingsTabs = [
   { key: "general" as SettingsTab, icon: "home" as const },
   { key: "agreement" as SettingsTab, icon: "document" as const },
@@ -6981,6 +7020,8 @@ type SettingsForm = Omit<
   openai_advanced_scheduler_enabled: boolean;
   // 系统全局平台限额 map；form 内始终归一化为全 4 平台对象（模板非空绑定依赖此不变量）
   default_platform_quotas: DefaultPlatformQuotasMap;
+  // KVoucher 总开关（独立 API 持久化，不在 SystemSettings 中）
+  voucher_enabled: boolean;
 };
 
 const form = reactive<SettingsForm>({
@@ -7194,8 +7235,12 @@ const form = reactive<SettingsForm>({
   available_channels_enabled: false,
   // Affiliate (邀请返利) feature switch
   affiliate_enabled: false,
+  // KVoucher (卡密充值) feature switch — persisted via /admin/voucher/settings
+  voucher_enabled: false,
 });
 const distributionGlobalLevelsText = ref("[]");
+const voucherSettingsAvailable = ref(false);
+const voucherEnabledBaseline = ref(false);
 
 const authSourceDefaults = reactive<AuthSourceDefaultsState>(
   buildAuthSourceDefaultsState({}),
@@ -7914,6 +7959,16 @@ async function loadSettings() {
 
     // Load web search emulation config separately
     await loadWebSearchConfig();
+
+    try {
+      const voucherRes = await voucherAdminAPI.getSettings();
+      form.voucher_enabled = voucherRes.data.enabled ?? false;
+      voucherEnabledBaseline.value = form.voucher_enabled;
+      voucherSettingsAvailable.value = true;
+      adminSettingsStore.setVoucherEnabledLocal(form.voucher_enabled);
+    } catch {
+      voucherSettingsAvailable.value = false;
+    }
   } catch (error: unknown) {
     loadFailed.value = true;
     appStore.showError(
@@ -8440,6 +8495,19 @@ async function saveSettings() {
     }
     // Save web search emulation config separately (errors handled internally)
     const wsOk = await saveWebSearchConfig();
+
+    if (
+      voucherSettingsAvailable.value &&
+      form.voucher_enabled !== voucherEnabledBaseline.value
+    ) {
+      const voucherRes = await voucherAdminAPI.updateSettings({
+        enabled: form.voucher_enabled,
+      });
+      form.voucher_enabled = voucherRes.data.enabled ?? form.voucher_enabled;
+      voucherEnabledBaseline.value = form.voucher_enabled;
+      adminSettingsStore.setVoucherEnabledLocal(form.voucher_enabled);
+    }
+
     // Refresh cached settings so sidebar/header update immediately
     await appStore.fetchPublicSettings(true);
     await adminSettingsStore.fetch(true);
@@ -9252,6 +9320,13 @@ async function handleDeleteProvider() {
 }
 
 onMounted(() => {
+  const tabQuery = route.query.tab;
+  if (
+    typeof tabQuery === "string" &&
+    settingsTabs.some((item) => item.key === tabQuery)
+  ) {
+    activeTab.value = tabQuery as SettingsTab;
+  }
   loadSettings();
   loadSubscriptionGroups();
   loadAdminApiKey();
