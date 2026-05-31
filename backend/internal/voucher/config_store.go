@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Wei-Shaw/sub2api/internal/service"
-	infraerrors "github.com/Wei-Shaw/sub2api/internal/pkg/errors"
 )
 
 const configSettingKey = "kvoucher_config"
@@ -154,10 +153,6 @@ func (s *ConfigStore) Update(ctx context.Context, in UpdateSettingsInput) error 
 	}
 	if in.RetailMarkupPercent != nil && *in.RetailMarkupPercent >= 0 {
 		p.RetailMarkupPercent = *in.RetailMarkupPercent
-	}
-
-	if p.Enabled && (strings.TrimSpace(p.APIKey) == "" || strings.TrimSpace(p.APISecret) == "") {
-		return infraerrors.BadRequest("KVOUCHER_CREDENTIALS_REQUIRED", "API key and secret are required when enabled")
 	}
 
 	encoded, err := json.Marshal(p)

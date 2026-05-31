@@ -89,12 +89,21 @@ func TestConfigStore_UpdateAndLoad(t *testing.T) {
 	}
 }
 
-func TestConfigStore_RejectEnableWithoutCredentials(t *testing.T) {
+func TestConfigStore_EnableWithoutCredentials(t *testing.T) {
 	store := NewConfigStore(&mockSettingsRepo{})
 	enabled := true
-	err := store.Update(context.Background(), UpdateSettingsInput{Enabled: &enabled})
-	if err == nil {
-		t.Fatal("expected error when enabling without credentials")
+	if err := store.Update(context.Background(), UpdateSettingsInput{Enabled: &enabled}); err != nil {
+		t.Fatalf("expected enable without credentials to succeed: %v", err)
+	}
+	view, err := store.AdminView(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !view.Enabled {
+		t.Fatal("expected enabled=true")
+	}
+	if view.SecretConfigured {
+		t.Fatal("expected secret not configured")
 	}
 }
 
