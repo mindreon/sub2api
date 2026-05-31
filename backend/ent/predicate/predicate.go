@@ -117,6 +117,9 @@ type UserSubscription func(*sql.Selector)
 // VoucherAuditLog is the predicate function for voucherauditlog builders.
 type VoucherAuditLog func(*sql.Selector)
 
+// VoucherB2BOrder is the predicate function for voucherb2border builders.
+type VoucherB2BOrder func(*sql.Selector)
+
 // VoucherOrder is the predicate function for voucherorder builders.
 type VoucherOrder func(*sql.Selector)
 

@@ -25,11 +25,19 @@ type AccountSummary struct {
 	IsTestMode   bool   `json:"is_test_mode"`
 }
 
+type paginationBlock struct {
+	Page       int `json:"page"`
+	PerPage    int `json:"per_page"`
+	Total      int `json:"total"`
+	TotalPages int `json:"total_pages"`
+}
+
 type envelope struct {
-	OK        bool            `json:"ok"`
-	RequestID string          `json:"request_id"`
-	Data      json.RawMessage `json:"data"`
-	Error     *struct {
+	OK         bool            `json:"ok"`
+	RequestID  string          `json:"request_id"`
+	Data       json.RawMessage `json:"data"`
+	Pagination *paginationBlock `json:"pagination"`
+	Error      *struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 	} `json:"error"`

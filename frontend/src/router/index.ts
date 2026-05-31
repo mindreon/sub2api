@@ -595,6 +595,49 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/admin/voucher',
+    redirect: '/admin/voucher/replenishment',
+  },
+  {
+    path: '/admin/voucher/replenishment',
+    name: 'AdminVoucherReplenishment',
+    component: () => import('@/views/admin/voucher/VoucherReplenishmentView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Voucher Replenishment',
+      titleKey: 'admin.voucher.replenishmentTitle',
+      descriptionKey: 'admin.voucher.replenishmentDescription',
+      requiresVoucher: true,
+    }
+  },
+  {
+    path: '/admin/voucher/orders',
+    name: 'AdminVoucherRetailOrders',
+    component: () => import('@/views/admin/voucher/VoucherRetailOrdersView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Voucher Retail Orders',
+      titleKey: 'admin.voucher.retailOrdersTitle',
+      descriptionKey: 'admin.voucher.retailOrdersDescription',
+      requiresVoucher: true,
+    }
+  },
+  {
+    path: '/admin/voucher/settings',
+    name: 'AdminVoucherSettings',
+    component: () => import('@/views/admin/voucher/VoucherSettingsView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Voucher Settings',
+      titleKey: 'admin.voucher.settingsPageTitle',
+      descriptionKey: 'admin.settings.voucher.description',
+      requiresVoucher: true,
+    }
+  },
+  {
     path: '/admin/settings',
     name: 'AdminSettings',
     component: () => import('@/views/admin/SettingsView.vue'),

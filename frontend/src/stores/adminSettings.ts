@@ -49,6 +49,7 @@ export const useAdminSettingsStore = defineStore('adminSettings', () => {
   const opsRealtimeMonitoringEnabled = ref(readCachedBool('ops_realtime_monitoring_enabled_cached', true))
   const opsQueryModeDefault = ref(readCachedString('ops_query_mode_default_cached', 'auto'))
   const paymentEnabled = ref(readCachedBool('payment_enabled_cached', false))
+  const voucherEnabled = ref(readCachedBool('voucher_enabled_cached', false))
   const customMenuItems = ref<CustomMenuItem[]>([])
 
   async function fetch(force = false): Promise<void> {
@@ -83,6 +84,26 @@ export const useAdminSettingsStore = defineStore('adminSettings', () => {
     } finally {
       loading.value = false
     }
+    void fetchVoucherNav(force)
+  }
+
+  async function fetchVoucherNav(force = false): Promise<void> {
+    try {
+      const { voucherAdminAPI } = await import('@/api/admin/voucher')
+      const res = await voucherAdminAPI.getSettings()
+      voucherEnabled.value = res.data.enabled ?? false
+      writeCachedBool('voucher_enabled_cached', voucherEnabled.value)
+    } catch {
+      if (force) {
+        voucherEnabled.value = false
+        writeCachedBool('voucher_enabled_cached', false)
+      }
+    }
+  }
+
+  function setVoucherEnabledLocal(value: boolean) {
+    voucherEnabled.value = value
+    writeCachedBool('voucher_enabled_cached', value)
   }
 
   function setOpsMonitoringEnabledLocal(value: boolean) {
@@ -140,11 +161,14 @@ export const useAdminSettingsStore = defineStore('adminSettings', () => {
     opsRealtimeMonitoringEnabled,
     opsQueryModeDefault,
     paymentEnabled,
+    voucherEnabled,
     customMenuItems,
     fetch,
+    fetchVoucherNav,
     setOpsMonitoringEnabledLocal,
     setOpsRealtimeMonitoringEnabledLocal,
     setPaymentEnabledLocal,
+    setVoucherEnabledLocal,
     setOpsQueryModeDefaultLocal
   }
 })

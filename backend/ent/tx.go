@@ -88,6 +88,8 @@ type Tx struct {
 	UserSubscription *UserSubscriptionClient
 	// VoucherAuditLog is the client for interacting with the VoucherAuditLog builders.
 	VoucherAuditLog *VoucherAuditLogClient
+	// VoucherB2BOrder is the client for interacting with the VoucherB2BOrder builders.
+	VoucherB2BOrder *VoucherB2BOrderClient
 	// VoucherOrder is the client for interacting with the VoucherOrder builders.
 	VoucherOrder *VoucherOrderClient
 	// VoucherPinDelivery is the client for interacting with the VoucherPinDelivery builders.
@@ -262,6 +264,7 @@ func (tx *Tx) init() {
 	tx.UserPlatformQuota = NewUserPlatformQuotaClient(tx.config)
 	tx.UserSubscription = NewUserSubscriptionClient(tx.config)
 	tx.VoucherAuditLog = NewVoucherAuditLogClient(tx.config)
+	tx.VoucherB2BOrder = NewVoucherB2BOrderClient(tx.config)
 	tx.VoucherOrder = NewVoucherOrderClient(tx.config)
 	tx.VoucherPinDelivery = NewVoucherPinDeliveryClient(tx.config)
 	tx.VoucherProduct = NewVoucherProductClient(tx.config)

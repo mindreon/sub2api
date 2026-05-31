@@ -28,6 +28,28 @@ func (_c *VoucherAuditLogCreate) SetOrderID(v int64) *VoucherAuditLogCreate {
 	return _c
 }
 
+// SetNillableOrderID sets the "order_id" field if the given value is not nil.
+func (_c *VoucherAuditLogCreate) SetNillableOrderID(v *int64) *VoucherAuditLogCreate {
+	if v != nil {
+		_c.SetOrderID(*v)
+	}
+	return _c
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (_c *VoucherAuditLogCreate) SetB2bOrderID(v int64) *VoucherAuditLogCreate {
+	_c.mutation.SetB2bOrderID(v)
+	return _c
+}
+
+// SetNillableB2bOrderID sets the "b2b_order_id" field if the given value is not nil.
+func (_c *VoucherAuditLogCreate) SetNillableB2bOrderID(v *int64) *VoucherAuditLogCreate {
+	if v != nil {
+		_c.SetB2bOrderID(*v)
+	}
+	return _c
+}
+
 // SetAction sets the "action" field.
 func (_c *VoucherAuditLogCreate) SetAction(v string) *VoucherAuditLogCreate {
 	_c.mutation.SetAction(v)
@@ -103,9 +125,6 @@ func (_c *VoucherAuditLogCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *VoucherAuditLogCreate) check() error {
-	if _, ok := _c.mutation.OrderID(); !ok {
-		return &ValidationError{Name: "order_id", err: errors.New(`ent: missing required field "VoucherAuditLog.order_id"`)}
-	}
 	if _, ok := _c.mutation.Action(); !ok {
 		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "VoucherAuditLog.action"`)}
 	}
@@ -154,7 +173,11 @@ func (_c *VoucherAuditLogCreate) createSpec() (*VoucherAuditLog, *sqlgraph.Creat
 	_spec.OnConflict = _c.conflict
 	if value, ok := _c.mutation.OrderID(); ok {
 		_spec.SetField(voucherauditlog.FieldOrderID, field.TypeInt64, value)
-		_node.OrderID = value
+		_node.OrderID = &value
+	}
+	if value, ok := _c.mutation.B2bOrderID(); ok {
+		_spec.SetField(voucherauditlog.FieldB2bOrderID, field.TypeInt64, value)
+		_node.B2bOrderID = &value
 	}
 	if value, ok := _c.mutation.Action(); ok {
 		_spec.SetField(voucherauditlog.FieldAction, field.TypeString, value)
@@ -239,6 +262,36 @@ func (u *VoucherAuditLogUpsert) UpdateOrderID() *VoucherAuditLogUpsert {
 // AddOrderID adds v to the "order_id" field.
 func (u *VoucherAuditLogUpsert) AddOrderID(v int64) *VoucherAuditLogUpsert {
 	u.Add(voucherauditlog.FieldOrderID, v)
+	return u
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (u *VoucherAuditLogUpsert) ClearOrderID() *VoucherAuditLogUpsert {
+	u.SetNull(voucherauditlog.FieldOrderID)
+	return u
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsert) SetB2bOrderID(v int64) *VoucherAuditLogUpsert {
+	u.Set(voucherauditlog.FieldB2bOrderID, v)
+	return u
+}
+
+// UpdateB2bOrderID sets the "b2b_order_id" field to the value that was provided on create.
+func (u *VoucherAuditLogUpsert) UpdateB2bOrderID() *VoucherAuditLogUpsert {
+	u.SetExcluded(voucherauditlog.FieldB2bOrderID)
+	return u
+}
+
+// AddB2bOrderID adds v to the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsert) AddB2bOrderID(v int64) *VoucherAuditLogUpsert {
+	u.Add(voucherauditlog.FieldB2bOrderID, v)
+	return u
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsert) ClearB2bOrderID() *VoucherAuditLogUpsert {
+	u.SetNull(voucherauditlog.FieldB2bOrderID)
 	return u
 }
 
@@ -347,6 +400,41 @@ func (u *VoucherAuditLogUpsertOne) AddOrderID(v int64) *VoucherAuditLogUpsertOne
 func (u *VoucherAuditLogUpsertOne) UpdateOrderID() *VoucherAuditLogUpsertOne {
 	return u.Update(func(s *VoucherAuditLogUpsert) {
 		s.UpdateOrderID()
+	})
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (u *VoucherAuditLogUpsertOne) ClearOrderID() *VoucherAuditLogUpsertOne {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.ClearOrderID()
+	})
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertOne) SetB2bOrderID(v int64) *VoucherAuditLogUpsertOne {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.SetB2bOrderID(v)
+	})
+}
+
+// AddB2bOrderID adds v to the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertOne) AddB2bOrderID(v int64) *VoucherAuditLogUpsertOne {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.AddB2bOrderID(v)
+	})
+}
+
+// UpdateB2bOrderID sets the "b2b_order_id" field to the value that was provided on create.
+func (u *VoucherAuditLogUpsertOne) UpdateB2bOrderID() *VoucherAuditLogUpsertOne {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.UpdateB2bOrderID()
+	})
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertOne) ClearB2bOrderID() *VoucherAuditLogUpsertOne {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.ClearB2bOrderID()
 	})
 }
 
@@ -628,6 +716,41 @@ func (u *VoucherAuditLogUpsertBulk) AddOrderID(v int64) *VoucherAuditLogUpsertBu
 func (u *VoucherAuditLogUpsertBulk) UpdateOrderID() *VoucherAuditLogUpsertBulk {
 	return u.Update(func(s *VoucherAuditLogUpsert) {
 		s.UpdateOrderID()
+	})
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (u *VoucherAuditLogUpsertBulk) ClearOrderID() *VoucherAuditLogUpsertBulk {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.ClearOrderID()
+	})
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertBulk) SetB2bOrderID(v int64) *VoucherAuditLogUpsertBulk {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.SetB2bOrderID(v)
+	})
+}
+
+// AddB2bOrderID adds v to the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertBulk) AddB2bOrderID(v int64) *VoucherAuditLogUpsertBulk {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.AddB2bOrderID(v)
+	})
+}
+
+// UpdateB2bOrderID sets the "b2b_order_id" field to the value that was provided on create.
+func (u *VoucherAuditLogUpsertBulk) UpdateB2bOrderID() *VoucherAuditLogUpsertBulk {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.UpdateB2bOrderID()
+	})
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (u *VoucherAuditLogUpsertBulk) ClearB2bOrderID() *VoucherAuditLogUpsertBulk {
+	return u.Update(func(s *VoucherAuditLogUpsert) {
+		s.ClearB2bOrderID()
 	})
 }
 

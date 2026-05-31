@@ -46,6 +46,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
 	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherb2border"
 	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
 	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
@@ -1106,6 +1107,33 @@ func (f TraverseVoucherAuditLog) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherAuditLogQuery", q)
 }
 
+// The VoucherB2BOrderFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VoucherB2BOrderFunc func(context.Context, *ent.VoucherB2BOrderQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VoucherB2BOrderFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VoucherB2BOrderQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VoucherB2BOrderQuery", q)
+}
+
+// The TraverseVoucherB2BOrder type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVoucherB2BOrder func(context.Context, *ent.VoucherB2BOrderQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVoucherB2BOrder) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVoucherB2BOrder) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VoucherB2BOrderQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherB2BOrderQuery", q)
+}
+
 // The VoucherOrderFunc type is an adapter to allow the use of ordinary function as a Querier.
 type VoucherOrderFunc func(context.Context, *ent.VoucherOrderQuery) (ent.Value, error)
 
@@ -1264,6 +1292,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.UserSubscriptionQuery, predicate.UserSubscription, usersubscription.OrderOption]{typ: ent.TypeUserSubscription, tq: q}, nil
 	case *ent.VoucherAuditLogQuery:
 		return &query[*ent.VoucherAuditLogQuery, predicate.VoucherAuditLog, voucherauditlog.OrderOption]{typ: ent.TypeVoucherAuditLog, tq: q}, nil
+	case *ent.VoucherB2BOrderQuery:
+		return &query[*ent.VoucherB2BOrderQuery, predicate.VoucherB2BOrder, voucherb2border.OrderOption]{typ: ent.TypeVoucherB2BOrder, tq: q}, nil
 	case *ent.VoucherOrderQuery:
 		return &query[*ent.VoucherOrderQuery, predicate.VoucherOrder, voucherorder.OrderOption]{typ: ent.TypeVoucherOrder, tq: q}, nil
 	case *ent.VoucherPinDeliveryQuery:

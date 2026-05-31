@@ -50,6 +50,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
 	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherb2border"
 	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
 	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
@@ -102,6 +103,7 @@ const (
 	TypeUserPlatformQuota             = "UserPlatformQuota"
 	TypeUserSubscription              = "UserSubscription"
 	TypeVoucherAuditLog               = "VoucherAuditLog"
+	TypeVoucherB2BOrder               = "VoucherB2BOrder"
 	TypeVoucherOrder                  = "VoucherOrder"
 	TypeVoucherPinDelivery            = "VoucherPinDelivery"
 	TypeVoucherProduct                = "VoucherProduct"
@@ -48215,19 +48217,21 @@ func (m *UserSubscriptionMutation) ResetEdge(name string) error {
 // VoucherAuditLogMutation represents an operation that mutates the VoucherAuditLog nodes in the graph.
 type VoucherAuditLogMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int64
-	order_id      *int64
-	addorder_id   *int64
-	action        *string
-	operator      *string
-	metadata      *map[string]interface{}
-	created_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*VoucherAuditLog, error)
-	predicates    []predicate.VoucherAuditLog
+	op              Op
+	typ             string
+	id              *int64
+	order_id        *int64
+	addorder_id     *int64
+	b2b_order_id    *int64
+	addb2b_order_id *int64
+	action          *string
+	operator        *string
+	metadata        *map[string]interface{}
+	created_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*VoucherAuditLog, error)
+	predicates      []predicate.VoucherAuditLog
 }
 
 var _ ent.Mutation = (*VoucherAuditLogMutation)(nil)
@@ -48346,7 +48350,7 @@ func (m *VoucherAuditLogMutation) OrderID() (r int64, exists bool) {
 // OldOrderID returns the old "order_id" field's value of the VoucherAuditLog entity.
 // If the VoucherAuditLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *VoucherAuditLogMutation) OldOrderID(ctx context.Context) (v int64, err error) {
+func (m *VoucherAuditLogMutation) OldOrderID(ctx context.Context) (v *int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOrderID is only allowed on UpdateOne operations")
 	}
@@ -48378,10 +48382,94 @@ func (m *VoucherAuditLogMutation) AddedOrderID() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearOrderID clears the value of the "order_id" field.
+func (m *VoucherAuditLogMutation) ClearOrderID() {
+	m.order_id = nil
+	m.addorder_id = nil
+	m.clearedFields[voucherauditlog.FieldOrderID] = struct{}{}
+}
+
+// OrderIDCleared returns if the "order_id" field was cleared in this mutation.
+func (m *VoucherAuditLogMutation) OrderIDCleared() bool {
+	_, ok := m.clearedFields[voucherauditlog.FieldOrderID]
+	return ok
+}
+
 // ResetOrderID resets all changes to the "order_id" field.
 func (m *VoucherAuditLogMutation) ResetOrderID() {
 	m.order_id = nil
 	m.addorder_id = nil
+	delete(m.clearedFields, voucherauditlog.FieldOrderID)
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (m *VoucherAuditLogMutation) SetB2bOrderID(i int64) {
+	m.b2b_order_id = &i
+	m.addb2b_order_id = nil
+}
+
+// B2bOrderID returns the value of the "b2b_order_id" field in the mutation.
+func (m *VoucherAuditLogMutation) B2bOrderID() (r int64, exists bool) {
+	v := m.b2b_order_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldB2bOrderID returns the old "b2b_order_id" field's value of the VoucherAuditLog entity.
+// If the VoucherAuditLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherAuditLogMutation) OldB2bOrderID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldB2bOrderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldB2bOrderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldB2bOrderID: %w", err)
+	}
+	return oldValue.B2bOrderID, nil
+}
+
+// AddB2bOrderID adds i to the "b2b_order_id" field.
+func (m *VoucherAuditLogMutation) AddB2bOrderID(i int64) {
+	if m.addb2b_order_id != nil {
+		*m.addb2b_order_id += i
+	} else {
+		m.addb2b_order_id = &i
+	}
+}
+
+// AddedB2bOrderID returns the value that was added to the "b2b_order_id" field in this mutation.
+func (m *VoucherAuditLogMutation) AddedB2bOrderID() (r int64, exists bool) {
+	v := m.addb2b_order_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (m *VoucherAuditLogMutation) ClearB2bOrderID() {
+	m.b2b_order_id = nil
+	m.addb2b_order_id = nil
+	m.clearedFields[voucherauditlog.FieldB2bOrderID] = struct{}{}
+}
+
+// B2bOrderIDCleared returns if the "b2b_order_id" field was cleared in this mutation.
+func (m *VoucherAuditLogMutation) B2bOrderIDCleared() bool {
+	_, ok := m.clearedFields[voucherauditlog.FieldB2bOrderID]
+	return ok
+}
+
+// ResetB2bOrderID resets all changes to the "b2b_order_id" field.
+func (m *VoucherAuditLogMutation) ResetB2bOrderID() {
+	m.b2b_order_id = nil
+	m.addb2b_order_id = nil
+	delete(m.clearedFields, voucherauditlog.FieldB2bOrderID)
 }
 
 // SetAction sets the "action" field.
@@ -48575,9 +48663,12 @@ func (m *VoucherAuditLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VoucherAuditLogMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.order_id != nil {
 		fields = append(fields, voucherauditlog.FieldOrderID)
+	}
+	if m.b2b_order_id != nil {
+		fields = append(fields, voucherauditlog.FieldB2bOrderID)
 	}
 	if m.action != nil {
 		fields = append(fields, voucherauditlog.FieldAction)
@@ -48601,6 +48692,8 @@ func (m *VoucherAuditLogMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case voucherauditlog.FieldOrderID:
 		return m.OrderID()
+	case voucherauditlog.FieldB2bOrderID:
+		return m.B2bOrderID()
 	case voucherauditlog.FieldAction:
 		return m.Action()
 	case voucherauditlog.FieldOperator:
@@ -48620,6 +48713,8 @@ func (m *VoucherAuditLogMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case voucherauditlog.FieldOrderID:
 		return m.OldOrderID(ctx)
+	case voucherauditlog.FieldB2bOrderID:
+		return m.OldB2bOrderID(ctx)
 	case voucherauditlog.FieldAction:
 		return m.OldAction(ctx)
 	case voucherauditlog.FieldOperator:
@@ -48643,6 +48738,13 @@ func (m *VoucherAuditLogMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOrderID(v)
+		return nil
+	case voucherauditlog.FieldB2bOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetB2bOrderID(v)
 		return nil
 	case voucherauditlog.FieldAction:
 		v, ok := value.(string)
@@ -48683,6 +48785,9 @@ func (m *VoucherAuditLogMutation) AddedFields() []string {
 	if m.addorder_id != nil {
 		fields = append(fields, voucherauditlog.FieldOrderID)
 	}
+	if m.addb2b_order_id != nil {
+		fields = append(fields, voucherauditlog.FieldB2bOrderID)
+	}
 	return fields
 }
 
@@ -48693,6 +48798,8 @@ func (m *VoucherAuditLogMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case voucherauditlog.FieldOrderID:
 		return m.AddedOrderID()
+	case voucherauditlog.FieldB2bOrderID:
+		return m.AddedB2bOrderID()
 	}
 	return nil, false
 }
@@ -48709,6 +48816,13 @@ func (m *VoucherAuditLogMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddOrderID(v)
 		return nil
+	case voucherauditlog.FieldB2bOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddB2bOrderID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown VoucherAuditLog numeric field %s", name)
 }
@@ -48717,6 +48831,12 @@ func (m *VoucherAuditLogMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *VoucherAuditLogMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(voucherauditlog.FieldOrderID) {
+		fields = append(fields, voucherauditlog.FieldOrderID)
+	}
+	if m.FieldCleared(voucherauditlog.FieldB2bOrderID) {
+		fields = append(fields, voucherauditlog.FieldB2bOrderID)
+	}
 	if m.FieldCleared(voucherauditlog.FieldMetadata) {
 		fields = append(fields, voucherauditlog.FieldMetadata)
 	}
@@ -48734,6 +48854,12 @@ func (m *VoucherAuditLogMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *VoucherAuditLogMutation) ClearField(name string) error {
 	switch name {
+	case voucherauditlog.FieldOrderID:
+		m.ClearOrderID()
+		return nil
+	case voucherauditlog.FieldB2bOrderID:
+		m.ClearB2bOrderID()
+		return nil
 	case voucherauditlog.FieldMetadata:
 		m.ClearMetadata()
 		return nil
@@ -48747,6 +48873,9 @@ func (m *VoucherAuditLogMutation) ResetField(name string) error {
 	switch name {
 	case voucherauditlog.FieldOrderID:
 		m.ResetOrderID()
+		return nil
+	case voucherauditlog.FieldB2bOrderID:
+		m.ResetB2bOrderID()
 		return nil
 	case voucherauditlog.FieldAction:
 		m.ResetAction()
@@ -48810,6 +48939,1936 @@ func (m *VoucherAuditLogMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *VoucherAuditLogMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown VoucherAuditLog edge %s", name)
+}
+
+// VoucherB2BOrderMutation represents an operation that mutates the VoucherB2BOrder nodes in the graph.
+type VoucherB2BOrderMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int64
+	kv_order_id        *int64
+	addkv_order_id     *int64
+	order_no           *string
+	status             *string
+	subtotal           *float64
+	addsubtotal        *float64
+	fee_amount         *float64
+	addfee_amount      *float64
+	total_amount       *float64
+	addtotal_amount    *float64
+	currency           *string
+	items_json         *[]map[string]interface{}
+	appenditems_json   []map[string]interface{}
+	payment_info_json  *map[string]interface{}
+	payment_ref        *string
+	payment_proof_path *string
+	bank_account_id    *int
+	addbank_account_id *int
+	merchant_notes     *string
+	idempotency_key    *string
+	reject_reason      *string
+	kv_last_request_id *string
+	created_by         *string
+	kv_last_synced_at  *time.Time
+	verified_at        *time.Time
+	pins_loaded_at     *time.Time
+	completed_at       *time.Time
+	created_at         *time.Time
+	updated_at         *time.Time
+	clearedFields      map[string]struct{}
+	done               bool
+	oldValue           func(context.Context) (*VoucherB2BOrder, error)
+	predicates         []predicate.VoucherB2BOrder
+}
+
+var _ ent.Mutation = (*VoucherB2BOrderMutation)(nil)
+
+// voucherb2borderOption allows management of the mutation configuration using functional options.
+type voucherb2borderOption func(*VoucherB2BOrderMutation)
+
+// newVoucherB2BOrderMutation creates new mutation for the VoucherB2BOrder entity.
+func newVoucherB2BOrderMutation(c config, op Op, opts ...voucherb2borderOption) *VoucherB2BOrderMutation {
+	m := &VoucherB2BOrderMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeVoucherB2BOrder,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withVoucherB2BOrderID sets the ID field of the mutation.
+func withVoucherB2BOrderID(id int64) voucherb2borderOption {
+	return func(m *VoucherB2BOrderMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *VoucherB2BOrder
+		)
+		m.oldValue = func(ctx context.Context) (*VoucherB2BOrder, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().VoucherB2BOrder.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withVoucherB2BOrder sets the old VoucherB2BOrder of the mutation.
+func withVoucherB2BOrder(node *VoucherB2BOrder) voucherb2borderOption {
+	return func(m *VoucherB2BOrderMutation) {
+		m.oldValue = func(context.Context) (*VoucherB2BOrder, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m VoucherB2BOrderMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m VoucherB2BOrderMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *VoucherB2BOrderMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *VoucherB2BOrderMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().VoucherB2BOrder.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKvOrderID sets the "kv_order_id" field.
+func (m *VoucherB2BOrderMutation) SetKvOrderID(i int64) {
+	m.kv_order_id = &i
+	m.addkv_order_id = nil
+}
+
+// KvOrderID returns the value of the "kv_order_id" field in the mutation.
+func (m *VoucherB2BOrderMutation) KvOrderID() (r int64, exists bool) {
+	v := m.kv_order_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKvOrderID returns the old "kv_order_id" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldKvOrderID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKvOrderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKvOrderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKvOrderID: %w", err)
+	}
+	return oldValue.KvOrderID, nil
+}
+
+// AddKvOrderID adds i to the "kv_order_id" field.
+func (m *VoucherB2BOrderMutation) AddKvOrderID(i int64) {
+	if m.addkv_order_id != nil {
+		*m.addkv_order_id += i
+	} else {
+		m.addkv_order_id = &i
+	}
+}
+
+// AddedKvOrderID returns the value that was added to the "kv_order_id" field in this mutation.
+func (m *VoucherB2BOrderMutation) AddedKvOrderID() (r int64, exists bool) {
+	v := m.addkv_order_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetKvOrderID resets all changes to the "kv_order_id" field.
+func (m *VoucherB2BOrderMutation) ResetKvOrderID() {
+	m.kv_order_id = nil
+	m.addkv_order_id = nil
+}
+
+// SetOrderNo sets the "order_no" field.
+func (m *VoucherB2BOrderMutation) SetOrderNo(s string) {
+	m.order_no = &s
+}
+
+// OrderNo returns the value of the "order_no" field in the mutation.
+func (m *VoucherB2BOrderMutation) OrderNo() (r string, exists bool) {
+	v := m.order_no
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrderNo returns the old "order_no" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldOrderNo(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrderNo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrderNo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrderNo: %w", err)
+	}
+	return oldValue.OrderNo, nil
+}
+
+// ResetOrderNo resets all changes to the "order_no" field.
+func (m *VoucherB2BOrderMutation) ResetOrderNo() {
+	m.order_no = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *VoucherB2BOrderMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *VoucherB2BOrderMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *VoucherB2BOrderMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetSubtotal sets the "subtotal" field.
+func (m *VoucherB2BOrderMutation) SetSubtotal(f float64) {
+	m.subtotal = &f
+	m.addsubtotal = nil
+}
+
+// Subtotal returns the value of the "subtotal" field in the mutation.
+func (m *VoucherB2BOrderMutation) Subtotal() (r float64, exists bool) {
+	v := m.subtotal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubtotal returns the old "subtotal" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldSubtotal(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubtotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubtotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubtotal: %w", err)
+	}
+	return oldValue.Subtotal, nil
+}
+
+// AddSubtotal adds f to the "subtotal" field.
+func (m *VoucherB2BOrderMutation) AddSubtotal(f float64) {
+	if m.addsubtotal != nil {
+		*m.addsubtotal += f
+	} else {
+		m.addsubtotal = &f
+	}
+}
+
+// AddedSubtotal returns the value that was added to the "subtotal" field in this mutation.
+func (m *VoucherB2BOrderMutation) AddedSubtotal() (r float64, exists bool) {
+	v := m.addsubtotal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSubtotal resets all changes to the "subtotal" field.
+func (m *VoucherB2BOrderMutation) ResetSubtotal() {
+	m.subtotal = nil
+	m.addsubtotal = nil
+}
+
+// SetFeeAmount sets the "fee_amount" field.
+func (m *VoucherB2BOrderMutation) SetFeeAmount(f float64) {
+	m.fee_amount = &f
+	m.addfee_amount = nil
+}
+
+// FeeAmount returns the value of the "fee_amount" field in the mutation.
+func (m *VoucherB2BOrderMutation) FeeAmount() (r float64, exists bool) {
+	v := m.fee_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFeeAmount returns the old "fee_amount" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldFeeAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFeeAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFeeAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFeeAmount: %w", err)
+	}
+	return oldValue.FeeAmount, nil
+}
+
+// AddFeeAmount adds f to the "fee_amount" field.
+func (m *VoucherB2BOrderMutation) AddFeeAmount(f float64) {
+	if m.addfee_amount != nil {
+		*m.addfee_amount += f
+	} else {
+		m.addfee_amount = &f
+	}
+}
+
+// AddedFeeAmount returns the value that was added to the "fee_amount" field in this mutation.
+func (m *VoucherB2BOrderMutation) AddedFeeAmount() (r float64, exists bool) {
+	v := m.addfee_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFeeAmount resets all changes to the "fee_amount" field.
+func (m *VoucherB2BOrderMutation) ResetFeeAmount() {
+	m.fee_amount = nil
+	m.addfee_amount = nil
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (m *VoucherB2BOrderMutation) SetTotalAmount(f float64) {
+	m.total_amount = &f
+	m.addtotal_amount = nil
+}
+
+// TotalAmount returns the value of the "total_amount" field in the mutation.
+func (m *VoucherB2BOrderMutation) TotalAmount() (r float64, exists bool) {
+	v := m.total_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalAmount returns the old "total_amount" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldTotalAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalAmount: %w", err)
+	}
+	return oldValue.TotalAmount, nil
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (m *VoucherB2BOrderMutation) AddTotalAmount(f float64) {
+	if m.addtotal_amount != nil {
+		*m.addtotal_amount += f
+	} else {
+		m.addtotal_amount = &f
+	}
+}
+
+// AddedTotalAmount returns the value that was added to the "total_amount" field in this mutation.
+func (m *VoucherB2BOrderMutation) AddedTotalAmount() (r float64, exists bool) {
+	v := m.addtotal_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalAmount resets all changes to the "total_amount" field.
+func (m *VoucherB2BOrderMutation) ResetTotalAmount() {
+	m.total_amount = nil
+	m.addtotal_amount = nil
+}
+
+// SetCurrency sets the "currency" field.
+func (m *VoucherB2BOrderMutation) SetCurrency(s string) {
+	m.currency = &s
+}
+
+// Currency returns the value of the "currency" field in the mutation.
+func (m *VoucherB2BOrderMutation) Currency() (r string, exists bool) {
+	v := m.currency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCurrency returns the old "currency" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldCurrency(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCurrency is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCurrency requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCurrency: %w", err)
+	}
+	return oldValue.Currency, nil
+}
+
+// ResetCurrency resets all changes to the "currency" field.
+func (m *VoucherB2BOrderMutation) ResetCurrency() {
+	m.currency = nil
+}
+
+// SetItemsJSON sets the "items_json" field.
+func (m *VoucherB2BOrderMutation) SetItemsJSON(value []map[string]interface{}) {
+	m.items_json = &value
+	m.appenditems_json = nil
+}
+
+// ItemsJSON returns the value of the "items_json" field in the mutation.
+func (m *VoucherB2BOrderMutation) ItemsJSON() (r []map[string]interface{}, exists bool) {
+	v := m.items_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldItemsJSON returns the old "items_json" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldItemsJSON(ctx context.Context) (v []map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldItemsJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldItemsJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldItemsJSON: %w", err)
+	}
+	return oldValue.ItemsJSON, nil
+}
+
+// AppendItemsJSON adds value to the "items_json" field.
+func (m *VoucherB2BOrderMutation) AppendItemsJSON(value []map[string]interface{}) {
+	m.appenditems_json = append(m.appenditems_json, value...)
+}
+
+// AppendedItemsJSON returns the list of values that were appended to the "items_json" field in this mutation.
+func (m *VoucherB2BOrderMutation) AppendedItemsJSON() ([]map[string]interface{}, bool) {
+	if len(m.appenditems_json) == 0 {
+		return nil, false
+	}
+	return m.appenditems_json, true
+}
+
+// ResetItemsJSON resets all changes to the "items_json" field.
+func (m *VoucherB2BOrderMutation) ResetItemsJSON() {
+	m.items_json = nil
+	m.appenditems_json = nil
+}
+
+// SetPaymentInfoJSON sets the "payment_info_json" field.
+func (m *VoucherB2BOrderMutation) SetPaymentInfoJSON(value map[string]interface{}) {
+	m.payment_info_json = &value
+}
+
+// PaymentInfoJSON returns the value of the "payment_info_json" field in the mutation.
+func (m *VoucherB2BOrderMutation) PaymentInfoJSON() (r map[string]interface{}, exists bool) {
+	v := m.payment_info_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPaymentInfoJSON returns the old "payment_info_json" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldPaymentInfoJSON(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPaymentInfoJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPaymentInfoJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPaymentInfoJSON: %w", err)
+	}
+	return oldValue.PaymentInfoJSON, nil
+}
+
+// ClearPaymentInfoJSON clears the value of the "payment_info_json" field.
+func (m *VoucherB2BOrderMutation) ClearPaymentInfoJSON() {
+	m.payment_info_json = nil
+	m.clearedFields[voucherb2border.FieldPaymentInfoJSON] = struct{}{}
+}
+
+// PaymentInfoJSONCleared returns if the "payment_info_json" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) PaymentInfoJSONCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldPaymentInfoJSON]
+	return ok
+}
+
+// ResetPaymentInfoJSON resets all changes to the "payment_info_json" field.
+func (m *VoucherB2BOrderMutation) ResetPaymentInfoJSON() {
+	m.payment_info_json = nil
+	delete(m.clearedFields, voucherb2border.FieldPaymentInfoJSON)
+}
+
+// SetPaymentRef sets the "payment_ref" field.
+func (m *VoucherB2BOrderMutation) SetPaymentRef(s string) {
+	m.payment_ref = &s
+}
+
+// PaymentRef returns the value of the "payment_ref" field in the mutation.
+func (m *VoucherB2BOrderMutation) PaymentRef() (r string, exists bool) {
+	v := m.payment_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPaymentRef returns the old "payment_ref" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldPaymentRef(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPaymentRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPaymentRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPaymentRef: %w", err)
+	}
+	return oldValue.PaymentRef, nil
+}
+
+// ClearPaymentRef clears the value of the "payment_ref" field.
+func (m *VoucherB2BOrderMutation) ClearPaymentRef() {
+	m.payment_ref = nil
+	m.clearedFields[voucherb2border.FieldPaymentRef] = struct{}{}
+}
+
+// PaymentRefCleared returns if the "payment_ref" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) PaymentRefCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldPaymentRef]
+	return ok
+}
+
+// ResetPaymentRef resets all changes to the "payment_ref" field.
+func (m *VoucherB2BOrderMutation) ResetPaymentRef() {
+	m.payment_ref = nil
+	delete(m.clearedFields, voucherb2border.FieldPaymentRef)
+}
+
+// SetPaymentProofPath sets the "payment_proof_path" field.
+func (m *VoucherB2BOrderMutation) SetPaymentProofPath(s string) {
+	m.payment_proof_path = &s
+}
+
+// PaymentProofPath returns the value of the "payment_proof_path" field in the mutation.
+func (m *VoucherB2BOrderMutation) PaymentProofPath() (r string, exists bool) {
+	v := m.payment_proof_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPaymentProofPath returns the old "payment_proof_path" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldPaymentProofPath(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPaymentProofPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPaymentProofPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPaymentProofPath: %w", err)
+	}
+	return oldValue.PaymentProofPath, nil
+}
+
+// ClearPaymentProofPath clears the value of the "payment_proof_path" field.
+func (m *VoucherB2BOrderMutation) ClearPaymentProofPath() {
+	m.payment_proof_path = nil
+	m.clearedFields[voucherb2border.FieldPaymentProofPath] = struct{}{}
+}
+
+// PaymentProofPathCleared returns if the "payment_proof_path" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) PaymentProofPathCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldPaymentProofPath]
+	return ok
+}
+
+// ResetPaymentProofPath resets all changes to the "payment_proof_path" field.
+func (m *VoucherB2BOrderMutation) ResetPaymentProofPath() {
+	m.payment_proof_path = nil
+	delete(m.clearedFields, voucherb2border.FieldPaymentProofPath)
+}
+
+// SetBankAccountID sets the "bank_account_id" field.
+func (m *VoucherB2BOrderMutation) SetBankAccountID(i int) {
+	m.bank_account_id = &i
+	m.addbank_account_id = nil
+}
+
+// BankAccountID returns the value of the "bank_account_id" field in the mutation.
+func (m *VoucherB2BOrderMutation) BankAccountID() (r int, exists bool) {
+	v := m.bank_account_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBankAccountID returns the old "bank_account_id" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldBankAccountID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBankAccountID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBankAccountID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBankAccountID: %w", err)
+	}
+	return oldValue.BankAccountID, nil
+}
+
+// AddBankAccountID adds i to the "bank_account_id" field.
+func (m *VoucherB2BOrderMutation) AddBankAccountID(i int) {
+	if m.addbank_account_id != nil {
+		*m.addbank_account_id += i
+	} else {
+		m.addbank_account_id = &i
+	}
+}
+
+// AddedBankAccountID returns the value that was added to the "bank_account_id" field in this mutation.
+func (m *VoucherB2BOrderMutation) AddedBankAccountID() (r int, exists bool) {
+	v := m.addbank_account_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBankAccountID clears the value of the "bank_account_id" field.
+func (m *VoucherB2BOrderMutation) ClearBankAccountID() {
+	m.bank_account_id = nil
+	m.addbank_account_id = nil
+	m.clearedFields[voucherb2border.FieldBankAccountID] = struct{}{}
+}
+
+// BankAccountIDCleared returns if the "bank_account_id" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) BankAccountIDCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldBankAccountID]
+	return ok
+}
+
+// ResetBankAccountID resets all changes to the "bank_account_id" field.
+func (m *VoucherB2BOrderMutation) ResetBankAccountID() {
+	m.bank_account_id = nil
+	m.addbank_account_id = nil
+	delete(m.clearedFields, voucherb2border.FieldBankAccountID)
+}
+
+// SetMerchantNotes sets the "merchant_notes" field.
+func (m *VoucherB2BOrderMutation) SetMerchantNotes(s string) {
+	m.merchant_notes = &s
+}
+
+// MerchantNotes returns the value of the "merchant_notes" field in the mutation.
+func (m *VoucherB2BOrderMutation) MerchantNotes() (r string, exists bool) {
+	v := m.merchant_notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMerchantNotes returns the old "merchant_notes" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldMerchantNotes(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMerchantNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMerchantNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMerchantNotes: %w", err)
+	}
+	return oldValue.MerchantNotes, nil
+}
+
+// ClearMerchantNotes clears the value of the "merchant_notes" field.
+func (m *VoucherB2BOrderMutation) ClearMerchantNotes() {
+	m.merchant_notes = nil
+	m.clearedFields[voucherb2border.FieldMerchantNotes] = struct{}{}
+}
+
+// MerchantNotesCleared returns if the "merchant_notes" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) MerchantNotesCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldMerchantNotes]
+	return ok
+}
+
+// ResetMerchantNotes resets all changes to the "merchant_notes" field.
+func (m *VoucherB2BOrderMutation) ResetMerchantNotes() {
+	m.merchant_notes = nil
+	delete(m.clearedFields, voucherb2border.FieldMerchantNotes)
+}
+
+// SetIdempotencyKey sets the "idempotency_key" field.
+func (m *VoucherB2BOrderMutation) SetIdempotencyKey(s string) {
+	m.idempotency_key = &s
+}
+
+// IdempotencyKey returns the value of the "idempotency_key" field in the mutation.
+func (m *VoucherB2BOrderMutation) IdempotencyKey() (r string, exists bool) {
+	v := m.idempotency_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIdempotencyKey returns the old "idempotency_key" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldIdempotencyKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIdempotencyKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIdempotencyKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIdempotencyKey: %w", err)
+	}
+	return oldValue.IdempotencyKey, nil
+}
+
+// ClearIdempotencyKey clears the value of the "idempotency_key" field.
+func (m *VoucherB2BOrderMutation) ClearIdempotencyKey() {
+	m.idempotency_key = nil
+	m.clearedFields[voucherb2border.FieldIdempotencyKey] = struct{}{}
+}
+
+// IdempotencyKeyCleared returns if the "idempotency_key" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) IdempotencyKeyCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldIdempotencyKey]
+	return ok
+}
+
+// ResetIdempotencyKey resets all changes to the "idempotency_key" field.
+func (m *VoucherB2BOrderMutation) ResetIdempotencyKey() {
+	m.idempotency_key = nil
+	delete(m.clearedFields, voucherb2border.FieldIdempotencyKey)
+}
+
+// SetRejectReason sets the "reject_reason" field.
+func (m *VoucherB2BOrderMutation) SetRejectReason(s string) {
+	m.reject_reason = &s
+}
+
+// RejectReason returns the value of the "reject_reason" field in the mutation.
+func (m *VoucherB2BOrderMutation) RejectReason() (r string, exists bool) {
+	v := m.reject_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRejectReason returns the old "reject_reason" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldRejectReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRejectReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRejectReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRejectReason: %w", err)
+	}
+	return oldValue.RejectReason, nil
+}
+
+// ClearRejectReason clears the value of the "reject_reason" field.
+func (m *VoucherB2BOrderMutation) ClearRejectReason() {
+	m.reject_reason = nil
+	m.clearedFields[voucherb2border.FieldRejectReason] = struct{}{}
+}
+
+// RejectReasonCleared returns if the "reject_reason" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) RejectReasonCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldRejectReason]
+	return ok
+}
+
+// ResetRejectReason resets all changes to the "reject_reason" field.
+func (m *VoucherB2BOrderMutation) ResetRejectReason() {
+	m.reject_reason = nil
+	delete(m.clearedFields, voucherb2border.FieldRejectReason)
+}
+
+// SetKvLastRequestID sets the "kv_last_request_id" field.
+func (m *VoucherB2BOrderMutation) SetKvLastRequestID(s string) {
+	m.kv_last_request_id = &s
+}
+
+// KvLastRequestID returns the value of the "kv_last_request_id" field in the mutation.
+func (m *VoucherB2BOrderMutation) KvLastRequestID() (r string, exists bool) {
+	v := m.kv_last_request_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKvLastRequestID returns the old "kv_last_request_id" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldKvLastRequestID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKvLastRequestID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKvLastRequestID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKvLastRequestID: %w", err)
+	}
+	return oldValue.KvLastRequestID, nil
+}
+
+// ClearKvLastRequestID clears the value of the "kv_last_request_id" field.
+func (m *VoucherB2BOrderMutation) ClearKvLastRequestID() {
+	m.kv_last_request_id = nil
+	m.clearedFields[voucherb2border.FieldKvLastRequestID] = struct{}{}
+}
+
+// KvLastRequestIDCleared returns if the "kv_last_request_id" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) KvLastRequestIDCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldKvLastRequestID]
+	return ok
+}
+
+// ResetKvLastRequestID resets all changes to the "kv_last_request_id" field.
+func (m *VoucherB2BOrderMutation) ResetKvLastRequestID() {
+	m.kv_last_request_id = nil
+	delete(m.clearedFields, voucherb2border.FieldKvLastRequestID)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *VoucherB2BOrderMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *VoucherB2BOrderMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *VoucherB2BOrderMutation) ResetCreatedBy() {
+	m.created_by = nil
+}
+
+// SetKvLastSyncedAt sets the "kv_last_synced_at" field.
+func (m *VoucherB2BOrderMutation) SetKvLastSyncedAt(t time.Time) {
+	m.kv_last_synced_at = &t
+}
+
+// KvLastSyncedAt returns the value of the "kv_last_synced_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) KvLastSyncedAt() (r time.Time, exists bool) {
+	v := m.kv_last_synced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKvLastSyncedAt returns the old "kv_last_synced_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldKvLastSyncedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKvLastSyncedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKvLastSyncedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKvLastSyncedAt: %w", err)
+	}
+	return oldValue.KvLastSyncedAt, nil
+}
+
+// ClearKvLastSyncedAt clears the value of the "kv_last_synced_at" field.
+func (m *VoucherB2BOrderMutation) ClearKvLastSyncedAt() {
+	m.kv_last_synced_at = nil
+	m.clearedFields[voucherb2border.FieldKvLastSyncedAt] = struct{}{}
+}
+
+// KvLastSyncedAtCleared returns if the "kv_last_synced_at" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) KvLastSyncedAtCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldKvLastSyncedAt]
+	return ok
+}
+
+// ResetKvLastSyncedAt resets all changes to the "kv_last_synced_at" field.
+func (m *VoucherB2BOrderMutation) ResetKvLastSyncedAt() {
+	m.kv_last_synced_at = nil
+	delete(m.clearedFields, voucherb2border.FieldKvLastSyncedAt)
+}
+
+// SetVerifiedAt sets the "verified_at" field.
+func (m *VoucherB2BOrderMutation) SetVerifiedAt(t time.Time) {
+	m.verified_at = &t
+}
+
+// VerifiedAt returns the value of the "verified_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) VerifiedAt() (r time.Time, exists bool) {
+	v := m.verified_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVerifiedAt returns the old "verified_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldVerifiedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVerifiedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVerifiedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVerifiedAt: %w", err)
+	}
+	return oldValue.VerifiedAt, nil
+}
+
+// ClearVerifiedAt clears the value of the "verified_at" field.
+func (m *VoucherB2BOrderMutation) ClearVerifiedAt() {
+	m.verified_at = nil
+	m.clearedFields[voucherb2border.FieldVerifiedAt] = struct{}{}
+}
+
+// VerifiedAtCleared returns if the "verified_at" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) VerifiedAtCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldVerifiedAt]
+	return ok
+}
+
+// ResetVerifiedAt resets all changes to the "verified_at" field.
+func (m *VoucherB2BOrderMutation) ResetVerifiedAt() {
+	m.verified_at = nil
+	delete(m.clearedFields, voucherb2border.FieldVerifiedAt)
+}
+
+// SetPinsLoadedAt sets the "pins_loaded_at" field.
+func (m *VoucherB2BOrderMutation) SetPinsLoadedAt(t time.Time) {
+	m.pins_loaded_at = &t
+}
+
+// PinsLoadedAt returns the value of the "pins_loaded_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) PinsLoadedAt() (r time.Time, exists bool) {
+	v := m.pins_loaded_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPinsLoadedAt returns the old "pins_loaded_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldPinsLoadedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPinsLoadedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPinsLoadedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPinsLoadedAt: %w", err)
+	}
+	return oldValue.PinsLoadedAt, nil
+}
+
+// ClearPinsLoadedAt clears the value of the "pins_loaded_at" field.
+func (m *VoucherB2BOrderMutation) ClearPinsLoadedAt() {
+	m.pins_loaded_at = nil
+	m.clearedFields[voucherb2border.FieldPinsLoadedAt] = struct{}{}
+}
+
+// PinsLoadedAtCleared returns if the "pins_loaded_at" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) PinsLoadedAtCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldPinsLoadedAt]
+	return ok
+}
+
+// ResetPinsLoadedAt resets all changes to the "pins_loaded_at" field.
+func (m *VoucherB2BOrderMutation) ResetPinsLoadedAt() {
+	m.pins_loaded_at = nil
+	delete(m.clearedFields, voucherb2border.FieldPinsLoadedAt)
+}
+
+// SetCompletedAt sets the "completed_at" field.
+func (m *VoucherB2BOrderMutation) SetCompletedAt(t time.Time) {
+	m.completed_at = &t
+}
+
+// CompletedAt returns the value of the "completed_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) CompletedAt() (r time.Time, exists bool) {
+	v := m.completed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedAt returns the old "completed_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldCompletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedAt: %w", err)
+	}
+	return oldValue.CompletedAt, nil
+}
+
+// ClearCompletedAt clears the value of the "completed_at" field.
+func (m *VoucherB2BOrderMutation) ClearCompletedAt() {
+	m.completed_at = nil
+	m.clearedFields[voucherb2border.FieldCompletedAt] = struct{}{}
+}
+
+// CompletedAtCleared returns if the "completed_at" field was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) CompletedAtCleared() bool {
+	_, ok := m.clearedFields[voucherb2border.FieldCompletedAt]
+	return ok
+}
+
+// ResetCompletedAt resets all changes to the "completed_at" field.
+func (m *VoucherB2BOrderMutation) ResetCompletedAt() {
+	m.completed_at = nil
+	delete(m.clearedFields, voucherb2border.FieldCompletedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *VoucherB2BOrderMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *VoucherB2BOrderMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *VoucherB2BOrderMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *VoucherB2BOrderMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the VoucherB2BOrder entity.
+// If the VoucherB2BOrder object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VoucherB2BOrderMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *VoucherB2BOrderMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the VoucherB2BOrderMutation builder.
+func (m *VoucherB2BOrderMutation) Where(ps ...predicate.VoucherB2BOrder) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the VoucherB2BOrderMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *VoucherB2BOrderMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.VoucherB2BOrder, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *VoucherB2BOrderMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *VoucherB2BOrderMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (VoucherB2BOrder).
+func (m *VoucherB2BOrderMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *VoucherB2BOrderMutation) Fields() []string {
+	fields := make([]string, 0, 23)
+	if m.kv_order_id != nil {
+		fields = append(fields, voucherb2border.FieldKvOrderID)
+	}
+	if m.order_no != nil {
+		fields = append(fields, voucherb2border.FieldOrderNo)
+	}
+	if m.status != nil {
+		fields = append(fields, voucherb2border.FieldStatus)
+	}
+	if m.subtotal != nil {
+		fields = append(fields, voucherb2border.FieldSubtotal)
+	}
+	if m.fee_amount != nil {
+		fields = append(fields, voucherb2border.FieldFeeAmount)
+	}
+	if m.total_amount != nil {
+		fields = append(fields, voucherb2border.FieldTotalAmount)
+	}
+	if m.currency != nil {
+		fields = append(fields, voucherb2border.FieldCurrency)
+	}
+	if m.items_json != nil {
+		fields = append(fields, voucherb2border.FieldItemsJSON)
+	}
+	if m.payment_info_json != nil {
+		fields = append(fields, voucherb2border.FieldPaymentInfoJSON)
+	}
+	if m.payment_ref != nil {
+		fields = append(fields, voucherb2border.FieldPaymentRef)
+	}
+	if m.payment_proof_path != nil {
+		fields = append(fields, voucherb2border.FieldPaymentProofPath)
+	}
+	if m.bank_account_id != nil {
+		fields = append(fields, voucherb2border.FieldBankAccountID)
+	}
+	if m.merchant_notes != nil {
+		fields = append(fields, voucherb2border.FieldMerchantNotes)
+	}
+	if m.idempotency_key != nil {
+		fields = append(fields, voucherb2border.FieldIdempotencyKey)
+	}
+	if m.reject_reason != nil {
+		fields = append(fields, voucherb2border.FieldRejectReason)
+	}
+	if m.kv_last_request_id != nil {
+		fields = append(fields, voucherb2border.FieldKvLastRequestID)
+	}
+	if m.created_by != nil {
+		fields = append(fields, voucherb2border.FieldCreatedBy)
+	}
+	if m.kv_last_synced_at != nil {
+		fields = append(fields, voucherb2border.FieldKvLastSyncedAt)
+	}
+	if m.verified_at != nil {
+		fields = append(fields, voucherb2border.FieldVerifiedAt)
+	}
+	if m.pins_loaded_at != nil {
+		fields = append(fields, voucherb2border.FieldPinsLoadedAt)
+	}
+	if m.completed_at != nil {
+		fields = append(fields, voucherb2border.FieldCompletedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, voucherb2border.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, voucherb2border.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *VoucherB2BOrderMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		return m.KvOrderID()
+	case voucherb2border.FieldOrderNo:
+		return m.OrderNo()
+	case voucherb2border.FieldStatus:
+		return m.Status()
+	case voucherb2border.FieldSubtotal:
+		return m.Subtotal()
+	case voucherb2border.FieldFeeAmount:
+		return m.FeeAmount()
+	case voucherb2border.FieldTotalAmount:
+		return m.TotalAmount()
+	case voucherb2border.FieldCurrency:
+		return m.Currency()
+	case voucherb2border.FieldItemsJSON:
+		return m.ItemsJSON()
+	case voucherb2border.FieldPaymentInfoJSON:
+		return m.PaymentInfoJSON()
+	case voucherb2border.FieldPaymentRef:
+		return m.PaymentRef()
+	case voucherb2border.FieldPaymentProofPath:
+		return m.PaymentProofPath()
+	case voucherb2border.FieldBankAccountID:
+		return m.BankAccountID()
+	case voucherb2border.FieldMerchantNotes:
+		return m.MerchantNotes()
+	case voucherb2border.FieldIdempotencyKey:
+		return m.IdempotencyKey()
+	case voucherb2border.FieldRejectReason:
+		return m.RejectReason()
+	case voucherb2border.FieldKvLastRequestID:
+		return m.KvLastRequestID()
+	case voucherb2border.FieldCreatedBy:
+		return m.CreatedBy()
+	case voucherb2border.FieldKvLastSyncedAt:
+		return m.KvLastSyncedAt()
+	case voucherb2border.FieldVerifiedAt:
+		return m.VerifiedAt()
+	case voucherb2border.FieldPinsLoadedAt:
+		return m.PinsLoadedAt()
+	case voucherb2border.FieldCompletedAt:
+		return m.CompletedAt()
+	case voucherb2border.FieldCreatedAt:
+		return m.CreatedAt()
+	case voucherb2border.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *VoucherB2BOrderMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		return m.OldKvOrderID(ctx)
+	case voucherb2border.FieldOrderNo:
+		return m.OldOrderNo(ctx)
+	case voucherb2border.FieldStatus:
+		return m.OldStatus(ctx)
+	case voucherb2border.FieldSubtotal:
+		return m.OldSubtotal(ctx)
+	case voucherb2border.FieldFeeAmount:
+		return m.OldFeeAmount(ctx)
+	case voucherb2border.FieldTotalAmount:
+		return m.OldTotalAmount(ctx)
+	case voucherb2border.FieldCurrency:
+		return m.OldCurrency(ctx)
+	case voucherb2border.FieldItemsJSON:
+		return m.OldItemsJSON(ctx)
+	case voucherb2border.FieldPaymentInfoJSON:
+		return m.OldPaymentInfoJSON(ctx)
+	case voucherb2border.FieldPaymentRef:
+		return m.OldPaymentRef(ctx)
+	case voucherb2border.FieldPaymentProofPath:
+		return m.OldPaymentProofPath(ctx)
+	case voucherb2border.FieldBankAccountID:
+		return m.OldBankAccountID(ctx)
+	case voucherb2border.FieldMerchantNotes:
+		return m.OldMerchantNotes(ctx)
+	case voucherb2border.FieldIdempotencyKey:
+		return m.OldIdempotencyKey(ctx)
+	case voucherb2border.FieldRejectReason:
+		return m.OldRejectReason(ctx)
+	case voucherb2border.FieldKvLastRequestID:
+		return m.OldKvLastRequestID(ctx)
+	case voucherb2border.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case voucherb2border.FieldKvLastSyncedAt:
+		return m.OldKvLastSyncedAt(ctx)
+	case voucherb2border.FieldVerifiedAt:
+		return m.OldVerifiedAt(ctx)
+	case voucherb2border.FieldPinsLoadedAt:
+		return m.OldPinsLoadedAt(ctx)
+	case voucherb2border.FieldCompletedAt:
+		return m.OldCompletedAt(ctx)
+	case voucherb2border.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case voucherb2border.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown VoucherB2BOrder field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VoucherB2BOrderMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKvOrderID(v)
+		return nil
+	case voucherb2border.FieldOrderNo:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrderNo(v)
+		return nil
+	case voucherb2border.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case voucherb2border.FieldSubtotal:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubtotal(v)
+		return nil
+	case voucherb2border.FieldFeeAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFeeAmount(v)
+		return nil
+	case voucherb2border.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalAmount(v)
+		return nil
+	case voucherb2border.FieldCurrency:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCurrency(v)
+		return nil
+	case voucherb2border.FieldItemsJSON:
+		v, ok := value.([]map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetItemsJSON(v)
+		return nil
+	case voucherb2border.FieldPaymentInfoJSON:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPaymentInfoJSON(v)
+		return nil
+	case voucherb2border.FieldPaymentRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPaymentRef(v)
+		return nil
+	case voucherb2border.FieldPaymentProofPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPaymentProofPath(v)
+		return nil
+	case voucherb2border.FieldBankAccountID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBankAccountID(v)
+		return nil
+	case voucherb2border.FieldMerchantNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMerchantNotes(v)
+		return nil
+	case voucherb2border.FieldIdempotencyKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIdempotencyKey(v)
+		return nil
+	case voucherb2border.FieldRejectReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRejectReason(v)
+		return nil
+	case voucherb2border.FieldKvLastRequestID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKvLastRequestID(v)
+		return nil
+	case voucherb2border.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case voucherb2border.FieldKvLastSyncedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKvLastSyncedAt(v)
+		return nil
+	case voucherb2border.FieldVerifiedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVerifiedAt(v)
+		return nil
+	case voucherb2border.FieldPinsLoadedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPinsLoadedAt(v)
+		return nil
+	case voucherb2border.FieldCompletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedAt(v)
+		return nil
+	case voucherb2border.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case voucherb2border.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VoucherB2BOrder field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *VoucherB2BOrderMutation) AddedFields() []string {
+	var fields []string
+	if m.addkv_order_id != nil {
+		fields = append(fields, voucherb2border.FieldKvOrderID)
+	}
+	if m.addsubtotal != nil {
+		fields = append(fields, voucherb2border.FieldSubtotal)
+	}
+	if m.addfee_amount != nil {
+		fields = append(fields, voucherb2border.FieldFeeAmount)
+	}
+	if m.addtotal_amount != nil {
+		fields = append(fields, voucherb2border.FieldTotalAmount)
+	}
+	if m.addbank_account_id != nil {
+		fields = append(fields, voucherb2border.FieldBankAccountID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *VoucherB2BOrderMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		return m.AddedKvOrderID()
+	case voucherb2border.FieldSubtotal:
+		return m.AddedSubtotal()
+	case voucherb2border.FieldFeeAmount:
+		return m.AddedFeeAmount()
+	case voucherb2border.FieldTotalAmount:
+		return m.AddedTotalAmount()
+	case voucherb2border.FieldBankAccountID:
+		return m.AddedBankAccountID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VoucherB2BOrderMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddKvOrderID(v)
+		return nil
+	case voucherb2border.FieldSubtotal:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSubtotal(v)
+		return nil
+	case voucherb2border.FieldFeeAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFeeAmount(v)
+		return nil
+	case voucherb2border.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalAmount(v)
+		return nil
+	case voucherb2border.FieldBankAccountID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBankAccountID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VoucherB2BOrder numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *VoucherB2BOrderMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(voucherb2border.FieldPaymentInfoJSON) {
+		fields = append(fields, voucherb2border.FieldPaymentInfoJSON)
+	}
+	if m.FieldCleared(voucherb2border.FieldPaymentRef) {
+		fields = append(fields, voucherb2border.FieldPaymentRef)
+	}
+	if m.FieldCleared(voucherb2border.FieldPaymentProofPath) {
+		fields = append(fields, voucherb2border.FieldPaymentProofPath)
+	}
+	if m.FieldCleared(voucherb2border.FieldBankAccountID) {
+		fields = append(fields, voucherb2border.FieldBankAccountID)
+	}
+	if m.FieldCleared(voucherb2border.FieldMerchantNotes) {
+		fields = append(fields, voucherb2border.FieldMerchantNotes)
+	}
+	if m.FieldCleared(voucherb2border.FieldIdempotencyKey) {
+		fields = append(fields, voucherb2border.FieldIdempotencyKey)
+	}
+	if m.FieldCleared(voucherb2border.FieldRejectReason) {
+		fields = append(fields, voucherb2border.FieldRejectReason)
+	}
+	if m.FieldCleared(voucherb2border.FieldKvLastRequestID) {
+		fields = append(fields, voucherb2border.FieldKvLastRequestID)
+	}
+	if m.FieldCleared(voucherb2border.FieldKvLastSyncedAt) {
+		fields = append(fields, voucherb2border.FieldKvLastSyncedAt)
+	}
+	if m.FieldCleared(voucherb2border.FieldVerifiedAt) {
+		fields = append(fields, voucherb2border.FieldVerifiedAt)
+	}
+	if m.FieldCleared(voucherb2border.FieldPinsLoadedAt) {
+		fields = append(fields, voucherb2border.FieldPinsLoadedAt)
+	}
+	if m.FieldCleared(voucherb2border.FieldCompletedAt) {
+		fields = append(fields, voucherb2border.FieldCompletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *VoucherB2BOrderMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *VoucherB2BOrderMutation) ClearField(name string) error {
+	switch name {
+	case voucherb2border.FieldPaymentInfoJSON:
+		m.ClearPaymentInfoJSON()
+		return nil
+	case voucherb2border.FieldPaymentRef:
+		m.ClearPaymentRef()
+		return nil
+	case voucherb2border.FieldPaymentProofPath:
+		m.ClearPaymentProofPath()
+		return nil
+	case voucherb2border.FieldBankAccountID:
+		m.ClearBankAccountID()
+		return nil
+	case voucherb2border.FieldMerchantNotes:
+		m.ClearMerchantNotes()
+		return nil
+	case voucherb2border.FieldIdempotencyKey:
+		m.ClearIdempotencyKey()
+		return nil
+	case voucherb2border.FieldRejectReason:
+		m.ClearRejectReason()
+		return nil
+	case voucherb2border.FieldKvLastRequestID:
+		m.ClearKvLastRequestID()
+		return nil
+	case voucherb2border.FieldKvLastSyncedAt:
+		m.ClearKvLastSyncedAt()
+		return nil
+	case voucherb2border.FieldVerifiedAt:
+		m.ClearVerifiedAt()
+		return nil
+	case voucherb2border.FieldPinsLoadedAt:
+		m.ClearPinsLoadedAt()
+		return nil
+	case voucherb2border.FieldCompletedAt:
+		m.ClearCompletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown VoucherB2BOrder nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *VoucherB2BOrderMutation) ResetField(name string) error {
+	switch name {
+	case voucherb2border.FieldKvOrderID:
+		m.ResetKvOrderID()
+		return nil
+	case voucherb2border.FieldOrderNo:
+		m.ResetOrderNo()
+		return nil
+	case voucherb2border.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case voucherb2border.FieldSubtotal:
+		m.ResetSubtotal()
+		return nil
+	case voucherb2border.FieldFeeAmount:
+		m.ResetFeeAmount()
+		return nil
+	case voucherb2border.FieldTotalAmount:
+		m.ResetTotalAmount()
+		return nil
+	case voucherb2border.FieldCurrency:
+		m.ResetCurrency()
+		return nil
+	case voucherb2border.FieldItemsJSON:
+		m.ResetItemsJSON()
+		return nil
+	case voucherb2border.FieldPaymentInfoJSON:
+		m.ResetPaymentInfoJSON()
+		return nil
+	case voucherb2border.FieldPaymentRef:
+		m.ResetPaymentRef()
+		return nil
+	case voucherb2border.FieldPaymentProofPath:
+		m.ResetPaymentProofPath()
+		return nil
+	case voucherb2border.FieldBankAccountID:
+		m.ResetBankAccountID()
+		return nil
+	case voucherb2border.FieldMerchantNotes:
+		m.ResetMerchantNotes()
+		return nil
+	case voucherb2border.FieldIdempotencyKey:
+		m.ResetIdempotencyKey()
+		return nil
+	case voucherb2border.FieldRejectReason:
+		m.ResetRejectReason()
+		return nil
+	case voucherb2border.FieldKvLastRequestID:
+		m.ResetKvLastRequestID()
+		return nil
+	case voucherb2border.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case voucherb2border.FieldKvLastSyncedAt:
+		m.ResetKvLastSyncedAt()
+		return nil
+	case voucherb2border.FieldVerifiedAt:
+		m.ResetVerifiedAt()
+		return nil
+	case voucherb2border.FieldPinsLoadedAt:
+		m.ResetPinsLoadedAt()
+		return nil
+	case voucherb2border.FieldCompletedAt:
+		m.ResetCompletedAt()
+		return nil
+	case voucherb2border.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case voucherb2border.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown VoucherB2BOrder field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *VoucherB2BOrderMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *VoucherB2BOrderMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *VoucherB2BOrderMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *VoucherB2BOrderMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *VoucherB2BOrderMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *VoucherB2BOrderMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *VoucherB2BOrderMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown VoucherB2BOrder unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *VoucherB2BOrderMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown VoucherB2BOrder edge %s", name)
 }
 
 // VoucherOrderMutation represents an operation that mutates the VoucherOrder nodes in the graph.

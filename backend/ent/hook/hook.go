@@ -453,6 +453,18 @@ func (f VoucherAuditLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherAuditLogMutation", m)
 }
 
+// The VoucherB2BOrderFunc type is an adapter to allow the use of ordinary
+// function as VoucherB2BOrder mutator.
+type VoucherB2BOrderFunc func(context.Context, *ent.VoucherB2BOrderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VoucherB2BOrderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VoucherB2BOrderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherB2BOrderMutation", m)
+}
+
 // The VoucherOrderFunc type is an adapter to allow the use of ordinary
 // function as VoucherOrder mutator.
 type VoucherOrderFunc func(context.Context, *ent.VoucherOrderMutation) (ent.Value, error)

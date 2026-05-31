@@ -15,6 +15,8 @@ const (
 	FieldID = "id"
 	// FieldOrderID holds the string denoting the order_id field in the database.
 	FieldOrderID = "order_id"
+	// FieldB2bOrderID holds the string denoting the b2b_order_id field in the database.
+	FieldB2bOrderID = "b2b_order_id"
 	// FieldAction holds the string denoting the action field in the database.
 	FieldAction = "action"
 	// FieldOperator holds the string denoting the operator field in the database.
@@ -31,6 +33,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldOrderID,
+	FieldB2bOrderID,
 	FieldAction,
 	FieldOperator,
 	FieldMetadata,
@@ -67,6 +70,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByOrderID orders the results by the order_id field.
 func ByOrderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOrderID, opts...).ToFunc()
+}
+
+// ByB2bOrderID orders the results by the b2b_order_id field.
+func ByB2bOrderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldB2bOrderID, opts...).ToFunc()
 }
 
 // ByAction orders the results by the action field.

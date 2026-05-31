@@ -49,6 +49,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
 	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherb2border"
 	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
 	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
@@ -149,6 +150,7 @@ func checkColumn(t, c string) error {
 			userplatformquota.Table:             userplatformquota.ValidColumn,
 			usersubscription.Table:              usersubscription.ValidColumn,
 			voucherauditlog.Table:               voucherauditlog.ValidColumn,
+			voucherb2border.Table:               voucherb2border.ValidColumn,
 			voucherorder.Table:                  voucherorder.ValidColumn,
 			voucherpindelivery.Table:            voucherpindelivery.ValidColumn,
 			voucherproduct.Table:                voucherproduct.ValidColumn,

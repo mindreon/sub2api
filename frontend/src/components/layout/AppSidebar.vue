@@ -816,6 +816,7 @@ const flagAffiliate = makeSidebarFlag(FeatureFlags.affiliate)
 const flagRiskControl = makeSidebarFlag(FeatureFlags.riskControl)
 const flagOpsMonitoring = () => adminSettingsStore.opsMonitoringEnabled
 const flagAdminPayment = () => adminSettingsStore.paymentEnabled
+const flagVoucherAdmin = () => adminSettingsStore.voucherEnabled
 
 // buildSelfNavItems 构造用户自己的导航项（用户端主菜单和管理员的"我的账户"子菜单共享这组声明）。
 // withDashboard=true 时包含仪表盘（用户端），false 时不含（管理员的个人区已经有独立仪表盘入口）。
@@ -946,6 +947,19 @@ const adminNavItems = computed((): NavItem[] => {
     { path: '/admin/risk-control', label: t('nav.riskControl'), icon: ShieldIcon, hideInSimpleMode: true, featureFlag: flagRiskControl },
     { path: '/admin/redeem', label: t('nav.redeemCodes'), icon: TicketIcon, hideInSimpleMode: true },
     { path: '/admin/promo-codes', label: t('nav.promoCodes'), icon: GiftIcon, hideInSimpleMode: true },
+    {
+      path: '/admin/voucher',
+      label: t('nav.voucherManagement'),
+      icon: TicketIcon,
+      hideInSimpleMode: true,
+      expandOnly: true,
+      featureFlag: flagVoucherAdmin,
+      children: [
+        { path: '/admin/voucher/replenishment', label: t('nav.voucherReplenishment'), icon: RechargeSubscriptionIcon },
+        { path: '/admin/voucher/orders', label: t('nav.voucherRetailOrders'), icon: OrderListIcon },
+        { path: '/admin/voucher/settings', label: t('nav.voucherSettings'), icon: CogIcon },
+      ],
+    },
     {
       path: '/admin/affiliates',
       label: t('nav.affiliateManagement'),

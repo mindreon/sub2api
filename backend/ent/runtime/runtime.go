@@ -43,6 +43,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
 	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherb2border"
 	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
 	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
@@ -2199,17 +2200,75 @@ func init() {
 	voucherauditlogFields := schema.VoucherAuditLog{}.Fields()
 	_ = voucherauditlogFields
 	// voucherauditlogDescAction is the schema descriptor for action field.
-	voucherauditlogDescAction := voucherauditlogFields[1].Descriptor()
+	voucherauditlogDescAction := voucherauditlogFields[2].Descriptor()
 	// voucherauditlog.ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	voucherauditlog.ActionValidator = voucherauditlogDescAction.Validators[0].(func(string) error)
 	// voucherauditlogDescOperator is the schema descriptor for operator field.
-	voucherauditlogDescOperator := voucherauditlogFields[2].Descriptor()
+	voucherauditlogDescOperator := voucherauditlogFields[3].Descriptor()
 	// voucherauditlog.OperatorValidator is a validator for the "operator" field. It is called by the builders before save.
 	voucherauditlog.OperatorValidator = voucherauditlogDescOperator.Validators[0].(func(string) error)
 	// voucherauditlogDescCreatedAt is the schema descriptor for created_at field.
-	voucherauditlogDescCreatedAt := voucherauditlogFields[4].Descriptor()
+	voucherauditlogDescCreatedAt := voucherauditlogFields[5].Descriptor()
 	// voucherauditlog.DefaultCreatedAt holds the default value on creation for the created_at field.
 	voucherauditlog.DefaultCreatedAt = voucherauditlogDescCreatedAt.Default.(func() time.Time)
+	voucherb2borderFields := schema.VoucherB2BOrder{}.Fields()
+	_ = voucherb2borderFields
+	// voucherb2borderDescOrderNo is the schema descriptor for order_no field.
+	voucherb2borderDescOrderNo := voucherb2borderFields[1].Descriptor()
+	// voucherb2border.OrderNoValidator is a validator for the "order_no" field. It is called by the builders before save.
+	voucherb2border.OrderNoValidator = voucherb2borderDescOrderNo.Validators[0].(func(string) error)
+	// voucherb2borderDescStatus is the schema descriptor for status field.
+	voucherb2borderDescStatus := voucherb2borderFields[2].Descriptor()
+	// voucherb2border.DefaultStatus holds the default value on creation for the status field.
+	voucherb2border.DefaultStatus = voucherb2borderDescStatus.Default.(string)
+	// voucherb2border.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	voucherb2border.StatusValidator = voucherb2borderDescStatus.Validators[0].(func(string) error)
+	// voucherb2borderDescFeeAmount is the schema descriptor for fee_amount field.
+	voucherb2borderDescFeeAmount := voucherb2borderFields[4].Descriptor()
+	// voucherb2border.DefaultFeeAmount holds the default value on creation for the fee_amount field.
+	voucherb2border.DefaultFeeAmount = voucherb2borderDescFeeAmount.Default.(float64)
+	// voucherb2borderDescCurrency is the schema descriptor for currency field.
+	voucherb2borderDescCurrency := voucherb2borderFields[6].Descriptor()
+	// voucherb2border.DefaultCurrency holds the default value on creation for the currency field.
+	voucherb2border.DefaultCurrency = voucherb2borderDescCurrency.Default.(string)
+	// voucherb2border.CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
+	voucherb2border.CurrencyValidator = voucherb2borderDescCurrency.Validators[0].(func(string) error)
+	// voucherb2borderDescPaymentRef is the schema descriptor for payment_ref field.
+	voucherb2borderDescPaymentRef := voucherb2borderFields[9].Descriptor()
+	// voucherb2border.PaymentRefValidator is a validator for the "payment_ref" field. It is called by the builders before save.
+	voucherb2border.PaymentRefValidator = voucherb2borderDescPaymentRef.Validators[0].(func(string) error)
+	// voucherb2borderDescPaymentProofPath is the schema descriptor for payment_proof_path field.
+	voucherb2borderDescPaymentProofPath := voucherb2borderFields[10].Descriptor()
+	// voucherb2border.PaymentProofPathValidator is a validator for the "payment_proof_path" field. It is called by the builders before save.
+	voucherb2border.PaymentProofPathValidator = voucherb2borderDescPaymentProofPath.Validators[0].(func(string) error)
+	// voucherb2borderDescMerchantNotes is the schema descriptor for merchant_notes field.
+	voucherb2borderDescMerchantNotes := voucherb2borderFields[12].Descriptor()
+	// voucherb2border.MerchantNotesValidator is a validator for the "merchant_notes" field. It is called by the builders before save.
+	voucherb2border.MerchantNotesValidator = voucherb2borderDescMerchantNotes.Validators[0].(func(string) error)
+	// voucherb2borderDescIdempotencyKey is the schema descriptor for idempotency_key field.
+	voucherb2borderDescIdempotencyKey := voucherb2borderFields[13].Descriptor()
+	// voucherb2border.IdempotencyKeyValidator is a validator for the "idempotency_key" field. It is called by the builders before save.
+	voucherb2border.IdempotencyKeyValidator = voucherb2borderDescIdempotencyKey.Validators[0].(func(string) error)
+	// voucherb2borderDescKvLastRequestID is the schema descriptor for kv_last_request_id field.
+	voucherb2borderDescKvLastRequestID := voucherb2borderFields[15].Descriptor()
+	// voucherb2border.KvLastRequestIDValidator is a validator for the "kv_last_request_id" field. It is called by the builders before save.
+	voucherb2border.KvLastRequestIDValidator = voucherb2borderDescKvLastRequestID.Validators[0].(func(string) error)
+	// voucherb2borderDescCreatedBy is the schema descriptor for created_by field.
+	voucherb2borderDescCreatedBy := voucherb2borderFields[16].Descriptor()
+	// voucherb2border.DefaultCreatedBy holds the default value on creation for the created_by field.
+	voucherb2border.DefaultCreatedBy = voucherb2borderDescCreatedBy.Default.(string)
+	// voucherb2border.CreatedByValidator is a validator for the "created_by" field. It is called by the builders before save.
+	voucherb2border.CreatedByValidator = voucherb2borderDescCreatedBy.Validators[0].(func(string) error)
+	// voucherb2borderDescCreatedAt is the schema descriptor for created_at field.
+	voucherb2borderDescCreatedAt := voucherb2borderFields[21].Descriptor()
+	// voucherb2border.DefaultCreatedAt holds the default value on creation for the created_at field.
+	voucherb2border.DefaultCreatedAt = voucherb2borderDescCreatedAt.Default.(func() time.Time)
+	// voucherb2borderDescUpdatedAt is the schema descriptor for updated_at field.
+	voucherb2borderDescUpdatedAt := voucherb2borderFields[22].Descriptor()
+	// voucherb2border.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	voucherb2border.DefaultUpdatedAt = voucherb2borderDescUpdatedAt.Default.(func() time.Time)
+	// voucherb2border.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	voucherb2border.UpdateDefaultUpdatedAt = voucherb2borderDescUpdatedAt.UpdateDefault.(func() time.Time)
 	voucherorderFields := schema.VoucherOrder{}.Fields()
 	_ = voucherorderFields
 	// voucherorderDescOrderNo is the schema descriptor for order_no field.

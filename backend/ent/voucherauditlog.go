@@ -19,7 +19,9 @@ type VoucherAuditLog struct {
 	// ID of the ent.
 	ID int64 `json:"id,omitempty"`
 	// OrderID holds the value of the "order_id" field.
-	OrderID int64 `json:"order_id,omitempty"`
+	OrderID *int64 `json:"order_id,omitempty"`
+	// B2bOrderID holds the value of the "b2b_order_id" field.
+	B2bOrderID *int64 `json:"b2b_order_id,omitempty"`
 	// Action holds the value of the "action" field.
 	Action string `json:"action,omitempty"`
 	// Operator holds the value of the "operator" field.
@@ -38,7 +40,7 @@ func (*VoucherAuditLog) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case voucherauditlog.FieldMetadata:
 			values[i] = new([]byte)
-		case voucherauditlog.FieldID, voucherauditlog.FieldOrderID:
+		case voucherauditlog.FieldID, voucherauditlog.FieldOrderID, voucherauditlog.FieldB2bOrderID:
 			values[i] = new(sql.NullInt64)
 		case voucherauditlog.FieldAction, voucherauditlog.FieldOperator:
 			values[i] = new(sql.NullString)
@@ -69,7 +71,15 @@ func (_m *VoucherAuditLog) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field order_id", values[i])
 			} else if value.Valid {
-				_m.OrderID = value.Int64
+				_m.OrderID = new(int64)
+				*_m.OrderID = value.Int64
+			}
+		case voucherauditlog.FieldB2bOrderID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field b2b_order_id", values[i])
+			} else if value.Valid {
+				_m.B2bOrderID = new(int64)
+				*_m.B2bOrderID = value.Int64
 			}
 		case voucherauditlog.FieldAction:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -133,8 +143,15 @@ func (_m *VoucherAuditLog) String() string {
 	var builder strings.Builder
 	builder.WriteString("VoucherAuditLog(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
-	builder.WriteString("order_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.OrderID))
+	if v := _m.OrderID; v != nil {
+		builder.WriteString("order_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.B2bOrderID; v != nil {
+		builder.WriteString("b2b_order_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("action=")
 	builder.WriteString(_m.Action)

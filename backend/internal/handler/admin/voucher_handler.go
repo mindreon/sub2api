@@ -1,13 +1,13 @@
 package admin
 
 import (
+	"io"
 	"strconv"
 
 	"github.com/Wei-Shaw/sub2api/internal/pkg/response"
 	"github.com/Wei-Shaw/sub2api/internal/voucher"
 	"github.com/gin-gonic/gin"
 )
-
 // VoucherHandler serves admin voucher management APIs.
 type VoucherHandler struct {
 	svc *voucher.Service
@@ -177,6 +177,131 @@ func (h *VoucherHandler) RetryFulfill(c *gin.Context) {
 		return
 	}
 	order, err := h.svc.AdminRetryFulfill(c.Request.Context(), id, adminOperator(c))
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"order": order})
+}
+
+func (h *VoucherHandler) ListProducts(c *gin.Context) {
+	products, err := h.svc.AdminListProducts(c.Request.Context())
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"products": products})
+}
+
+func (h *VoucherHandler) ListB2BOrders(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "25"))
+	status := c.Query("status")
+	orders, total, err := h.svc.AdminListB2BOrders(c.Request.Context(), status, page, perPage)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{
+		"orders": orders,
+		"pagination": gin.H{
+			"page":        page,
+			"per_page":    perPage,
+			"total":       total,
+			"total_pages": (total + perPage - 1) / perPage,
+		},
+	})
+}
+
+type createB2BOrderRequest struct {
+	Items          []voucher.B2BOrderItem `json:"items" binding:"required"`
+	Currency       string                 `json:"currency"`
+	MerchantNotes  string                 `json:"merchant_notes"`
+	IdempotencyKey string                 `json:"idempotency_key"`
+}
+
+func (h *VoucherHandler) CreateB2BOrder(c *gin.Context) {
+	var req createB2BOrderRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "invalid request: "+err.Error())
+		return
+	}
+	order, err := h.svc.AdminCreateB2BOrder(c.Request.Context(), voucher.CreateB2BOrderInput{
+		Items:          req.Items,
+		Currency:       req.Currency,
+		MerchantNotes:  req.MerchantNotes,
+		IdempotencyKey: req.IdempotencyKey,
+		Operator:       adminOperator(c),
+	})
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"order": order})
+}
+
+func (h *VoucherHandler) GetB2BOrder(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "invalid order id")
+		return
+	}
+	order, err := h.svc.AdminGetB2BOrder(c.Request.Context(), id)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	audit, _ := h.svc.AdminListB2BAudit(c.Request.Context(), id)
+	response.Success(c, gin.H{"order": order, "audit": audit})
+}
+
+func (h *VoucherHandler) SyncB2BOrder(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "invalid order id")
+		return
+	}
+	order, err := h.svc.AdminSyncB2BOrder(c.Request.Context(), id, adminOperator(c))
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+	response.Success(c, gin.H{"order": order})
+}
+
+func (h *VoucherHandler) SubmitB2BProof(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "invalid order id")
+		return
+	}
+	paymentRef := c.PostForm("payment_ref")
+	var bankID *int
+	if raw := c.PostForm("bank_id"); raw != "" {
+		if v, perr := strconv.Atoi(raw); perr == nil {
+			bankID = &v
+		}
+	}
+	var proofReader io.Reader
+	proofName := ""
+	if file, ferr := c.FormFile("payment_proof"); ferr == nil && file != nil {
+		f, oerr := file.Open()
+		if oerr != nil {
+			response.BadRequest(c, "cannot read proof file")
+			return
+		}
+		defer f.Close()
+		proofReader = f
+		proofName = file.Filename
+	}
+	order, err := h.svc.AdminSubmitB2BProof(c.Request.Context(), voucher.SubmitB2BProofInput{
+		LocalOrderID: id,
+		PaymentRef:   paymentRef,
+		BankID:       bankID,
+		ProofReader:  proofReader,
+		ProofName:    proofName,
+		Operator:     adminOperator(c),
+	})
 	if err != nil {
 		response.ErrorFrom(c, err)
 		return

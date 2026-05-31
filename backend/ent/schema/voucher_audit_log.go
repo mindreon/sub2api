@@ -24,7 +24,12 @@ func (VoucherAuditLog) Annotations() []schema.Annotation {
 
 func (VoucherAuditLog) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int64("order_id"),
+		field.Int64("order_id").
+			Optional().
+			Nillable(),
+		field.Int64("b2b_order_id").
+			Optional().
+			Nillable(),
 		field.String("action").
 			MaxLen(64),
 		field.String("operator").
@@ -42,6 +47,7 @@ func (VoucherAuditLog) Fields() []ent.Field {
 func (VoucherAuditLog) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("order_id"),
+		index.Fields("b2b_order_id"),
 		index.Fields("created_at"),
 	}
 }

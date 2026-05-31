@@ -1,18 +1,12 @@
 <template>
   <div class="card">
     <div class="border-b border-gray-100 p-6 dark:border-dark-700">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.settings.voucher.ordersTitle') }}</h3>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.settings.voucher.ordersDescription') }}</p>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('admin.voucher.retailOrdersTitle') }}</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('admin.voucher.retailOrdersDescription') }}</p>
     </div>
 
     <div class="space-y-4 p-6">
       <div class="flex flex-wrap gap-3">
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="syncing" @click="syncCatalog">
-          {{ t('admin.settings.voucher.syncCatalog') }}
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="syncing" @click="syncStock">
-          {{ t('admin.settings.voucher.syncStock') }}
-        </button>
         <button type="button" class="btn btn-secondary btn-sm" :disabled="loading" @click="loadOrders">
           {{ t('common.refresh') }}
         </button>
@@ -25,7 +19,6 @@
         </select>
       </div>
 
-      <p v-if="syncMessage" class="text-sm text-green-700 dark:text-green-300">{{ syncMessage }}</p>
       <p v-if="actionError" class="text-sm text-red-600 dark:text-red-400">{{ actionError }}</p>
 
       <div v-if="loading" class="flex justify-center py-10">
@@ -106,11 +99,9 @@ import type { VoucherOrder } from '@/types/voucher'
 const { t } = useI18n()
 
 const loading = ref(true)
-const syncing = ref(false)
 const actingId = ref<number | null>(null)
 const orders = ref<VoucherOrder[]>([])
 const statusFilter = ref('payment_submitted')
-const syncMessage = ref('')
 const actionError = ref('')
 
 async function loadOrders() {
@@ -127,35 +118,6 @@ async function loadOrders() {
     actionError.value = extractApiErrorMessage(err)
   } finally {
     loading.value = false
-  }
-}
-
-async function syncCatalog() {
-  syncing.value = true
-  syncMessage.value = ''
-  actionError.value = ''
-  try {
-    const res = await voucherAdminAPI.syncCatalog()
-    syncMessage.value = t('admin.settings.voucher.syncCatalogDone', { count: res.data.synced })
-    await loadOrders()
-  } catch (err: unknown) {
-    actionError.value = extractApiErrorMessage(err)
-  } finally {
-    syncing.value = false
-  }
-}
-
-async function syncStock() {
-  syncing.value = true
-  syncMessage.value = ''
-  actionError.value = ''
-  try {
-    const res = await voucherAdminAPI.syncStock()
-    syncMessage.value = t('admin.settings.voucher.syncStockDone', { count: res.data.updated })
-  } catch (err: unknown) {
-    actionError.value = extractApiErrorMessage(err)
-  } finally {
-    syncing.value = false
   }
 }
 

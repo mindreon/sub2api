@@ -59,6 +59,11 @@ func OrderID(v int64) predicate.VoucherAuditLog {
 	return predicate.VoucherAuditLog(sql.FieldEQ(FieldOrderID, v))
 }
 
+// B2bOrderID applies equality check predicate on the "b2b_order_id" field. It's identical to B2bOrderIDEQ.
+func B2bOrderID(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldEQ(FieldB2bOrderID, v))
+}
+
 // Action applies equality check predicate on the "action" field. It's identical to ActionEQ.
 func Action(v string) predicate.VoucherAuditLog {
 	return predicate.VoucherAuditLog(sql.FieldEQ(FieldAction, v))
@@ -112,6 +117,66 @@ func OrderIDLT(v int64) predicate.VoucherAuditLog {
 // OrderIDLTE applies the LTE predicate on the "order_id" field.
 func OrderIDLTE(v int64) predicate.VoucherAuditLog {
 	return predicate.VoucherAuditLog(sql.FieldLTE(FieldOrderID, v))
+}
+
+// OrderIDIsNil applies the IsNil predicate on the "order_id" field.
+func OrderIDIsNil() predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldIsNull(FieldOrderID))
+}
+
+// OrderIDNotNil applies the NotNil predicate on the "order_id" field.
+func OrderIDNotNil() predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldNotNull(FieldOrderID))
+}
+
+// B2bOrderIDEQ applies the EQ predicate on the "b2b_order_id" field.
+func B2bOrderIDEQ(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldEQ(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDNEQ applies the NEQ predicate on the "b2b_order_id" field.
+func B2bOrderIDNEQ(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldNEQ(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDIn applies the In predicate on the "b2b_order_id" field.
+func B2bOrderIDIn(vs ...int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldIn(FieldB2bOrderID, vs...))
+}
+
+// B2bOrderIDNotIn applies the NotIn predicate on the "b2b_order_id" field.
+func B2bOrderIDNotIn(vs ...int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldNotIn(FieldB2bOrderID, vs...))
+}
+
+// B2bOrderIDGT applies the GT predicate on the "b2b_order_id" field.
+func B2bOrderIDGT(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldGT(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDGTE applies the GTE predicate on the "b2b_order_id" field.
+func B2bOrderIDGTE(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldGTE(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDLT applies the LT predicate on the "b2b_order_id" field.
+func B2bOrderIDLT(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldLT(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDLTE applies the LTE predicate on the "b2b_order_id" field.
+func B2bOrderIDLTE(v int64) predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldLTE(FieldB2bOrderID, v))
+}
+
+// B2bOrderIDIsNil applies the IsNil predicate on the "b2b_order_id" field.
+func B2bOrderIDIsNil() predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldIsNull(FieldB2bOrderID))
+}
+
+// B2bOrderIDNotNil applies the NotNil predicate on the "b2b_order_id" field.
+func B2bOrderIDNotNil() predicate.VoucherAuditLog {
+	return predicate.VoucherAuditLog(sql.FieldNotNull(FieldB2bOrderID))
 }
 
 // ActionEQ applies the EQ predicate on the "action" field.

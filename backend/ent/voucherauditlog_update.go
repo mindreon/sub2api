@@ -48,6 +48,39 @@ func (_u *VoucherAuditLogUpdate) AddOrderID(v int64) *VoucherAuditLogUpdate {
 	return _u
 }
 
+// ClearOrderID clears the value of the "order_id" field.
+func (_u *VoucherAuditLogUpdate) ClearOrderID() *VoucherAuditLogUpdate {
+	_u.mutation.ClearOrderID()
+	return _u
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdate) SetB2bOrderID(v int64) *VoucherAuditLogUpdate {
+	_u.mutation.ResetB2bOrderID()
+	_u.mutation.SetB2bOrderID(v)
+	return _u
+}
+
+// SetNillableB2bOrderID sets the "b2b_order_id" field if the given value is not nil.
+func (_u *VoucherAuditLogUpdate) SetNillableB2bOrderID(v *int64) *VoucherAuditLogUpdate {
+	if v != nil {
+		_u.SetB2bOrderID(*v)
+	}
+	return _u
+}
+
+// AddB2bOrderID adds value to the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdate) AddB2bOrderID(v int64) *VoucherAuditLogUpdate {
+	_u.mutation.AddB2bOrderID(v)
+	return _u
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdate) ClearB2bOrderID() *VoucherAuditLogUpdate {
+	_u.mutation.ClearB2bOrderID()
+	return _u
+}
+
 // SetAction sets the "action" field.
 func (_u *VoucherAuditLogUpdate) SetAction(v string) *VoucherAuditLogUpdate {
 	_u.mutation.SetAction(v)
@@ -153,6 +186,18 @@ func (_u *VoucherAuditLogUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.AddedOrderID(); ok {
 		_spec.AddField(voucherauditlog.FieldOrderID, field.TypeInt64, value)
 	}
+	if _u.mutation.OrderIDCleared() {
+		_spec.ClearField(voucherauditlog.FieldOrderID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.B2bOrderID(); ok {
+		_spec.SetField(voucherauditlog.FieldB2bOrderID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedB2bOrderID(); ok {
+		_spec.AddField(voucherauditlog.FieldB2bOrderID, field.TypeInt64, value)
+	}
+	if _u.mutation.B2bOrderIDCleared() {
+		_spec.ClearField(voucherauditlog.FieldB2bOrderID, field.TypeInt64)
+	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(voucherauditlog.FieldAction, field.TypeString, value)
 	}
@@ -203,6 +248,39 @@ func (_u *VoucherAuditLogUpdateOne) SetNillableOrderID(v *int64) *VoucherAuditLo
 // AddOrderID adds value to the "order_id" field.
 func (_u *VoucherAuditLogUpdateOne) AddOrderID(v int64) *VoucherAuditLogUpdateOne {
 	_u.mutation.AddOrderID(v)
+	return _u
+}
+
+// ClearOrderID clears the value of the "order_id" field.
+func (_u *VoucherAuditLogUpdateOne) ClearOrderID() *VoucherAuditLogUpdateOne {
+	_u.mutation.ClearOrderID()
+	return _u
+}
+
+// SetB2bOrderID sets the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdateOne) SetB2bOrderID(v int64) *VoucherAuditLogUpdateOne {
+	_u.mutation.ResetB2bOrderID()
+	_u.mutation.SetB2bOrderID(v)
+	return _u
+}
+
+// SetNillableB2bOrderID sets the "b2b_order_id" field if the given value is not nil.
+func (_u *VoucherAuditLogUpdateOne) SetNillableB2bOrderID(v *int64) *VoucherAuditLogUpdateOne {
+	if v != nil {
+		_u.SetB2bOrderID(*v)
+	}
+	return _u
+}
+
+// AddB2bOrderID adds value to the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdateOne) AddB2bOrderID(v int64) *VoucherAuditLogUpdateOne {
+	_u.mutation.AddB2bOrderID(v)
+	return _u
+}
+
+// ClearB2bOrderID clears the value of the "b2b_order_id" field.
+func (_u *VoucherAuditLogUpdateOne) ClearB2bOrderID() *VoucherAuditLogUpdateOne {
+	_u.mutation.ClearB2bOrderID()
 	return _u
 }
 
@@ -340,6 +418,18 @@ func (_u *VoucherAuditLogUpdateOne) sqlSave(ctx context.Context) (_node *Voucher
 	}
 	if value, ok := _u.mutation.AddedOrderID(); ok {
 		_spec.AddField(voucherauditlog.FieldOrderID, field.TypeInt64, value)
+	}
+	if _u.mutation.OrderIDCleared() {
+		_spec.ClearField(voucherauditlog.FieldOrderID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.B2bOrderID(); ok {
+		_spec.SetField(voucherauditlog.FieldB2bOrderID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedB2bOrderID(); ok {
+		_spec.AddField(voucherauditlog.FieldB2bOrderID, field.TypeInt64, value)
+	}
+	if _u.mutation.B2bOrderIDCleared() {
+		_spec.ClearField(voucherauditlog.FieldB2bOrderID, field.TypeInt64)
 	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(voucherauditlog.FieldAction, field.TypeString, value)

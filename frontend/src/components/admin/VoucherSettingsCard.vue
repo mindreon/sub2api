@@ -115,6 +115,8 @@ import { extractApiErrorMessage } from '@/utils/apiError'
 
 const { t } = useI18n()
 
+const emit = defineEmits<{ saved: [] }>()
+
 interface VoucherSettingsForm {
   enabled: boolean
   ui_enabled: boolean
@@ -203,6 +205,7 @@ async function save() {
     const res = await voucherAdminAPI.updateSettings(buildUpdatePayload())
     applySettings(res.data)
     saveOk.value = true
+    emit('saved')
   } catch (err: unknown) {
     saveError.value = extractApiErrorMessage(err)
   } finally {

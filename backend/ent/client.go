@@ -52,6 +52,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
 	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherb2border"
 	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
 	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
@@ -138,6 +139,8 @@ type Client struct {
 	UserSubscription *UserSubscriptionClient
 	// VoucherAuditLog is the client for interacting with the VoucherAuditLog builders.
 	VoucherAuditLog *VoucherAuditLogClient
+	// VoucherB2BOrder is the client for interacting with the VoucherB2BOrder builders.
+	VoucherB2BOrder *VoucherB2BOrderClient
 	// VoucherOrder is the client for interacting with the VoucherOrder builders.
 	VoucherOrder *VoucherOrderClient
 	// VoucherPinDelivery is the client for interacting with the VoucherPinDelivery builders.
@@ -192,6 +195,7 @@ func (c *Client) init() {
 	c.UserPlatformQuota = NewUserPlatformQuotaClient(c.config)
 	c.UserSubscription = NewUserSubscriptionClient(c.config)
 	c.VoucherAuditLog = NewVoucherAuditLogClient(c.config)
+	c.VoucherB2BOrder = NewVoucherB2BOrderClient(c.config)
 	c.VoucherOrder = NewVoucherOrderClient(c.config)
 	c.VoucherPinDelivery = NewVoucherPinDeliveryClient(c.config)
 	c.VoucherProduct = NewVoucherProductClient(c.config)
@@ -324,6 +328,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserPlatformQuota:             NewUserPlatformQuotaClient(cfg),
 		UserSubscription:              NewUserSubscriptionClient(cfg),
 		VoucherAuditLog:               NewVoucherAuditLogClient(cfg),
+		VoucherB2BOrder:               NewVoucherB2BOrderClient(cfg),
 		VoucherOrder:                  NewVoucherOrderClient(cfg),
 		VoucherPinDelivery:            NewVoucherPinDeliveryClient(cfg),
 		VoucherProduct:                NewVoucherProductClient(cfg),
@@ -383,6 +388,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserPlatformQuota:             NewUserPlatformQuotaClient(cfg),
 		UserSubscription:              NewUserSubscriptionClient(cfg),
 		VoucherAuditLog:               NewVoucherAuditLogClient(cfg),
+		VoucherB2BOrder:               NewVoucherB2BOrderClient(cfg),
 		VoucherOrder:                  NewVoucherOrderClient(cfg),
 		VoucherPinDelivery:            NewVoucherPinDeliveryClient(cfg),
 		VoucherProduct:                NewVoucherProductClient(cfg),
@@ -424,8 +430,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
 		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
 		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherOrder,
-		c.VoucherPinDelivery, c.VoucherProduct,
+		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder,
+		c.VoucherOrder, c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Use(hooks...)
 	}
@@ -444,8 +450,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
 		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
 		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherOrder,
-		c.VoucherPinDelivery, c.VoucherProduct,
+		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder,
+		c.VoucherOrder, c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -528,6 +534,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserSubscription.mutate(ctx, m)
 	case *VoucherAuditLogMutation:
 		return c.VoucherAuditLog.mutate(ctx, m)
+	case *VoucherB2BOrderMutation:
+		return c.VoucherB2BOrder.mutate(ctx, m)
 	case *VoucherOrderMutation:
 		return c.VoucherOrder.mutate(ctx, m)
 	case *VoucherPinDeliveryMutation:
@@ -6514,6 +6522,139 @@ func (c *VoucherAuditLogClient) mutate(ctx context.Context, m *VoucherAuditLogMu
 	}
 }
 
+// VoucherB2BOrderClient is a client for the VoucherB2BOrder schema.
+type VoucherB2BOrderClient struct {
+	config
+}
+
+// NewVoucherB2BOrderClient returns a client for the VoucherB2BOrder from the given config.
+func NewVoucherB2BOrderClient(c config) *VoucherB2BOrderClient {
+	return &VoucherB2BOrderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `voucherb2border.Hooks(f(g(h())))`.
+func (c *VoucherB2BOrderClient) Use(hooks ...Hook) {
+	c.hooks.VoucherB2BOrder = append(c.hooks.VoucherB2BOrder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `voucherb2border.Intercept(f(g(h())))`.
+func (c *VoucherB2BOrderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VoucherB2BOrder = append(c.inters.VoucherB2BOrder, interceptors...)
+}
+
+// Create returns a builder for creating a VoucherB2BOrder entity.
+func (c *VoucherB2BOrderClient) Create() *VoucherB2BOrderCreate {
+	mutation := newVoucherB2BOrderMutation(c.config, OpCreate)
+	return &VoucherB2BOrderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VoucherB2BOrder entities.
+func (c *VoucherB2BOrderClient) CreateBulk(builders ...*VoucherB2BOrderCreate) *VoucherB2BOrderCreateBulk {
+	return &VoucherB2BOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoucherB2BOrderClient) MapCreateBulk(slice any, setFunc func(*VoucherB2BOrderCreate, int)) *VoucherB2BOrderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoucherB2BOrderCreateBulk{err: fmt.Errorf("calling to VoucherB2BOrderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoucherB2BOrderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoucherB2BOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VoucherB2BOrder.
+func (c *VoucherB2BOrderClient) Update() *VoucherB2BOrderUpdate {
+	mutation := newVoucherB2BOrderMutation(c.config, OpUpdate)
+	return &VoucherB2BOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VoucherB2BOrderClient) UpdateOne(_m *VoucherB2BOrder) *VoucherB2BOrderUpdateOne {
+	mutation := newVoucherB2BOrderMutation(c.config, OpUpdateOne, withVoucherB2BOrder(_m))
+	return &VoucherB2BOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VoucherB2BOrderClient) UpdateOneID(id int64) *VoucherB2BOrderUpdateOne {
+	mutation := newVoucherB2BOrderMutation(c.config, OpUpdateOne, withVoucherB2BOrderID(id))
+	return &VoucherB2BOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VoucherB2BOrder.
+func (c *VoucherB2BOrderClient) Delete() *VoucherB2BOrderDelete {
+	mutation := newVoucherB2BOrderMutation(c.config, OpDelete)
+	return &VoucherB2BOrderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VoucherB2BOrderClient) DeleteOne(_m *VoucherB2BOrder) *VoucherB2BOrderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VoucherB2BOrderClient) DeleteOneID(id int64) *VoucherB2BOrderDeleteOne {
+	builder := c.Delete().Where(voucherb2border.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VoucherB2BOrderDeleteOne{builder}
+}
+
+// Query returns a query builder for VoucherB2BOrder.
+func (c *VoucherB2BOrderClient) Query() *VoucherB2BOrderQuery {
+	return &VoucherB2BOrderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVoucherB2BOrder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VoucherB2BOrder entity by its id.
+func (c *VoucherB2BOrderClient) Get(ctx context.Context, id int64) (*VoucherB2BOrder, error) {
+	return c.Query().Where(voucherb2border.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VoucherB2BOrderClient) GetX(ctx context.Context, id int64) *VoucherB2BOrder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *VoucherB2BOrderClient) Hooks() []Hook {
+	return c.hooks.VoucherB2BOrder
+}
+
+// Interceptors returns the client interceptors.
+func (c *VoucherB2BOrderClient) Interceptors() []Interceptor {
+	return c.inters.VoucherB2BOrder
+}
+
+func (c *VoucherB2BOrderClient) mutate(ctx context.Context, m *VoucherB2BOrderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VoucherB2BOrderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VoucherB2BOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VoucherB2BOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VoucherB2BOrderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VoucherB2BOrder mutation op: %q", m.Op())
+	}
+}
+
 // VoucherOrderClient is a client for the VoucherOrder schema.
 type VoucherOrderClient struct {
 	config
@@ -6940,8 +7081,8 @@ type (
 		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
 		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
 		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription, VoucherAuditLog, VoucherOrder, VoucherPinDelivery,
-		VoucherProduct []ent.Hook
+		UserSubscription, VoucherAuditLog, VoucherB2BOrder, VoucherOrder,
+		VoucherPinDelivery, VoucherProduct []ent.Hook
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
@@ -6952,8 +7093,8 @@ type (
 		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
 		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
 		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription, VoucherAuditLog, VoucherOrder, VoucherPinDelivery,
-		VoucherProduct []ent.Interceptor
+		UserSubscription, VoucherAuditLog, VoucherB2BOrder, VoucherOrder,
+		VoucherPinDelivery, VoucherProduct []ent.Interceptor
 	}
 )
 
