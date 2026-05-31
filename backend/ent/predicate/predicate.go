@@ -113,3 +113,15 @@ type UserPlatformQuota func(*sql.Selector)
 
 // UserSubscription is the predicate function for usersubscription builders.
 type UserSubscription func(*sql.Selector)
+
+// VoucherAuditLog is the predicate function for voucherauditlog builders.
+type VoucherAuditLog func(*sql.Selector)
+
+// VoucherOrder is the predicate function for voucherorder builders.
+type VoucherOrder func(*sql.Selector)
+
+// VoucherPinDelivery is the predicate function for voucherpindelivery builders.
+type VoucherPinDelivery func(*sql.Selector)
+
+// VoucherProduct is the predicate function for voucherproduct builders.
+type VoucherProduct func(*sql.Selector)

@@ -89,6 +89,13 @@
             </button>
             </template>
           </template>
+          <!-- Voucher / PIN Tab (KVoucher bank-transfer flow, env-driven UI preview) -->
+          <template v-else-if="activeTab === 'voucher'">
+            <VoucherPurchasePanel
+              :config="voucherConfig"
+              :username="user?.username || ''"
+            />
+          </template>
           <!-- Subscribe Tab -->
           <template v-else-if="activeTab === 'subscription'">
             <!-- Subscription confirm (inline, replaces plan list) -->
@@ -279,6 +286,9 @@ import { formatPaymentAmount, normalizePaymentCurrency } from '@/components/paym
 import type { PaymentMethodOption } from '@/components/payment/PaymentMethodSelector.vue'
 import { buildPaymentErrorToastMessage, describePaymentScenarioError } from './paymentUx'
 import { hasWechatResumeQuery, parseWechatResumeRoute, stripWechatResumeQuery } from './paymentWechatResume'
+import VoucherPurchasePanel from '@/components/voucher/VoucherPurchasePanel.vue'
+import { voucherAPI, mapCheckoutInfo } from '@/api/voucher'
+import { EMPTY_VOUCHER_CHECKOUT, type VoucherCheckoutConfig } from '@/types/voucher'
 
 const i18n = useI18n()
 const { t } = i18n
@@ -301,7 +311,10 @@ const loading = ref(true)
 const submitting = ref(false)
 const errorMessage = ref('')
 const errorHintMessage = ref('')
-const activeTab = ref<'recharge' | 'subscription'>('recharge')
+type PurchaseTab = 'recharge' | 'subscription' | 'voucher'
+
+const activeTab = ref<PurchaseTab>('recharge')
+const voucherConfig = ref<VoucherCheckoutConfig>({ ...EMPTY_VOUCHER_CHECKOUT })
 const amount = ref<number | null>(null)
 const selectedMethod = ref('')
 const selectedPlan = ref<SubscriptionPlan | null>(null)
@@ -482,8 +495,11 @@ const checkout = ref<CheckoutInfoResponse>({
 })
 
 const tabs = computed(() => {
-  const result: { key: 'recharge' | 'subscription'; label: string }[] = []
+  const result: { key: PurchaseTab; label: string }[] = []
   if (!checkout.value.balance_disabled) result.push({ key: 'recharge', label: t('payment.tabTopUp') })
+  if (voucherConfig.value.enabled) {
+    result.push({ key: 'voucher', label: t('payment.tabVoucher') })
+  }
   result.push({ key: 'subscription', label: t('payment.tabSubscribe') })
   return result
 })
@@ -1016,8 +1032,14 @@ async function resumeWechatPaymentFromQuery() {
 
 onMounted(async () => {
   try {
-    const res = await paymentAPI.getCheckoutInfo()
-    checkout.value = res.data
+    const paymentRes = await paymentAPI.getCheckoutInfo()
+    checkout.value = paymentRes.data
+    try {
+      const voucherRes = await voucherAPI.getCheckoutInfo()
+      voucherConfig.value = mapCheckoutInfo(voucherRes.data)
+    } catch {
+      voucherConfig.value = { ...EMPTY_VOUCHER_CHECKOUT }
+    }
     if (enabledMethods.value.length) {
       const order: readonly string[] = METHOD_ORDER
       const sorted = [...enabledMethods.value].sort((a, b) => {
@@ -1054,6 +1076,9 @@ onMounted(async () => {
     await resumeWechatPaymentFromQuery()
     if (checkout.value.balance_disabled) {
       activeTab.value = 'subscription'
+    }
+    if (route.query.tab === 'voucher' && voucherConfig.value.enabled) {
+      activeTab.value = 'voucher'
     }
     // Handle renewal navigation: ?tab=subscription&group=123
     if (route.query.tab === 'subscription') {

@@ -86,6 +86,14 @@ type Tx struct {
 	UserPlatformQuota *UserPlatformQuotaClient
 	// UserSubscription is the client for interacting with the UserSubscription builders.
 	UserSubscription *UserSubscriptionClient
+	// VoucherAuditLog is the client for interacting with the VoucherAuditLog builders.
+	VoucherAuditLog *VoucherAuditLogClient
+	// VoucherOrder is the client for interacting with the VoucherOrder builders.
+	VoucherOrder *VoucherOrderClient
+	// VoucherPinDelivery is the client for interacting with the VoucherPinDelivery builders.
+	VoucherPinDelivery *VoucherPinDeliveryClient
+	// VoucherProduct is the client for interacting with the VoucherProduct builders.
+	VoucherProduct *VoucherProductClient
 
 	// lazily loaded.
 	client     *Client
@@ -253,6 +261,10 @@ func (tx *Tx) init() {
 	tx.UserAttributeValue = NewUserAttributeValueClient(tx.config)
 	tx.UserPlatformQuota = NewUserPlatformQuotaClient(tx.config)
 	tx.UserSubscription = NewUserSubscriptionClient(tx.config)
+	tx.VoucherAuditLog = NewVoucherAuditLogClient(tx.config)
+	tx.VoucherOrder = NewVoucherOrderClient(tx.config)
+	tx.VoucherPinDelivery = NewVoucherPinDeliveryClient(tx.config)
+	tx.VoucherProduct = NewVoucherProductClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

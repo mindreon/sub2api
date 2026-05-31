@@ -24,6 +24,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -488,6 +489,21 @@ func (_c *UserCreate) AddPaymentOrders(v ...*PaymentOrder) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddPaymentOrderIDs(ids...)
+}
+
+// AddVoucherOrderIDs adds the "voucher_orders" edge to the VoucherOrder entity by IDs.
+func (_c *UserCreate) AddVoucherOrderIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddVoucherOrderIDs(ids...)
+	return _c
+}
+
+// AddVoucherOrders adds the "voucher_orders" edges to the VoucherOrder entity.
+func (_c *UserCreate) AddVoucherOrders(v ...*VoucherOrder) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVoucherOrderIDs(ids...)
 }
 
 // AddAuthIdentityIDs adds the "auth_identities" edge to the AuthIdentity entity by IDs.
@@ -1000,6 +1016,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(paymentorder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VoucherOrdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

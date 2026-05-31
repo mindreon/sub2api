@@ -6164,6 +6164,10 @@
             @toggle-type="handleToggleType"
             @reorder="handleReorderProviders"
           />
+
+          <!-- KVoucher PIN recharge (env-based supplier credentials) -->
+          <VoucherSettingsCard />
+          <VoucherAdminOrdersCard />
         </div>
 
         <div v-show="activeTab === 'email'" class="space-y-6">
@@ -6702,6 +6706,8 @@ import Icon from "@/components/icons/Icon.vue";
 import Select from "@/components/common/Select.vue";
 import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import PaymentProviderList from "@/components/payment/PaymentProviderList.vue";
+import VoucherSettingsCard from "@/components/admin/VoucherSettingsCard.vue";
+import VoucherAdminOrdersCard from "@/components/admin/VoucherAdminOrdersCard.vue";
 import PaymentProviderDialog from "@/components/payment/PaymentProviderDialog.vue";
 import GroupBadge from "@/components/common/GroupBadge.vue";
 import GroupOptionItem from "@/components/common/GroupOptionItem.vue";

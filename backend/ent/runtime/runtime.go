@@ -42,6 +42,10 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
+	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
+	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
 	"github.com/Wei-Shaw/sub2api/internal/domain"
 )
 
@@ -2192,6 +2196,140 @@ func init() {
 	usersubscriptionDescAssignedAt := usersubscriptionFields[12].Descriptor()
 	// usersubscription.DefaultAssignedAt holds the default value on creation for the assigned_at field.
 	usersubscription.DefaultAssignedAt = usersubscriptionDescAssignedAt.Default.(func() time.Time)
+	voucherauditlogFields := schema.VoucherAuditLog{}.Fields()
+	_ = voucherauditlogFields
+	// voucherauditlogDescAction is the schema descriptor for action field.
+	voucherauditlogDescAction := voucherauditlogFields[1].Descriptor()
+	// voucherauditlog.ActionValidator is a validator for the "action" field. It is called by the builders before save.
+	voucherauditlog.ActionValidator = voucherauditlogDescAction.Validators[0].(func(string) error)
+	// voucherauditlogDescOperator is the schema descriptor for operator field.
+	voucherauditlogDescOperator := voucherauditlogFields[2].Descriptor()
+	// voucherauditlog.OperatorValidator is a validator for the "operator" field. It is called by the builders before save.
+	voucherauditlog.OperatorValidator = voucherauditlogDescOperator.Validators[0].(func(string) error)
+	// voucherauditlogDescCreatedAt is the schema descriptor for created_at field.
+	voucherauditlogDescCreatedAt := voucherauditlogFields[4].Descriptor()
+	// voucherauditlog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	voucherauditlog.DefaultCreatedAt = voucherauditlogDescCreatedAt.Default.(func() time.Time)
+	voucherorderFields := schema.VoucherOrder{}.Fields()
+	_ = voucherorderFields
+	// voucherorderDescOrderNo is the schema descriptor for order_no field.
+	voucherorderDescOrderNo := voucherorderFields[0].Descriptor()
+	// voucherorder.OrderNoValidator is a validator for the "order_no" field. It is called by the builders before save.
+	voucherorder.OrderNoValidator = voucherorderDescOrderNo.Validators[0].(func(string) error)
+	// voucherorderDescUserEmail is the schema descriptor for user_email field.
+	voucherorderDescUserEmail := voucherorderFields[2].Descriptor()
+	// voucherorder.UserEmailValidator is a validator for the "user_email" field. It is called by the builders before save.
+	voucherorder.UserEmailValidator = voucherorderDescUserEmail.Validators[0].(func(string) error)
+	// voucherorderDescUserName is the schema descriptor for user_name field.
+	voucherorderDescUserName := voucherorderFields[3].Descriptor()
+	// voucherorder.UserNameValidator is a validator for the "user_name" field. It is called by the builders before save.
+	voucherorder.UserNameValidator = voucherorderDescUserName.Validators[0].(func(string) error)
+	// voucherorderDescStatus is the schema descriptor for status field.
+	voucherorderDescStatus := voucherorderFields[4].Descriptor()
+	// voucherorder.DefaultStatus holds the default value on creation for the status field.
+	voucherorder.DefaultStatus = voucherorderDescStatus.Default.(string)
+	// voucherorder.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	voucherorder.StatusValidator = voucherorderDescStatus.Validators[0].(func(string) error)
+	// voucherorderDescProductName is the schema descriptor for product_name field.
+	voucherorderDescProductName := voucherorderFields[7].Descriptor()
+	// voucherorder.ProductNameValidator is a validator for the "product_name" field. It is called by the builders before save.
+	voucherorder.ProductNameValidator = voucherorderDescProductName.Validators[0].(func(string) error)
+	// voucherorderDescQuantity is the schema descriptor for quantity field.
+	voucherorderDescQuantity := voucherorderFields[9].Descriptor()
+	// voucherorder.DefaultQuantity holds the default value on creation for the quantity field.
+	voucherorder.DefaultQuantity = voucherorderDescQuantity.Default.(int)
+	// voucherorderDescFeeAmount is the schema descriptor for fee_amount field.
+	voucherorderDescFeeAmount := voucherorderFields[12].Descriptor()
+	// voucherorder.DefaultFeeAmount holds the default value on creation for the fee_amount field.
+	voucherorder.DefaultFeeAmount = voucherorderDescFeeAmount.Default.(float64)
+	// voucherorderDescCurrency is the schema descriptor for currency field.
+	voucherorderDescCurrency := voucherorderFields[14].Descriptor()
+	// voucherorder.DefaultCurrency holds the default value on creation for the currency field.
+	voucherorder.DefaultCurrency = voucherorderDescCurrency.Default.(string)
+	// voucherorder.CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
+	voucherorder.CurrencyValidator = voucherorderDescCurrency.Validators[0].(func(string) error)
+	// voucherorderDescPaymentRef is the schema descriptor for payment_ref field.
+	voucherorderDescPaymentRef := voucherorderFields[15].Descriptor()
+	// voucherorder.PaymentRefValidator is a validator for the "payment_ref" field. It is called by the builders before save.
+	voucherorder.PaymentRefValidator = voucherorderDescPaymentRef.Validators[0].(func(string) error)
+	// voucherorderDescPaymentProofPath is the schema descriptor for payment_proof_path field.
+	voucherorderDescPaymentProofPath := voucherorderFields[16].Descriptor()
+	// voucherorder.PaymentProofPathValidator is a validator for the "payment_proof_path" field. It is called by the builders before save.
+	voucherorder.PaymentProofPathValidator = voucherorderDescPaymentProofPath.Validators[0].(func(string) error)
+	// voucherorderDescKvRetrieveReference is the schema descriptor for kv_retrieve_reference field.
+	voucherorderDescKvRetrieveReference := voucherorderFields[18].Descriptor()
+	// voucherorder.KvRetrieveReferenceValidator is a validator for the "kv_retrieve_reference" field. It is called by the builders before save.
+	voucherorder.KvRetrieveReferenceValidator = voucherorderDescKvRetrieveReference.Validators[0].(func(string) error)
+	// voucherorderDescIdempotencyKey is the schema descriptor for idempotency_key field.
+	voucherorderDescIdempotencyKey := voucherorderFields[19].Descriptor()
+	// voucherorder.IdempotencyKeyValidator is a validator for the "idempotency_key" field. It is called by the builders before save.
+	voucherorder.IdempotencyKeyValidator = voucherorderDescIdempotencyKey.Validators[0].(func(string) error)
+	// voucherorderDescClientIP is the schema descriptor for client_ip field.
+	voucherorderDescClientIP := voucherorderFields[26].Descriptor()
+	// voucherorder.DefaultClientIP holds the default value on creation for the client_ip field.
+	voucherorder.DefaultClientIP = voucherorderDescClientIP.Default.(string)
+	// voucherorder.ClientIPValidator is a validator for the "client_ip" field. It is called by the builders before save.
+	voucherorder.ClientIPValidator = voucherorderDescClientIP.Validators[0].(func(string) error)
+	// voucherorderDescCreatedAt is the schema descriptor for created_at field.
+	voucherorderDescCreatedAt := voucherorderFields[27].Descriptor()
+	// voucherorder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	voucherorder.DefaultCreatedAt = voucherorderDescCreatedAt.Default.(func() time.Time)
+	// voucherorderDescUpdatedAt is the schema descriptor for updated_at field.
+	voucherorderDescUpdatedAt := voucherorderFields[28].Descriptor()
+	// voucherorder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	voucherorder.DefaultUpdatedAt = voucherorderDescUpdatedAt.Default.(func() time.Time)
+	// voucherorder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	voucherorder.UpdateDefaultUpdatedAt = voucherorderDescUpdatedAt.UpdateDefault.(func() time.Time)
+	voucherpindeliveryFields := schema.VoucherPinDelivery{}.Fields()
+	_ = voucherpindeliveryFields
+	// voucherpindeliveryDescSerial is the schema descriptor for serial field.
+	voucherpindeliveryDescSerial := voucherpindeliveryFields[2].Descriptor()
+	// voucherpindelivery.DefaultSerial holds the default value on creation for the serial field.
+	voucherpindelivery.DefaultSerial = voucherpindeliveryDescSerial.Default.(string)
+	// voucherpindelivery.SerialValidator is a validator for the "serial" field. It is called by the builders before save.
+	voucherpindelivery.SerialValidator = voucherpindeliveryDescSerial.Validators[0].(func(string) error)
+	// voucherpindeliveryDescDeliveredAt is the schema descriptor for delivered_at field.
+	voucherpindeliveryDescDeliveredAt := voucherpindeliveryFields[5].Descriptor()
+	// voucherpindelivery.DefaultDeliveredAt holds the default value on creation for the delivered_at field.
+	voucherpindelivery.DefaultDeliveredAt = voucherpindeliveryDescDeliveredAt.Default.(func() time.Time)
+	voucherproductFields := schema.VoucherProduct{}.Fields()
+	_ = voucherproductFields
+	// voucherproductDescName is the schema descriptor for name field.
+	voucherproductDescName := voucherproductFields[1].Descriptor()
+	// voucherproduct.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	voucherproduct.NameValidator = voucherproductDescName.Validators[0].(func(string) error)
+	// voucherproductDescWholesalePrice is the schema descriptor for wholesale_price field.
+	voucherproductDescWholesalePrice := voucherproductFields[3].Descriptor()
+	// voucherproduct.DefaultWholesalePrice holds the default value on creation for the wholesale_price field.
+	voucherproduct.DefaultWholesalePrice = voucherproductDescWholesalePrice.Default.(float64)
+	// voucherproductDescCurrency is the schema descriptor for currency field.
+	voucherproductDescCurrency := voucherproductFields[5].Descriptor()
+	// voucherproduct.DefaultCurrency holds the default value on creation for the currency field.
+	voucherproduct.DefaultCurrency = voucherproductDescCurrency.Default.(string)
+	// voucherproduct.CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
+	voucherproduct.CurrencyValidator = voucherproductDescCurrency.Validators[0].(func(string) error)
+	// voucherproductDescStockAvailable is the schema descriptor for stock_available field.
+	voucherproductDescStockAvailable := voucherproductFields[6].Descriptor()
+	// voucherproduct.DefaultStockAvailable holds the default value on creation for the stock_available field.
+	voucherproduct.DefaultStockAvailable = voucherproductDescStockAvailable.Default.(int)
+	// voucherproductDescIsActive is the schema descriptor for is_active field.
+	voucherproductDescIsActive := voucherproductFields[7].Descriptor()
+	// voucherproduct.DefaultIsActive holds the default value on creation for the is_active field.
+	voucherproduct.DefaultIsActive = voucherproductDescIsActive.Default.(bool)
+	// voucherproductDescSortOrder is the schema descriptor for sort_order field.
+	voucherproductDescSortOrder := voucherproductFields[8].Descriptor()
+	// voucherproduct.DefaultSortOrder holds the default value on creation for the sort_order field.
+	voucherproduct.DefaultSortOrder = voucherproductDescSortOrder.Default.(int)
+	// voucherproductDescCreatedAt is the schema descriptor for created_at field.
+	voucherproductDescCreatedAt := voucherproductFields[9].Descriptor()
+	// voucherproduct.DefaultCreatedAt holds the default value on creation for the created_at field.
+	voucherproduct.DefaultCreatedAt = voucherproductDescCreatedAt.Default.(func() time.Time)
+	// voucherproductDescUpdatedAt is the schema descriptor for updated_at field.
+	voucherproductDescUpdatedAt := voucherproductFields[10].Descriptor()
+	// voucherproduct.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	voucherproduct.DefaultUpdatedAt = voucherproductDescUpdatedAt.Default.(func() time.Time)
+	// voucherproduct.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	voucherproduct.UpdateDefaultUpdatedAt = voucherproductDescUpdatedAt.UpdateDefault.(func() time.Time)
 }
 
 const (

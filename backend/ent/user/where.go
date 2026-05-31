@@ -1570,6 +1570,29 @@ func HasPaymentOrdersWith(preds ...predicate.PaymentOrder) predicate.User {
 	})
 }
 
+// HasVoucherOrders applies the HasEdge predicate on the "voucher_orders" edge.
+func HasVoucherOrders() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, VoucherOrdersTable, VoucherOrdersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasVoucherOrdersWith applies the HasEdge predicate on the "voucher_orders" edge with a given conditions (other predicates).
+func HasVoucherOrdersWith(preds ...predicate.VoucherOrder) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newVoucherOrdersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAuthIdentities applies the HasEdge predicate on the "auth_identities" edge.
 func HasAuthIdentities() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

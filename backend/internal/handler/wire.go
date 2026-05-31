@@ -1,8 +1,10 @@
 package handler
 
 import (
+	dbent "github.com/Wei-Shaw/sub2api/ent"
 	"github.com/Wei-Shaw/sub2api/internal/handler/admin"
 	"github.com/Wei-Shaw/sub2api/internal/service"
+	"github.com/Wei-Shaw/sub2api/internal/voucher"
 
 	"github.com/google/wire"
 )
@@ -41,6 +43,7 @@ func ProvideAdminHandlers(
 	affiliateHandler *admin.AffiliateHandler,
 	distributionHandler *admin.DistributionHandler,
 	catalogModelHandler *admin.CatalogModelHandler,
+	voucherAdminHandler *admin.VoucherHandler,
 ) *AdminHandlers {
 	return &AdminHandlers{
 		Dashboard:              dashboardHandler,
@@ -75,6 +78,7 @@ func ProvideAdminHandlers(
 		Affiliate:              affiliateHandler,
 		Distribution:           distributionHandler,
 		CatalogModel:           catalogModelHandler,
+		Voucher:                voucherAdminHandler,
 	}
 }
 
@@ -97,6 +101,11 @@ func ProvideAdminSettingHandler(settingService *service.SettingService, emailSer
 	return h
 }
 
+// ProvideVoucherService creates the KVoucher PIN purchase service.
+func ProvideVoucherService(entClient *dbent.Client, settingRepo service.SettingRepository) *voucher.Service {
+	return voucher.NewService(entClient, voucher.NewConfigStore(settingRepo))
+}
+
 // ProvideHandlers creates the Handlers struct
 func ProvideHandlers(
 	authHandler *AuthHandler,
@@ -115,6 +124,7 @@ func ProvideHandlers(
 	totpHandler *TotpHandler,
 	paymentHandler *PaymentHandler,
 	paymentWebhookHandler *PaymentWebhookHandler,
+	voucherHandler *VoucherHandler,
 	availableChannelHandler *AvailableChannelHandler,
 	publicCatalogHandler *PublicCatalogHandler,
 	_ *service.IdempotencyCoordinator,
@@ -137,6 +147,7 @@ func ProvideHandlers(
 		Totp:             totpHandler,
 		Payment:          paymentHandler,
 		PaymentWebhook:   paymentWebhookHandler,
+		Voucher:          voucherHandler,
 		AvailableChannel: availableChannelHandler,
 		PublicCatalog:    publicCatalogHandler,
 	}
@@ -160,8 +171,10 @@ var ProviderSet = wire.NewSet(
 	ProvideSettingHandler,
 	NewPaymentHandler,
 	NewPaymentWebhookHandler,
+	NewVoucherHandler,
 	NewAvailableChannelHandler,
 	NewPublicCatalogHandler,
+	ProvideVoucherService,
 
 	// Admin handlers
 	admin.NewDashboardHandler,
@@ -196,6 +209,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewAffiliateHandler,
 	admin.NewDistributionHandler,
 	admin.NewCatalogModelHandler,
+	admin.NewVoucherHandler,
 
 	// AdminHandlers and Handlers constructors
 	ProvideAdminHandlers,

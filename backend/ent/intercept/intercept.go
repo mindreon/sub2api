@@ -45,6 +45,10 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
+	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
+	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
 )
 
 // The Query interface represents an operation that queries a graph.
@@ -1075,6 +1079,114 @@ func (f TraverseUserSubscription) Traverse(ctx context.Context, q ent.Query) err
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserSubscriptionQuery", q)
 }
 
+// The VoucherAuditLogFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VoucherAuditLogFunc func(context.Context, *ent.VoucherAuditLogQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VoucherAuditLogFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VoucherAuditLogQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VoucherAuditLogQuery", q)
+}
+
+// The TraverseVoucherAuditLog type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVoucherAuditLog func(context.Context, *ent.VoucherAuditLogQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVoucherAuditLog) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVoucherAuditLog) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VoucherAuditLogQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherAuditLogQuery", q)
+}
+
+// The VoucherOrderFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VoucherOrderFunc func(context.Context, *ent.VoucherOrderQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VoucherOrderFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VoucherOrderQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VoucherOrderQuery", q)
+}
+
+// The TraverseVoucherOrder type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVoucherOrder func(context.Context, *ent.VoucherOrderQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVoucherOrder) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVoucherOrder) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VoucherOrderQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherOrderQuery", q)
+}
+
+// The VoucherPinDeliveryFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VoucherPinDeliveryFunc func(context.Context, *ent.VoucherPinDeliveryQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VoucherPinDeliveryFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VoucherPinDeliveryQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VoucherPinDeliveryQuery", q)
+}
+
+// The TraverseVoucherPinDelivery type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVoucherPinDelivery func(context.Context, *ent.VoucherPinDeliveryQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVoucherPinDelivery) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVoucherPinDelivery) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VoucherPinDeliveryQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherPinDeliveryQuery", q)
+}
+
+// The VoucherProductFunc type is an adapter to allow the use of ordinary function as a Querier.
+type VoucherProductFunc func(context.Context, *ent.VoucherProductQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f VoucherProductFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.VoucherProductQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.VoucherProductQuery", q)
+}
+
+// The TraverseVoucherProduct type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseVoucherProduct func(context.Context, *ent.VoucherProductQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseVoucherProduct) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseVoucherProduct) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.VoucherProductQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.VoucherProductQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
@@ -1150,6 +1262,14 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.UserPlatformQuotaQuery, predicate.UserPlatformQuota, userplatformquota.OrderOption]{typ: ent.TypeUserPlatformQuota, tq: q}, nil
 	case *ent.UserSubscriptionQuery:
 		return &query[*ent.UserSubscriptionQuery, predicate.UserSubscription, usersubscription.OrderOption]{typ: ent.TypeUserSubscription, tq: q}, nil
+	case *ent.VoucherAuditLogQuery:
+		return &query[*ent.VoucherAuditLogQuery, predicate.VoucherAuditLog, voucherauditlog.OrderOption]{typ: ent.TypeVoucherAuditLog, tq: q}, nil
+	case *ent.VoucherOrderQuery:
+		return &query[*ent.VoucherOrderQuery, predicate.VoucherOrder, voucherorder.OrderOption]{typ: ent.TypeVoucherOrder, tq: q}, nil
+	case *ent.VoucherPinDeliveryQuery:
+		return &query[*ent.VoucherPinDeliveryQuery, predicate.VoucherPinDelivery, voucherpindelivery.OrderOption]{typ: ent.TypeVoucherPinDelivery, tq: q}, nil
+	case *ent.VoucherProductQuery:
+		return &query[*ent.VoucherProductQuery, predicate.VoucherProduct, voucherproduct.OrderOption]{typ: ent.TypeVoucherProduct, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

@@ -51,6 +51,10 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/Wei-Shaw/sub2api/ent/voucherauditlog"
+	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
+	"github.com/Wei-Shaw/sub2api/ent/voucherpindelivery"
+	"github.com/Wei-Shaw/sub2api/ent/voucherproduct"
 
 	stdsql "database/sql"
 )
@@ -132,6 +136,14 @@ type Client struct {
 	UserPlatformQuota *UserPlatformQuotaClient
 	// UserSubscription is the client for interacting with the UserSubscription builders.
 	UserSubscription *UserSubscriptionClient
+	// VoucherAuditLog is the client for interacting with the VoucherAuditLog builders.
+	VoucherAuditLog *VoucherAuditLogClient
+	// VoucherOrder is the client for interacting with the VoucherOrder builders.
+	VoucherOrder *VoucherOrderClient
+	// VoucherPinDelivery is the client for interacting with the VoucherPinDelivery builders.
+	VoucherPinDelivery *VoucherPinDeliveryClient
+	// VoucherProduct is the client for interacting with the VoucherProduct builders.
+	VoucherProduct *VoucherProductClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -179,6 +191,10 @@ func (c *Client) init() {
 	c.UserAttributeValue = NewUserAttributeValueClient(c.config)
 	c.UserPlatformQuota = NewUserPlatformQuotaClient(c.config)
 	c.UserSubscription = NewUserSubscriptionClient(c.config)
+	c.VoucherAuditLog = NewVoucherAuditLogClient(c.config)
+	c.VoucherOrder = NewVoucherOrderClient(c.config)
+	c.VoucherPinDelivery = NewVoucherPinDeliveryClient(c.config)
+	c.VoucherProduct = NewVoucherProductClient(c.config)
 }
 
 type (
@@ -307,6 +323,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserAttributeValue:            NewUserAttributeValueClient(cfg),
 		UserPlatformQuota:             NewUserPlatformQuotaClient(cfg),
 		UserSubscription:              NewUserSubscriptionClient(cfg),
+		VoucherAuditLog:               NewVoucherAuditLogClient(cfg),
+		VoucherOrder:                  NewVoucherOrderClient(cfg),
+		VoucherPinDelivery:            NewVoucherPinDeliveryClient(cfg),
+		VoucherProduct:                NewVoucherProductClient(cfg),
 	}, nil
 }
 
@@ -362,6 +382,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserAttributeValue:            NewUserAttributeValueClient(cfg),
 		UserPlatformQuota:             NewUserPlatformQuotaClient(cfg),
 		UserSubscription:              NewUserSubscriptionClient(cfg),
+		VoucherAuditLog:               NewVoucherAuditLogClient(cfg),
+		VoucherOrder:                  NewVoucherOrderClient(cfg),
+		VoucherPinDelivery:            NewVoucherPinDeliveryClient(cfg),
+		VoucherProduct:                NewVoucherProductClient(cfg),
 	}, nil
 }
 
@@ -400,7 +424,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
 		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
 		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription,
+		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherOrder,
+		c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Use(hooks...)
 	}
@@ -419,7 +444,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
 		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
 		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription,
+		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherOrder,
+		c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -500,6 +526,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserPlatformQuota.mutate(ctx, m)
 	case *UserSubscriptionMutation:
 		return c.UserSubscription.mutate(ctx, m)
+	case *VoucherAuditLogMutation:
+		return c.VoucherAuditLog.mutate(ctx, m)
+	case *VoucherOrderMutation:
+		return c.VoucherOrder.mutate(ctx, m)
+	case *VoucherPinDeliveryMutation:
+		return c.VoucherPinDelivery.mutate(ctx, m)
+	case *VoucherProductMutation:
+		return c.VoucherProduct.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -5458,6 +5492,22 @@ func (c *UserClient) QueryPaymentOrders(_m *User) *PaymentOrderQuery {
 	return query
 }
 
+// QueryVoucherOrders queries the voucher_orders edge of a User.
+func (c *UserClient) QueryVoucherOrders(_m *User) *VoucherOrderQuery {
+	query := (&VoucherOrderClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(voucherorder.Table, voucherorder.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.VoucherOrdersTable, user.VoucherOrdersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAuthIdentities queries the auth_identities edge of a User.
 func (c *UserClient) QueryAuthIdentities(_m *User) *AuthIdentityQuery {
 	query := (&AuthIdentityClient{config: c.config}).Query()
@@ -6331,6 +6381,554 @@ func (c *UserSubscriptionClient) mutate(ctx context.Context, m *UserSubscription
 	}
 }
 
+// VoucherAuditLogClient is a client for the VoucherAuditLog schema.
+type VoucherAuditLogClient struct {
+	config
+}
+
+// NewVoucherAuditLogClient returns a client for the VoucherAuditLog from the given config.
+func NewVoucherAuditLogClient(c config) *VoucherAuditLogClient {
+	return &VoucherAuditLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `voucherauditlog.Hooks(f(g(h())))`.
+func (c *VoucherAuditLogClient) Use(hooks ...Hook) {
+	c.hooks.VoucherAuditLog = append(c.hooks.VoucherAuditLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `voucherauditlog.Intercept(f(g(h())))`.
+func (c *VoucherAuditLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VoucherAuditLog = append(c.inters.VoucherAuditLog, interceptors...)
+}
+
+// Create returns a builder for creating a VoucherAuditLog entity.
+func (c *VoucherAuditLogClient) Create() *VoucherAuditLogCreate {
+	mutation := newVoucherAuditLogMutation(c.config, OpCreate)
+	return &VoucherAuditLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VoucherAuditLog entities.
+func (c *VoucherAuditLogClient) CreateBulk(builders ...*VoucherAuditLogCreate) *VoucherAuditLogCreateBulk {
+	return &VoucherAuditLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoucherAuditLogClient) MapCreateBulk(slice any, setFunc func(*VoucherAuditLogCreate, int)) *VoucherAuditLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoucherAuditLogCreateBulk{err: fmt.Errorf("calling to VoucherAuditLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoucherAuditLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoucherAuditLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VoucherAuditLog.
+func (c *VoucherAuditLogClient) Update() *VoucherAuditLogUpdate {
+	mutation := newVoucherAuditLogMutation(c.config, OpUpdate)
+	return &VoucherAuditLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VoucherAuditLogClient) UpdateOne(_m *VoucherAuditLog) *VoucherAuditLogUpdateOne {
+	mutation := newVoucherAuditLogMutation(c.config, OpUpdateOne, withVoucherAuditLog(_m))
+	return &VoucherAuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VoucherAuditLogClient) UpdateOneID(id int64) *VoucherAuditLogUpdateOne {
+	mutation := newVoucherAuditLogMutation(c.config, OpUpdateOne, withVoucherAuditLogID(id))
+	return &VoucherAuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VoucherAuditLog.
+func (c *VoucherAuditLogClient) Delete() *VoucherAuditLogDelete {
+	mutation := newVoucherAuditLogMutation(c.config, OpDelete)
+	return &VoucherAuditLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VoucherAuditLogClient) DeleteOne(_m *VoucherAuditLog) *VoucherAuditLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VoucherAuditLogClient) DeleteOneID(id int64) *VoucherAuditLogDeleteOne {
+	builder := c.Delete().Where(voucherauditlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VoucherAuditLogDeleteOne{builder}
+}
+
+// Query returns a query builder for VoucherAuditLog.
+func (c *VoucherAuditLogClient) Query() *VoucherAuditLogQuery {
+	return &VoucherAuditLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVoucherAuditLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VoucherAuditLog entity by its id.
+func (c *VoucherAuditLogClient) Get(ctx context.Context, id int64) (*VoucherAuditLog, error) {
+	return c.Query().Where(voucherauditlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VoucherAuditLogClient) GetX(ctx context.Context, id int64) *VoucherAuditLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *VoucherAuditLogClient) Hooks() []Hook {
+	return c.hooks.VoucherAuditLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *VoucherAuditLogClient) Interceptors() []Interceptor {
+	return c.inters.VoucherAuditLog
+}
+
+func (c *VoucherAuditLogClient) mutate(ctx context.Context, m *VoucherAuditLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VoucherAuditLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VoucherAuditLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VoucherAuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VoucherAuditLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VoucherAuditLog mutation op: %q", m.Op())
+	}
+}
+
+// VoucherOrderClient is a client for the VoucherOrder schema.
+type VoucherOrderClient struct {
+	config
+}
+
+// NewVoucherOrderClient returns a client for the VoucherOrder from the given config.
+func NewVoucherOrderClient(c config) *VoucherOrderClient {
+	return &VoucherOrderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `voucherorder.Hooks(f(g(h())))`.
+func (c *VoucherOrderClient) Use(hooks ...Hook) {
+	c.hooks.VoucherOrder = append(c.hooks.VoucherOrder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `voucherorder.Intercept(f(g(h())))`.
+func (c *VoucherOrderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VoucherOrder = append(c.inters.VoucherOrder, interceptors...)
+}
+
+// Create returns a builder for creating a VoucherOrder entity.
+func (c *VoucherOrderClient) Create() *VoucherOrderCreate {
+	mutation := newVoucherOrderMutation(c.config, OpCreate)
+	return &VoucherOrderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VoucherOrder entities.
+func (c *VoucherOrderClient) CreateBulk(builders ...*VoucherOrderCreate) *VoucherOrderCreateBulk {
+	return &VoucherOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoucherOrderClient) MapCreateBulk(slice any, setFunc func(*VoucherOrderCreate, int)) *VoucherOrderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoucherOrderCreateBulk{err: fmt.Errorf("calling to VoucherOrderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoucherOrderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoucherOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VoucherOrder.
+func (c *VoucherOrderClient) Update() *VoucherOrderUpdate {
+	mutation := newVoucherOrderMutation(c.config, OpUpdate)
+	return &VoucherOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VoucherOrderClient) UpdateOne(_m *VoucherOrder) *VoucherOrderUpdateOne {
+	mutation := newVoucherOrderMutation(c.config, OpUpdateOne, withVoucherOrder(_m))
+	return &VoucherOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VoucherOrderClient) UpdateOneID(id int64) *VoucherOrderUpdateOne {
+	mutation := newVoucherOrderMutation(c.config, OpUpdateOne, withVoucherOrderID(id))
+	return &VoucherOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VoucherOrder.
+func (c *VoucherOrderClient) Delete() *VoucherOrderDelete {
+	mutation := newVoucherOrderMutation(c.config, OpDelete)
+	return &VoucherOrderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VoucherOrderClient) DeleteOne(_m *VoucherOrder) *VoucherOrderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VoucherOrderClient) DeleteOneID(id int64) *VoucherOrderDeleteOne {
+	builder := c.Delete().Where(voucherorder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VoucherOrderDeleteOne{builder}
+}
+
+// Query returns a query builder for VoucherOrder.
+func (c *VoucherOrderClient) Query() *VoucherOrderQuery {
+	return &VoucherOrderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVoucherOrder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VoucherOrder entity by its id.
+func (c *VoucherOrderClient) Get(ctx context.Context, id int64) (*VoucherOrder, error) {
+	return c.Query().Where(voucherorder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VoucherOrderClient) GetX(ctx context.Context, id int64) *VoucherOrder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a VoucherOrder.
+func (c *VoucherOrderClient) QueryUser(_m *VoucherOrder) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(voucherorder.Table, voucherorder.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, voucherorder.UserTable, voucherorder.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *VoucherOrderClient) Hooks() []Hook {
+	return c.hooks.VoucherOrder
+}
+
+// Interceptors returns the client interceptors.
+func (c *VoucherOrderClient) Interceptors() []Interceptor {
+	return c.inters.VoucherOrder
+}
+
+func (c *VoucherOrderClient) mutate(ctx context.Context, m *VoucherOrderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VoucherOrderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VoucherOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VoucherOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VoucherOrderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VoucherOrder mutation op: %q", m.Op())
+	}
+}
+
+// VoucherPinDeliveryClient is a client for the VoucherPinDelivery schema.
+type VoucherPinDeliveryClient struct {
+	config
+}
+
+// NewVoucherPinDeliveryClient returns a client for the VoucherPinDelivery from the given config.
+func NewVoucherPinDeliveryClient(c config) *VoucherPinDeliveryClient {
+	return &VoucherPinDeliveryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `voucherpindelivery.Hooks(f(g(h())))`.
+func (c *VoucherPinDeliveryClient) Use(hooks ...Hook) {
+	c.hooks.VoucherPinDelivery = append(c.hooks.VoucherPinDelivery, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `voucherpindelivery.Intercept(f(g(h())))`.
+func (c *VoucherPinDeliveryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VoucherPinDelivery = append(c.inters.VoucherPinDelivery, interceptors...)
+}
+
+// Create returns a builder for creating a VoucherPinDelivery entity.
+func (c *VoucherPinDeliveryClient) Create() *VoucherPinDeliveryCreate {
+	mutation := newVoucherPinDeliveryMutation(c.config, OpCreate)
+	return &VoucherPinDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VoucherPinDelivery entities.
+func (c *VoucherPinDeliveryClient) CreateBulk(builders ...*VoucherPinDeliveryCreate) *VoucherPinDeliveryCreateBulk {
+	return &VoucherPinDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoucherPinDeliveryClient) MapCreateBulk(slice any, setFunc func(*VoucherPinDeliveryCreate, int)) *VoucherPinDeliveryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoucherPinDeliveryCreateBulk{err: fmt.Errorf("calling to VoucherPinDeliveryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoucherPinDeliveryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoucherPinDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VoucherPinDelivery.
+func (c *VoucherPinDeliveryClient) Update() *VoucherPinDeliveryUpdate {
+	mutation := newVoucherPinDeliveryMutation(c.config, OpUpdate)
+	return &VoucherPinDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VoucherPinDeliveryClient) UpdateOne(_m *VoucherPinDelivery) *VoucherPinDeliveryUpdateOne {
+	mutation := newVoucherPinDeliveryMutation(c.config, OpUpdateOne, withVoucherPinDelivery(_m))
+	return &VoucherPinDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VoucherPinDeliveryClient) UpdateOneID(id int64) *VoucherPinDeliveryUpdateOne {
+	mutation := newVoucherPinDeliveryMutation(c.config, OpUpdateOne, withVoucherPinDeliveryID(id))
+	return &VoucherPinDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VoucherPinDelivery.
+func (c *VoucherPinDeliveryClient) Delete() *VoucherPinDeliveryDelete {
+	mutation := newVoucherPinDeliveryMutation(c.config, OpDelete)
+	return &VoucherPinDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VoucherPinDeliveryClient) DeleteOne(_m *VoucherPinDelivery) *VoucherPinDeliveryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VoucherPinDeliveryClient) DeleteOneID(id int64) *VoucherPinDeliveryDeleteOne {
+	builder := c.Delete().Where(voucherpindelivery.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VoucherPinDeliveryDeleteOne{builder}
+}
+
+// Query returns a query builder for VoucherPinDelivery.
+func (c *VoucherPinDeliveryClient) Query() *VoucherPinDeliveryQuery {
+	return &VoucherPinDeliveryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVoucherPinDelivery},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VoucherPinDelivery entity by its id.
+func (c *VoucherPinDeliveryClient) Get(ctx context.Context, id int64) (*VoucherPinDelivery, error) {
+	return c.Query().Where(voucherpindelivery.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VoucherPinDeliveryClient) GetX(ctx context.Context, id int64) *VoucherPinDelivery {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *VoucherPinDeliveryClient) Hooks() []Hook {
+	return c.hooks.VoucherPinDelivery
+}
+
+// Interceptors returns the client interceptors.
+func (c *VoucherPinDeliveryClient) Interceptors() []Interceptor {
+	return c.inters.VoucherPinDelivery
+}
+
+func (c *VoucherPinDeliveryClient) mutate(ctx context.Context, m *VoucherPinDeliveryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VoucherPinDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VoucherPinDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VoucherPinDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VoucherPinDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VoucherPinDelivery mutation op: %q", m.Op())
+	}
+}
+
+// VoucherProductClient is a client for the VoucherProduct schema.
+type VoucherProductClient struct {
+	config
+}
+
+// NewVoucherProductClient returns a client for the VoucherProduct from the given config.
+func NewVoucherProductClient(c config) *VoucherProductClient {
+	return &VoucherProductClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `voucherproduct.Hooks(f(g(h())))`.
+func (c *VoucherProductClient) Use(hooks ...Hook) {
+	c.hooks.VoucherProduct = append(c.hooks.VoucherProduct, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `voucherproduct.Intercept(f(g(h())))`.
+func (c *VoucherProductClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VoucherProduct = append(c.inters.VoucherProduct, interceptors...)
+}
+
+// Create returns a builder for creating a VoucherProduct entity.
+func (c *VoucherProductClient) Create() *VoucherProductCreate {
+	mutation := newVoucherProductMutation(c.config, OpCreate)
+	return &VoucherProductCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VoucherProduct entities.
+func (c *VoucherProductClient) CreateBulk(builders ...*VoucherProductCreate) *VoucherProductCreateBulk {
+	return &VoucherProductCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoucherProductClient) MapCreateBulk(slice any, setFunc func(*VoucherProductCreate, int)) *VoucherProductCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoucherProductCreateBulk{err: fmt.Errorf("calling to VoucherProductClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoucherProductCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoucherProductCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VoucherProduct.
+func (c *VoucherProductClient) Update() *VoucherProductUpdate {
+	mutation := newVoucherProductMutation(c.config, OpUpdate)
+	return &VoucherProductUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VoucherProductClient) UpdateOne(_m *VoucherProduct) *VoucherProductUpdateOne {
+	mutation := newVoucherProductMutation(c.config, OpUpdateOne, withVoucherProduct(_m))
+	return &VoucherProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VoucherProductClient) UpdateOneID(id int64) *VoucherProductUpdateOne {
+	mutation := newVoucherProductMutation(c.config, OpUpdateOne, withVoucherProductID(id))
+	return &VoucherProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VoucherProduct.
+func (c *VoucherProductClient) Delete() *VoucherProductDelete {
+	mutation := newVoucherProductMutation(c.config, OpDelete)
+	return &VoucherProductDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VoucherProductClient) DeleteOne(_m *VoucherProduct) *VoucherProductDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VoucherProductClient) DeleteOneID(id int64) *VoucherProductDeleteOne {
+	builder := c.Delete().Where(voucherproduct.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VoucherProductDeleteOne{builder}
+}
+
+// Query returns a query builder for VoucherProduct.
+func (c *VoucherProductClient) Query() *VoucherProductQuery {
+	return &VoucherProductQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVoucherProduct},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VoucherProduct entity by its id.
+func (c *VoucherProductClient) Get(ctx context.Context, id int64) (*VoucherProduct, error) {
+	return c.Query().Where(voucherproduct.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VoucherProductClient) GetX(ctx context.Context, id int64) *VoucherProduct {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *VoucherProductClient) Hooks() []Hook {
+	return c.hooks.VoucherProduct
+}
+
+// Interceptors returns the client interceptors.
+func (c *VoucherProductClient) Interceptors() []Interceptor {
+	return c.inters.VoucherProduct
+}
+
+func (c *VoucherProductClient) mutate(ctx context.Context, m *VoucherProductMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VoucherProductCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VoucherProductUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VoucherProductUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VoucherProductDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VoucherProduct mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
@@ -6342,7 +6940,8 @@ type (
 		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
 		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
 		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription []ent.Hook
+		UserSubscription, VoucherAuditLog, VoucherOrder, VoucherPinDelivery,
+		VoucherProduct []ent.Hook
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
@@ -6353,7 +6952,8 @@ type (
 		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
 		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
 		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription []ent.Interceptor
+		UserSubscription, VoucherAuditLog, VoucherOrder, VoucherPinDelivery,
+		VoucherProduct []ent.Interceptor
 	}
 )
 

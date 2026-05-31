@@ -441,6 +441,54 @@ func (f UserSubscriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserSubscriptionMutation", m)
 }
 
+// The VoucherAuditLogFunc type is an adapter to allow the use of ordinary
+// function as VoucherAuditLog mutator.
+type VoucherAuditLogFunc func(context.Context, *ent.VoucherAuditLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VoucherAuditLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VoucherAuditLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherAuditLogMutation", m)
+}
+
+// The VoucherOrderFunc type is an adapter to allow the use of ordinary
+// function as VoucherOrder mutator.
+type VoucherOrderFunc func(context.Context, *ent.VoucherOrderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VoucherOrderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VoucherOrderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherOrderMutation", m)
+}
+
+// The VoucherPinDeliveryFunc type is an adapter to allow the use of ordinary
+// function as VoucherPinDelivery mutator.
+type VoucherPinDeliveryFunc func(context.Context, *ent.VoucherPinDeliveryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VoucherPinDeliveryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VoucherPinDeliveryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherPinDeliveryMutation", m)
+}
+
+// The VoucherProductFunc type is an adapter to allow the use of ordinary
+// function as VoucherProduct mutator.
+type VoucherProductFunc func(context.Context, *ent.VoucherProductMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VoucherProductFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VoucherProductMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VoucherProductMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

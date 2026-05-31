@@ -1802,6 +1802,169 @@ var (
 			},
 		},
 	}
+	// VoucherAuditLogsColumns holds the columns for the "voucher_audit_logs" table.
+	VoucherAuditLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "order_id", Type: field.TypeInt64},
+		{Name: "action", Type: field.TypeString, Size: 64},
+		{Name: "operator", Type: field.TypeString, Size: 128},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// VoucherAuditLogsTable holds the schema information for the "voucher_audit_logs" table.
+	VoucherAuditLogsTable = &schema.Table{
+		Name:       "voucher_audit_logs",
+		Columns:    VoucherAuditLogsColumns,
+		PrimaryKey: []*schema.Column{VoucherAuditLogsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "voucherauditlog_order_id",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherAuditLogsColumns[1]},
+			},
+			{
+				Name:    "voucherauditlog_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherAuditLogsColumns[5]},
+			},
+		},
+	}
+	// VoucherOrdersColumns holds the columns for the "voucher_orders" table.
+	VoucherOrdersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "order_no", Type: field.TypeString, Unique: true, Size: 64},
+		{Name: "user_email", Type: field.TypeString, Size: 255},
+		{Name: "user_name", Type: field.TypeString, Size: 100},
+		{Name: "status", Type: field.TypeString, Size: 32, Default: "pending_payment"},
+		{Name: "product_id", Type: field.TypeInt64},
+		{Name: "kv_product_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "product_name", Type: field.TypeString, Size: 128},
+		{Name: "denomination", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "quantity", Type: field.TypeInt, Default: 1},
+		{Name: "unit_price", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "subtotal", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "fee_amount", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "total_amount", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "currency", Type: field.TypeString, Size: 3, Default: "MYR"},
+		{Name: "payment_ref", Type: field.TypeString, Nullable: true, Size: 128},
+		{Name: "payment_proof_path", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "bank_account_id", Type: field.TypeInt, Nullable: true},
+		{Name: "kv_retrieve_reference", Type: field.TypeString, Size: 128},
+		{Name: "idempotency_key", Type: field.TypeString, Nullable: true, Size: 128},
+		{Name: "reject_reason", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "fulfill_error", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "expires_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "verified_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "fulfilled_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "client_ip", Type: field.TypeString, Size: 50, Default: ""},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "user_id", Type: field.TypeInt64},
+	}
+	// VoucherOrdersTable holds the schema information for the "voucher_orders" table.
+	VoucherOrdersTable = &schema.Table{
+		Name:       "voucher_orders",
+		Columns:    VoucherOrdersColumns,
+		PrimaryKey: []*schema.Column{VoucherOrdersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "voucher_orders_users_voucher_orders",
+				Columns:    []*schema.Column{VoucherOrdersColumns[29]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "voucherorder_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherOrdersColumns[29]},
+			},
+			{
+				Name:    "voucherorder_status",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherOrdersColumns[4]},
+			},
+			{
+				Name:    "voucherorder_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherOrdersColumns[27]},
+			},
+			{
+				Name:    "voucherorder_idempotency_key",
+				Unique:  true,
+				Columns: []*schema.Column{VoucherOrdersColumns[19]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "idempotency_key IS NOT NULL AND idempotency_key <> ''",
+				},
+			},
+		},
+	}
+	// VoucherPinDeliveriesColumns holds the columns for the "voucher_pin_deliveries" table.
+	VoucherPinDeliveriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "order_id", Type: field.TypeInt64},
+		{Name: "pin_code_enc", Type: field.TypeString, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "serial", Type: field.TypeString, Size: 128, Default: ""},
+		{Name: "denomination", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "expires_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "delivered_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// VoucherPinDeliveriesTable holds the schema information for the "voucher_pin_deliveries" table.
+	VoucherPinDeliveriesTable = &schema.Table{
+		Name:       "voucher_pin_deliveries",
+		Columns:    VoucherPinDeliveriesColumns,
+		PrimaryKey: []*schema.Column{VoucherPinDeliveriesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "voucherpindelivery_order_id",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherPinDeliveriesColumns[1]},
+			},
+		},
+	}
+	// VoucherProductsColumns holds the columns for the "voucher_products" table.
+	VoucherProductsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "kv_product_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "name", Type: field.TypeString, Size: 128},
+		{Name: "denomination", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "wholesale_price", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "retail_price", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,2)"}},
+		{Name: "currency", Type: field.TypeString, Size: 3, Default: "MYR"},
+		{Name: "stock_available", Type: field.TypeInt, Default: 0},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+	}
+	// VoucherProductsTable holds the schema information for the "voucher_products" table.
+	VoucherProductsTable = &schema.Table{
+		Name:       "voucher_products",
+		Columns:    VoucherProductsColumns,
+		PrimaryKey: []*schema.Column{VoucherProductsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "voucherproduct_kv_product_id",
+				Unique:  true,
+				Columns: []*schema.Column{VoucherProductsColumns[1]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "kv_product_id IS NOT NULL",
+				},
+			},
+			{
+				Name:    "voucherproduct_denomination",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherProductsColumns[3]},
+			},
+			{
+				Name:    "voucherproduct_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{VoucherProductsColumns[8]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		APIKeysTable,
@@ -1840,6 +2003,10 @@ var (
 		UserAttributeValuesTable,
 		UserPlatformQuotasTable,
 		UserSubscriptionsTable,
+		VoucherAuditLogsTable,
+		VoucherOrdersTable,
+		VoucherPinDeliveriesTable,
+		VoucherProductsTable,
 	}
 )
 
@@ -1984,5 +2151,18 @@ func init() {
 	UserSubscriptionsTable.ForeignKeys[2].RefTable = UsersTable
 	UserSubscriptionsTable.Annotation = &entsql.Annotation{
 		Table: "user_subscriptions",
+	}
+	VoucherAuditLogsTable.Annotation = &entsql.Annotation{
+		Table: "voucher_audit_logs",
+	}
+	VoucherOrdersTable.ForeignKeys[0].RefTable = UsersTable
+	VoucherOrdersTable.Annotation = &entsql.Annotation{
+		Table: "voucher_orders",
+	}
+	VoucherPinDeliveriesTable.Annotation = &entsql.Annotation{
+		Table: "voucher_pin_deliveries",
+	}
+	VoucherProductsTable.Annotation = &entsql.Annotation{
+		Table: "voucher_products",
 	}
 }

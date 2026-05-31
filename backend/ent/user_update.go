@@ -25,6 +25,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
 	"github.com/Wei-Shaw/sub2api/ent/userplatformquota"
 	"github.com/Wei-Shaw/sub2api/ent/usersubscription"
+	"github.com/Wei-Shaw/sub2api/ent/voucherorder"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -561,6 +562,21 @@ func (_u *UserUpdate) AddPaymentOrders(v ...*PaymentOrder) *UserUpdate {
 	return _u.AddPaymentOrderIDs(ids...)
 }
 
+// AddVoucherOrderIDs adds the "voucher_orders" edge to the VoucherOrder entity by IDs.
+func (_u *UserUpdate) AddVoucherOrderIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddVoucherOrderIDs(ids...)
+	return _u
+}
+
+// AddVoucherOrders adds the "voucher_orders" edges to the VoucherOrder entity.
+func (_u *UserUpdate) AddVoucherOrders(v ...*VoucherOrder) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVoucherOrderIDs(ids...)
+}
+
 // AddAuthIdentityIDs adds the "auth_identities" edge to the AuthIdentity entity by IDs.
 func (_u *UserUpdate) AddAuthIdentityIDs(ids ...int64) *UserUpdate {
 	_u.mutation.AddAuthIdentityIDs(ids...)
@@ -819,6 +835,27 @@ func (_u *UserUpdate) RemovePaymentOrders(v ...*PaymentOrder) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePaymentOrderIDs(ids...)
+}
+
+// ClearVoucherOrders clears all "voucher_orders" edges to the VoucherOrder entity.
+func (_u *UserUpdate) ClearVoucherOrders() *UserUpdate {
+	_u.mutation.ClearVoucherOrders()
+	return _u
+}
+
+// RemoveVoucherOrderIDs removes the "voucher_orders" edge to VoucherOrder entities by IDs.
+func (_u *UserUpdate) RemoveVoucherOrderIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveVoucherOrderIDs(ids...)
+	return _u
+}
+
+// RemoveVoucherOrders removes "voucher_orders" edges to VoucherOrder entities.
+func (_u *UserUpdate) RemoveVoucherOrders(v ...*VoucherOrder) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVoucherOrderIDs(ids...)
 }
 
 // ClearAuthIdentities clears all "auth_identities" edges to the AuthIdentity entity.
@@ -1534,6 +1571,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.VoucherOrdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVoucherOrdersIDs(); len(nodes) > 0 && !_u.mutation.VoucherOrdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VoucherOrdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AuthIdentitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2210,6 +2292,21 @@ func (_u *UserUpdateOne) AddPaymentOrders(v ...*PaymentOrder) *UserUpdateOne {
 	return _u.AddPaymentOrderIDs(ids...)
 }
 
+// AddVoucherOrderIDs adds the "voucher_orders" edge to the VoucherOrder entity by IDs.
+func (_u *UserUpdateOne) AddVoucherOrderIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddVoucherOrderIDs(ids...)
+	return _u
+}
+
+// AddVoucherOrders adds the "voucher_orders" edges to the VoucherOrder entity.
+func (_u *UserUpdateOne) AddVoucherOrders(v ...*VoucherOrder) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVoucherOrderIDs(ids...)
+}
+
 // AddAuthIdentityIDs adds the "auth_identities" edge to the AuthIdentity entity by IDs.
 func (_u *UserUpdateOne) AddAuthIdentityIDs(ids ...int64) *UserUpdateOne {
 	_u.mutation.AddAuthIdentityIDs(ids...)
@@ -2468,6 +2565,27 @@ func (_u *UserUpdateOne) RemovePaymentOrders(v ...*PaymentOrder) *UserUpdateOne 
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePaymentOrderIDs(ids...)
+}
+
+// ClearVoucherOrders clears all "voucher_orders" edges to the VoucherOrder entity.
+func (_u *UserUpdateOne) ClearVoucherOrders() *UserUpdateOne {
+	_u.mutation.ClearVoucherOrders()
+	return _u
+}
+
+// RemoveVoucherOrderIDs removes the "voucher_orders" edge to VoucherOrder entities by IDs.
+func (_u *UserUpdateOne) RemoveVoucherOrderIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveVoucherOrderIDs(ids...)
+	return _u
+}
+
+// RemoveVoucherOrders removes "voucher_orders" edges to VoucherOrder entities.
+func (_u *UserUpdateOne) RemoveVoucherOrders(v ...*VoucherOrder) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVoucherOrderIDs(ids...)
 }
 
 // ClearAuthIdentities clears all "auth_identities" edges to the AuthIdentity entity.
@@ -3206,6 +3324,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(paymentorder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VoucherOrdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVoucherOrdersIDs(); len(nodes) > 0 && !_u.mutation.VoucherOrdersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VoucherOrdersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.VoucherOrdersTable,
+			Columns: []string{user.VoucherOrdersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(voucherorder.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
