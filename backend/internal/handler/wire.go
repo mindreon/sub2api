@@ -101,6 +101,11 @@ func ProvideAdminSettingHandler(settingService *service.SettingService, emailSer
 	return h
 }
 
+// ProvideAdminAPIKeyHandler creates the admin API key handler with user-key creation support.
+func ProvideAdminAPIKeyHandler(adminService service.AdminService, apiKeyService *service.APIKeyService) *admin.AdminAPIKeyHandler {
+	return admin.NewAdminAPIKeyHandler(adminService, apiKeyService)
+}
+
 // ProvideVoucherService creates the KVoucher PIN purchase service.
 func ProvideVoucherService(entClient *dbent.Client, settingRepo service.SettingRepository) *voucher.Service {
 	return voucher.NewService(entClient, voucher.NewConfigStore(settingRepo))
@@ -199,7 +204,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewUserAttributeHandler,
 	admin.NewErrorPassthroughHandler,
 	admin.NewTLSFingerprintProfileHandler,
-	admin.NewAdminAPIKeyHandler,
+	ProvideAdminAPIKeyHandler,
 	admin.NewScheduledTestHandler,
 	admin.NewChannelHandler,
 	admin.NewChannelMonitorHandler,
