@@ -1,7 +1,15 @@
 // Package usagestats provides types for usage statistics and reporting.
 package usagestats
 
-import "time"
+import (
+	"errors"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+var ErrUsageLogRequestIDRequired = errors.New("request_id or client_request_id is required")
 
 const (
 	ModelSourceRequested = "requested"
@@ -259,6 +267,44 @@ type PlatformDashboardStats struct {
 	TodayActualCost float64 `json:"today_actual_cost"`
 }
 
+// ResolveUsageLogRequestID normalizes admin lookup keys for usage_logs.request_id.
+// client_request_id accepts the raw X-Client-Request-ID header value and adds the client: prefix.
+// request_id accepts the exact stored value; bare UUIDs are treated as client request IDs.
+func ResolveUsageLogRequestID(requestID, clientRequestID string) (string, error) {
+	requestID = strings.TrimSpace(requestID)
+	clientRequestID = strings.TrimSpace(clientRequestID)
+	if requestID != "" {
+		return normalizeStoredUsageLogRequestIDLookupKey(requestID), nil
+	}
+	if clientRequestID == "" {
+		return "", ErrUsageLogRequestIDRequired
+	}
+	return normalizeClientUsageLogRequestIDLookupKey(clientRequestID), nil
+}
+
+func hasKnownUsageLogRequestIDPrefix(value string) bool {
+	return strings.HasPrefix(value, "client:") ||
+		strings.HasPrefix(value, "local:") ||
+		strings.HasPrefix(value, "generated:")
+}
+
+func normalizeStoredUsageLogRequestIDLookupKey(value string) string {
+	if hasKnownUsageLogRequestIDPrefix(value) {
+		return value
+	}
+	if _, err := uuid.Parse(value); err == nil {
+		return "client:" + value
+	}
+	return value
+}
+
+func normalizeClientUsageLogRequestIDLookupKey(value string) string {
+	if hasKnownUsageLogRequestIDPrefix(value) {
+		return value
+	}
+	return "client:" + value
+}
+
 // UsageLogFilters represents filters for usage log queries
 type UsageLogFilters struct {
 	UserID      int64
@@ -266,6 +312,7 @@ type UsageLogFilters struct {
 	AccountID   int64
 	GroupID     int64
 	Model       string
+	RequestID   string
 	RequestType *int16
 	Stream      *bool
 	BillingType *int8

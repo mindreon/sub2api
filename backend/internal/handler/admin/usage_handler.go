@@ -42,6 +42,47 @@ func NewUsageHandler(
 	}
 }
 
+func parseAdminUsageRequestID(c *gin.Context) (string, error) {
+	return usagestats.ResolveUsageLogRequestID(c.Query("request_id"), c.Query("client_request_id"))
+}
+
+func optionalAdminUsageRequestID(c *gin.Context) (string, error) {
+	requestID := strings.TrimSpace(c.Query("request_id"))
+	clientRequestID := strings.TrimSpace(c.Query("client_request_id"))
+	if requestID == "" && clientRequestID == "" {
+		return "", nil
+	}
+	return usagestats.ResolveUsageLogRequestID(requestID, clientRequestID)
+}
+
+// GetByRequestID handles looking up a single usage record by request_id.
+// GET /api/v1/admin/usage/by-request-id?request_id=client:...&api_key_id=100
+// GET /api/v1/admin/usage/by-request-id?client_request_id=550e8400-...
+func (h *UsageHandler) GetByRequestID(c *gin.Context) {
+	requestID, err := parseAdminUsageRequestID(c)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	var apiKeyID int64
+	if apiKeyIDStr := strings.TrimSpace(c.Query("api_key_id")); apiKeyIDStr != "" {
+		apiKeyID, err = strconv.ParseInt(apiKeyIDStr, 10, 64)
+		if err != nil || apiKeyID <= 0 {
+			response.BadRequest(c, "Invalid api_key_id")
+			return
+		}
+	}
+
+	record, err := h.usageService.GetByRequestID(c.Request.Context(), requestID, apiKeyID)
+	if err != nil {
+		response.ErrorFrom(c, err)
+		return
+	}
+
+	response.Success(c, dto.UsageLogFromServiceAdmin(record))
+}
+
 // CreateUsageCleanupTaskRequest represents cleanup task creation request
 type CreateUsageCleanupTaskRequest struct {
 	StartDate   string  `json:"start_date"`
@@ -111,6 +152,11 @@ func (h *UsageHandler) List(c *gin.Context) {
 
 	model := c.Query("model")
 	billingMode := strings.TrimSpace(c.Query("billing_mode"))
+	requestID, err := optionalAdminUsageRequestID(c)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
 
 	var requestType *int16
 	var stream *bool
@@ -177,6 +223,7 @@ func (h *UsageHandler) List(c *gin.Context) {
 		AccountID:   accountID,
 		GroupID:     groupID,
 		Model:       model,
+		RequestID:   requestID,
 		RequestType: requestType,
 		Stream:      stream,
 		BillingType: billingType,
@@ -242,6 +289,11 @@ func (h *UsageHandler) Stats(c *gin.Context) {
 
 	model := c.Query("model")
 	billingMode := strings.TrimSpace(c.Query("billing_mode"))
+	requestID, err := optionalAdminUsageRequestID(c)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
 
 	var requestType *int16
 	var stream *bool
@@ -317,6 +369,7 @@ func (h *UsageHandler) Stats(c *gin.Context) {
 		AccountID:   accountID,
 		GroupID:     groupID,
 		Model:       model,
+		RequestID:   requestID,
 		RequestType: requestType,
 		Stream:      stream,
 		BillingType: billingType,

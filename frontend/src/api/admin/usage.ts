@@ -79,6 +79,8 @@ export interface CreateUsageCleanupTaskRequest {
 
 export interface AdminUsageQueryParams extends UsageQueryParams {
   user_id?: number
+  request_id?: string
+  client_request_id?: string
   exact_total?: boolean
   billing_mode?: string
   sort_by?: string
@@ -99,6 +101,20 @@ export async function list(
   const { data } = await apiClient.get<PaginatedResponse<AdminUsageLog>>('/admin/usage', {
     params,
     signal: options?.signal
+  })
+  return data
+}
+
+/**
+ * Look up a single usage log by request_id or client_request_id (admin only).
+ */
+export async function getByRequestID(params: {
+  request_id?: string
+  client_request_id?: string
+  api_key_id?: number
+}): Promise<AdminUsageLog> {
+  const { data } = await apiClient.get<AdminUsageLog>('/admin/usage/by-request-id', {
+    params
   })
   return data
 }

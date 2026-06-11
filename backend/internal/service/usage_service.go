@@ -155,6 +155,15 @@ func (s *UsageService) GetByID(ctx context.Context, id int64) (*UsageLog, error)
 	return log, nil
 }
 
+// GetByRequestID returns a usage log by request_id (admin lookup).
+func (s *UsageService) GetByRequestID(ctx context.Context, requestID string, apiKeyID int64) (*UsageLog, error) {
+	log, err := s.usageRepo.GetByRequestID(ctx, requestID, apiKeyID)
+	if err != nil {
+		return nil, fmt.Errorf("get usage log by request id: %w", err)
+	}
+	return log, nil
+}
+
 // ListByUser 获取用户的使用日志列表
 func (s *UsageService) ListByUser(ctx context.Context, userID int64, params pagination.PaginationParams) ([]UsageLog, *pagination.PaginationResult, error) {
 	logs, pagination, err := s.usageRepo.ListByUser(ctx, userID, params)

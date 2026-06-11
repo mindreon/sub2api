@@ -1430,6 +1430,51 @@ func (r *usageLogRepository) GetByID(ctx context.Context, id int64) (log *servic
 	return log, nil
 }
 
+func (r *usageLogRepository) GetByRequestID(ctx context.Context, requestID string, apiKeyID int64) (log *service.UsageLog, err error) {
+	requestID = strings.TrimSpace(requestID)
+	if requestID == "" {
+		return nil, service.ErrUsageLogNotFound
+	}
+
+	query := "SELECT " + usageLogSelectColumns + " FROM usage_logs WHERE request_id = $1"
+	args := []any{requestID}
+	if apiKeyID > 0 {
+		query += " AND api_key_id = $2"
+		args = append(args, apiKeyID)
+	}
+	query += " ORDER BY created_at DESC LIMIT 1"
+
+	rows, err := r.sql.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = closeErr
+			log = nil
+		}
+	}()
+	if !rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
+		return nil, service.ErrUsageLogNotFound
+	}
+	log, err = scanUsageLog(rows)
+	if err != nil {
+		return nil, err
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	logs := []service.UsageLog{*log}
+	if err = r.hydrateUsageLogAssociations(ctx, logs); err != nil {
+		return nil, err
+	}
+	return &logs[0], nil
+}
+
 func (r *usageLogRepository) ListByUser(ctx context.Context, userID int64, params pagination.PaginationParams) ([]service.UsageLog, *pagination.PaginationResult, error) {
 	return r.listUsageLogsWithPagination(ctx, "WHERE user_id = $1", []any{userID}, params)
 }
@@ -2789,6 +2834,10 @@ func (r *usageLogRepository) ListWithFilters(ctx context.Context, params paginat
 		args = append(args, filters.GroupID)
 	}
 	conditions, args = appendRawUsageLogModelWhereCondition(conditions, args, filters.Model)
+	if requestID := strings.TrimSpace(filters.RequestID); requestID != "" {
+		conditions = append(conditions, fmt.Sprintf("request_id = $%d", len(args)+1))
+		args = append(args, requestID)
+	}
 	conditions, args = appendRequestTypeOrStreamWhereCondition(conditions, args, filters.RequestType, filters.Stream)
 	if filters.BillingType != nil {
 		conditions = append(conditions, fmt.Sprintf("billing_type = $%d", len(args)+1))
@@ -2827,6 +2876,9 @@ func (r *usageLogRepository) ListWithFilters(ctx context.Context, params paginat
 
 func shouldUseFastUsageLogTotal(filters UsageLogFilters) bool {
 	if filters.ExactTotal {
+		return false
+	}
+	if strings.TrimSpace(filters.RequestID) != "" {
 		return false
 	}
 	// 强选择过滤下记录集通常较小，保留精确总数。
@@ -3506,6 +3558,10 @@ func (r *usageLogRepository) GetStatsWithFilters(ctx context.Context, filters Us
 		args = append(args, filters.GroupID)
 	}
 	conditions, args = appendRawUsageLogModelWhereCondition(conditions, args, filters.Model)
+	if requestID := strings.TrimSpace(filters.RequestID); requestID != "" {
+		conditions = append(conditions, fmt.Sprintf("request_id = $%d", len(args)+1))
+		args = append(args, requestID)
+	}
 	conditions, args = appendRequestTypeOrStreamWhereCondition(conditions, args, filters.RequestType, filters.Stream)
 	if filters.BillingType != nil {
 		conditions = append(conditions, fmt.Sprintf("billing_type = $%d", len(args)+1))
