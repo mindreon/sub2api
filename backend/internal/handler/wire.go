@@ -22,6 +22,7 @@ func ProvideAdminHandlers(
 	openaiOAuthHandler *admin.OpenAIOAuthHandler,
 	geminiOAuthHandler *admin.GeminiOAuthHandler,
 	antigravityOAuthHandler *admin.AntigravityOAuthHandler,
+	grokOAuthHandler *admin.GrokOAuthHandler,
 	proxyHandler *admin.ProxyHandler,
 	redeemHandler *admin.RedeemHandler,
 	promoHandler *admin.PromoHandler,
@@ -44,6 +45,7 @@ func ProvideAdminHandlers(
 	distributionHandler *admin.DistributionHandler,
 	catalogModelHandler *admin.CatalogModelHandler,
 	voucherAdminHandler *admin.VoucherHandler,
+	complianceHandler *admin.ComplianceHandler,
 ) *AdminHandlers {
 	return &AdminHandlers{
 		Dashboard:              dashboardHandler,
@@ -57,6 +59,7 @@ func ProvideAdminHandlers(
 		OpenAIOAuth:            openaiOAuthHandler,
 		GeminiOAuth:            geminiOAuthHandler,
 		AntigravityOAuth:       antigravityOAuthHandler,
+		GrokOAuth:              grokOAuthHandler,
 		Proxy:                  proxyHandler,
 		Redeem:                 redeemHandler,
 		Promo:                  promoHandler,
@@ -79,6 +82,7 @@ func ProvideAdminHandlers(
 		Distribution:           distributionHandler,
 		CatalogModel:           catalogModelHandler,
 		Voucher:                voucherAdminHandler,
+		Compliance:             complianceHandler,
 	}
 }
 
@@ -193,6 +197,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewOpenAIOAuthHandler,
 	admin.NewGeminiOAuthHandler,
 	admin.NewAntigravityOAuthHandler,
+	admin.NewGrokOAuthHandler,
 	admin.NewProxyHandler,
 	admin.NewRedeemHandler,
 	admin.NewPromoHandler,
@@ -215,6 +220,7 @@ var ProviderSet = wire.NewSet(
 	admin.NewDistributionHandler,
 	admin.NewCatalogModelHandler,
 	admin.NewVoucherHandler,
+	admin.NewComplianceHandler,
 
 	// AdminHandlers and Handlers constructors
 	ProvideAdminHandlers,

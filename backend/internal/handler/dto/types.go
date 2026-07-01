@@ -20,6 +20,7 @@ type User struct {
 	LastActiveAt  *time.Time `json:"last_active_at,omitempty"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
+	DeletedAt     *time.Time `json:"deleted_at,omitempty"`
 
 	// 余额不足通知
 	BalanceNotifyEnabled       bool               `json:"balance_notify_enabled"`
@@ -159,21 +160,23 @@ type Account struct {
 	Type     string  `json:"type"`
 	// Credentials 经 RedactCredentials 处理后只含非敏感子键；敏感 token / api_key / 私钥
 	// 的存在性通过 CredentialsStatus（has_<key>）暴露，原始值不返回前端。
-	Credentials        map[string]any  `json:"credentials"`
-	CredentialsStatus  map[string]bool `json:"credentials_status,omitempty"`
-	Extra              map[string]any  `json:"extra"`
-	ProxyID            *int64          `json:"proxy_id"`
-	Concurrency        int             `json:"concurrency"`
-	LoadFactor         *int            `json:"load_factor,omitempty"`
-	Priority           int             `json:"priority"`
-	RateMultiplier     float64         `json:"rate_multiplier"`
-	Status             string          `json:"status"`
-	ErrorMessage       string          `json:"error_message"`
-	LastUsedAt         *time.Time      `json:"last_used_at"`
-	ExpiresAt          *int64          `json:"expires_at"`
-	AutoPauseOnExpired bool            `json:"auto_pause_on_expired"`
-	CreatedAt          time.Time       `json:"created_at"`
-	UpdatedAt          time.Time       `json:"updated_at"`
+	Credentials             map[string]any  `json:"credentials"`
+	CredentialsStatus       map[string]bool `json:"credentials_status,omitempty"`
+	Extra                   map[string]any  `json:"extra"`
+	ProxyID                 *int64          `json:"proxy_id"`
+	ProxyFallbackOriginID   *int64          `json:"proxy_fallback_origin_id"`
+	ProxyFallbackOriginName *string         `json:"proxy_fallback_origin_name,omitempty"`
+	Concurrency             int             `json:"concurrency"`
+	LoadFactor              *int            `json:"load_factor,omitempty"`
+	Priority                int             `json:"priority"`
+	RateMultiplier          float64         `json:"rate_multiplier"`
+	Status                  string          `json:"status"`
+	ErrorMessage            string          `json:"error_message"`
+	LastUsedAt              *time.Time      `json:"last_used_at"`
+	ExpiresAt               *int64          `json:"expires_at"`
+	AutoPauseOnExpired      bool            `json:"auto_pause_on_expired"`
+	CreatedAt               time.Time       `json:"created_at"`
+	UpdatedAt               time.Time       `json:"updated_at"`
 
 	Schedulable bool `json:"schedulable"`
 
@@ -250,6 +253,17 @@ type Account struct {
 	QuotaNotifyTotalEnabled    *bool    `json:"quota_notify_total_enabled,omitempty"`
 	QuotaNotifyTotalThreshold  *float64 `json:"quota_notify_total_threshold,omitempty"`
 
+	// 影子账号关系（spark 维度影子）
+	ParentAccountID *int64 `json:"parent_account_id,omitempty"`
+	QuotaDimension  string `json:"quota_dimension,omitempty"`
+
+	// 影子账号回填的母账号信息（仅影子非空，源自母账号 Credentials/Extra）
+	ParentEmail                 string `json:"parent_email,omitempty"`
+	ParentPlanType              string `json:"parent_plan_type,omitempty"`
+	ParentPrivacyMode           string `json:"parent_privacy_mode,omitempty"`
+	ParentSubscriptionExpiresAt string `json:"parent_subscription_expires_at,omitempty"`
+	ParentChatGPTAccountID      string `json:"parent_chatgpt_account_id,omitempty"`
+
 	Proxy         *Proxy         `json:"proxy,omitempty"`
 	AccountGroups []AccountGroup `json:"account_groups,omitempty"`
 
@@ -278,6 +292,11 @@ type Proxy struct {
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	ExpiresAt      *time.Time `json:"expires_at"`
+	FallbackMode   string     `json:"fallback_mode"`
+	BackupProxyID  *int64     `json:"backup_proxy_id"`
+	ExpiryWarnDays int        `json:"expiry_warn_days"`
 }
 
 type ProxyWithAccountCount struct {
@@ -464,12 +483,16 @@ type UsageLog struct {
 	ImageSize          *string        `json:"image_size"`
 	ImageInputSize     *string        `json:"image_input_size"`
 	ImageOutputSize    *string        `json:"image_output_size"`
+	ImageOutputTokens  int            `json:"image_output_tokens"`
+	ImageOutputCost    float64        `json:"image_output_cost"`
 	ImageSizeSource    *string        `json:"image_size_source"`
 	ImageSizeBreakdown map[string]int `json:"image_size_breakdown"`
 	MediaType          *string        `json:"media_type"`
 
 	// User-Agent
 	UserAgent *string `json:"user_agent"`
+	// IPAddress is visible to the owner of the usage record.
+	IPAddress *string `json:"ip_address,omitempty"`
 
 	// Cache TTL Override 标记
 	CacheTTLOverridden bool `json:"cache_ttl_overridden"`
@@ -505,7 +528,7 @@ type AdminUsageLog struct {
 	// AccountStatsCost 自定义定价规则计算的账号统计费用（nil 表示使用默认公式）
 	AccountStatsCost *float64 `json:"account_stats_cost,omitempty"`
 
-	// IPAddress 用户请求 IP（仅管理员可见）
+	// IPAddress 用户请求 IP
 	IPAddress *string `json:"ip_address,omitempty"`
 
 	// Account 最小账号信息（避免泄露敏感字段）
