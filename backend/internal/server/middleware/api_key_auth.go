@@ -126,6 +126,8 @@ func apiKeyAuthWithSubscription(apiKeyService *service.APIKeyService, subscripti
 		if abortIfAPIKeyGroupNotAllowed(c, apiKey) {
 			return
 		}
+		ctx := context.WithValue(c.Request.Context(), ctxkey.UserID, apiKey.User.ID)
+		c.Request = c.Request.WithContext(ctx)
 
 		if err := apiKeyService.CheckDistributionAccess(c.Request.Context(), apiKey.User.ID); err != nil {
 			AbortWithError(c, 403, "DISTRIBUTION_CHANNEL_UNAVAILABLE", err.Error())
