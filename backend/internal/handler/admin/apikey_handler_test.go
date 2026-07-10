@@ -644,6 +644,10 @@ func (r *adminCreateAPIKeySubscriptionRepo) GetByID(context.Context, int64) (*se
 	return nil, service.ErrSubscriptionNotFound
 }
 
+func (r *adminCreateAPIKeySubscriptionRepo) GetByIDIncludeDeleted(context.Context, int64) (*service.UserSubscription, error) {
+	return nil, service.ErrSubscriptionNotFound
+}
+
 func (r *adminCreateAPIKeySubscriptionRepo) GetByUserIDAndGroupID(context.Context, int64, int64) (*service.UserSubscription, error) {
 	return nil, service.ErrSubscriptionNotFound
 }
@@ -657,6 +661,10 @@ func (r *adminCreateAPIKeySubscriptionRepo) Update(context.Context, *service.Use
 }
 
 func (r *adminCreateAPIKeySubscriptionRepo) Delete(context.Context, int64) error { return nil }
+
+func (r *adminCreateAPIKeySubscriptionRepo) Restore(context.Context, int64, string) (*service.UserSubscription, error) {
+	return nil, service.ErrSubscriptionNotFound
+}
 
 func (r *adminCreateAPIKeySubscriptionRepo) ListByUserID(context.Context, int64) ([]service.UserSubscription, error) {
 	return nil, nil
@@ -678,6 +686,10 @@ func (r *adminCreateAPIKeySubscriptionRepo) ExistsByUserIDAndGroupID(context.Con
 	return false, nil
 }
 
+func (r *adminCreateAPIKeySubscriptionRepo) ExistsActiveByUserIDAndGroupID(context.Context, int64, int64) (bool, error) {
+	return false, nil
+}
+
 func (r *adminCreateAPIKeySubscriptionRepo) ExtendExpiry(context.Context, int64, time.Time) error {
 	return nil
 }
@@ -694,15 +706,19 @@ func (r *adminCreateAPIKeySubscriptionRepo) ActivateWindows(context.Context, int
 	return nil
 }
 
-func (r *adminCreateAPIKeySubscriptionRepo) ResetDailyUsage(context.Context, int64, time.Time) error {
+func (r *adminCreateAPIKeySubscriptionRepo) ResetUsageWindows(context.Context, int64, bool, bool, bool, time.Time) error {
 	return nil
 }
 
-func (r *adminCreateAPIKeySubscriptionRepo) ResetWeeklyUsage(context.Context, int64, time.Time) error {
+func (r *adminCreateAPIKeySubscriptionRepo) ResetDailyUsage(context.Context, int64, *time.Time, time.Time) error {
 	return nil
 }
 
-func (r *adminCreateAPIKeySubscriptionRepo) ResetMonthlyUsage(context.Context, int64, time.Time) error {
+func (r *adminCreateAPIKeySubscriptionRepo) ResetWeeklyUsage(context.Context, int64, *time.Time, time.Time) error {
+	return nil
+}
+
+func (r *adminCreateAPIKeySubscriptionRepo) ResetMonthlyUsage(context.Context, int64, *time.Time, time.Time) error {
 	return nil
 }
 
