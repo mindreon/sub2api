@@ -112,6 +112,9 @@ func RegisterAdminRoutes(
 
 		// 模型目录管理
 		registerCatalogModelRoutes(admin, h)
+
+		// 多模态异步计费（任务列表 + 厂商配置）
+		registerMediaAdminRoutes(admin, h)
 	}
 }
 
@@ -730,5 +733,14 @@ func registerCatalogModelRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		catalog.PUT("/:id", h.Admin.CatalogModel.Update)
 		catalog.PATCH("/:id/toggle", h.Admin.CatalogModel.Toggle)
 		catalog.POST("/seed", h.Admin.CatalogModel.Seed)
+	}
+}
+
+func registerMediaAdminRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	mediaGroup := admin.Group("/media")
+	{
+		mediaGroup.GET("/settings", h.Admin.Media.GetSettings)
+		mediaGroup.PUT("/settings", h.Admin.Media.UpdateSettings)
+		mediaGroup.GET("/tasks", h.Admin.Media.ListTasks)
 	}
 }

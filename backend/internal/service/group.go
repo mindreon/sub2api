@@ -34,6 +34,11 @@ type Group struct {
 	ImagePrice2K         *float64
 	ImagePrice4K         *float64
 
+	// 多模态异步生成计费配置（volcengine / openrouter 平台使用）
+	AllowMediaGeneration bool
+	MediaRateIndependent bool
+	MediaRateMultiplier  float64
+
 	// Claude Code 客户端限制
 	ClaudeCodeOnly  bool
 	FallbackGroupID *int64

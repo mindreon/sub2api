@@ -857,6 +857,51 @@
           </div>
         </div>
 
+        <!-- 多模态异步生成计费配置 -->
+        <div
+          v-if="createForm.platform === 'volcengine' || createForm.platform === 'openrouter'"
+          class="border-t pt-4"
+        >
+          <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">
+            {{ t("admin.groups.mediaPricing.title") }}
+          </label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            {{ t("admin.groups.mediaPricing.description") }}
+          </p>
+          <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                v-model="createForm.allow_media_generation"
+                type="checkbox"
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              {{ t("admin.groups.mediaPricing.allowMediaGeneration") }}
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                v-model="createForm.media_rate_independent"
+                type="checkbox"
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              {{ t("admin.groups.mediaPricing.independentMultiplier") }}
+            </label>
+          </div>
+          <div v-if="createForm.media_rate_independent" class="mb-4">
+            <label class="input-label">{{ t("admin.groups.mediaPricing.mediaMultiplier") }}</label>
+            <input
+              v-model.number="createForm.media_rate_multiplier"
+              type="number"
+              step="0.0001"
+              min="0"
+              class="input"
+              placeholder="1"
+            />
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ t("admin.groups.mediaPricing.modeHint") }}
+          </p>
+        </div>
+
         <!-- 支持的模型系列（仅 antigravity 平台） -->
         <div v-if="createForm.platform === 'antigravity'" class="border-t pt-4">
           <div class="mb-1.5 flex items-center gap-1">
@@ -2149,6 +2194,51 @@
           </div>
         </div>
 
+        <!-- 多模态异步生成计费配置 -->
+        <div
+          v-if="editForm.platform === 'volcengine' || editForm.platform === 'openrouter'"
+          class="border-t pt-4"
+        >
+          <label class="block mb-2 font-medium text-gray-700 dark:text-gray-300">
+            {{ t("admin.groups.mediaPricing.title") }}
+          </label>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            {{ t("admin.groups.mediaPricing.description") }}
+          </p>
+          <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                v-model="editForm.allow_media_generation"
+                type="checkbox"
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              {{ t("admin.groups.mediaPricing.allowMediaGeneration") }}
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input
+                v-model="editForm.media_rate_independent"
+                type="checkbox"
+                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              {{ t("admin.groups.mediaPricing.independentMultiplier") }}
+            </label>
+          </div>
+          <div v-if="editForm.media_rate_independent" class="mb-4">
+            <label class="input-label">{{ t("admin.groups.mediaPricing.mediaMultiplier") }}</label>
+            <input
+              v-model.number="editForm.media_rate_multiplier"
+              type="number"
+              step="0.0001"
+              min="0"
+              class="input"
+              placeholder="1"
+            />
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ t("admin.groups.mediaPricing.modeHint") }}
+          </p>
+        </div>
+
         <!-- 支持的模型系列（仅 antigravity 平台） -->
         <div v-if="editForm.platform === 'antigravity'" class="border-t pt-4">
           <div class="mb-1.5 flex items-center gap-1">
@@ -3147,6 +3237,8 @@ const platformOptions = computed(() => [
   { value: "gemini", label: "Gemini" },
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
+  { value: "volcengine", label: "Volcengine" },
+  { value: "openrouter", label: "OpenRouter" },
 ]);
 
 const platformFilterOptions = computed(() => [
@@ -3156,6 +3248,8 @@ const platformFilterOptions = computed(() => [
   { value: "gemini", label: "Gemini" },
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
+  { value: "volcengine", label: "Volcengine" },
+  { value: "openrouter", label: "OpenRouter" },
 ]);
 
 const editStatusOptions = computed(() => [
@@ -3350,6 +3444,9 @@ const createForm = reactive({
   image_price_1k: null as number | null,
   image_price_2k: null as number | null,
   image_price_4k: null as number | null,
+  allow_media_generation: false,
+  media_rate_independent: false,
+  media_rate_multiplier: 1,
   // Claude Code 客户端限制（仅 anthropic 平台使用）
   claude_code_only: false,
   fallback_group_id: null as number | null,
@@ -3681,6 +3778,9 @@ const editForm = reactive({
   image_price_1k: null as number | null,
   image_price_2k: null as number | null,
   image_price_4k: null as number | null,
+  allow_media_generation: false,
+  media_rate_independent: false,
+  media_rate_multiplier: 1,
   // Claude Code 客户端限制（仅 anthropic 平台使用）
   claude_code_only: false,
   fallback_group_id: null as number | null,
@@ -3929,6 +4029,9 @@ const closeCreateModal = () => {
   createForm.allow_image_generation = false;
   createForm.image_rate_independent = false;
   createForm.image_rate_multiplier = 1;
+  createForm.allow_media_generation = false;
+  createForm.media_rate_independent = false;
+  createForm.media_rate_multiplier = 1;
   createForm.image_price_1k = null;
   createForm.image_price_2k = null;
   createForm.image_price_4k = null;
@@ -4021,6 +4124,9 @@ const handleCreateGroup = async () => {
     requestData.image_rate_multiplier = normalizeImageRateMultiplier(
       requestData.image_rate_multiplier,
     );
+    requestData.media_rate_multiplier = normalizeImageRateMultiplier(
+      requestData.media_rate_multiplier,
+    );
     await adminAPI.groups.create(requestData);
     appStore.showSuccess(t("admin.groups.groupCreated"));
     closeCreateModal();
@@ -4058,6 +4164,9 @@ const handleEdit = async (group: AdminGroup) => {
   editForm.image_price_1k = group.image_price_1k;
   editForm.image_price_2k = group.image_price_2k;
   editForm.image_price_4k = group.image_price_4k;
+  editForm.allow_media_generation = group.allow_media_generation ?? false;
+  editForm.media_rate_independent = group.media_rate_independent ?? false;
+  editForm.media_rate_multiplier = group.media_rate_multiplier ?? 1;
   editForm.claude_code_only = group.claude_code_only || false;
   editForm.fallback_group_id = group.fallback_group_id;
   editForm.fallback_group_id_on_invalid_request =
@@ -4159,6 +4268,9 @@ const handleUpdateGroup = async () => {
     payload.monthly_limit_usd = emptyToNull(payload.monthly_limit_usd);
     payload.image_rate_multiplier = normalizeImageRateMultiplier(
       payload.image_rate_multiplier,
+    );
+    payload.media_rate_multiplier = normalizeImageRateMultiplier(
+      payload.media_rate_multiplier,
     );
     await adminAPI.groups.update(editingGroup.value.id, payload);
     appStore.showSuccess(t("admin.groups.groupUpdated"));

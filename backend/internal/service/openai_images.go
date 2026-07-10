@@ -455,7 +455,13 @@ func applyOpenAIImagesDefaults(req *OpenAIImagesRequest) {
 }
 
 func isOpenAIImageGenerationModel(model string) bool {
-	return strings.HasPrefix(strings.ToLower(strings.TrimSpace(model)), "gpt-image-")
+	m := strings.ToLower(strings.TrimSpace(model))
+	if strings.HasPrefix(m, "gpt-image-") {
+		return true
+	}
+	m = strings.TrimPrefix(m, "volcengine/")
+	m = strings.TrimPrefix(m, "doubao-")
+	return strings.HasPrefix(m, "seedream-")
 }
 
 func validateOpenAIImagesModel(model string) error {

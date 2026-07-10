@@ -21,6 +21,8 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
 	"github.com/Wei-Shaw/sub2api/ent/identityadoptiondecision"
+	"github.com/Wei-Shaw/sub2api/ent/mediagenerationtask"
+	"github.com/Wei-Shaw/sub2api/ent/mediaquotahold"
 	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
 	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
@@ -938,54 +940,66 @@ func init() {
 	groupDescImageRateMultiplier := groupFields[13].Descriptor()
 	// group.DefaultImageRateMultiplier holds the default value on creation for the image_rate_multiplier field.
 	group.DefaultImageRateMultiplier = groupDescImageRateMultiplier.Default.(float64)
+	// groupDescAllowMediaGeneration is the schema descriptor for allow_media_generation field.
+	groupDescAllowMediaGeneration := groupFields[17].Descriptor()
+	// group.DefaultAllowMediaGeneration holds the default value on creation for the allow_media_generation field.
+	group.DefaultAllowMediaGeneration = groupDescAllowMediaGeneration.Default.(bool)
+	// groupDescMediaRateIndependent is the schema descriptor for media_rate_independent field.
+	groupDescMediaRateIndependent := groupFields[18].Descriptor()
+	// group.DefaultMediaRateIndependent holds the default value on creation for the media_rate_independent field.
+	group.DefaultMediaRateIndependent = groupDescMediaRateIndependent.Default.(bool)
+	// groupDescMediaRateMultiplier is the schema descriptor for media_rate_multiplier field.
+	groupDescMediaRateMultiplier := groupFields[19].Descriptor()
+	// group.DefaultMediaRateMultiplier holds the default value on creation for the media_rate_multiplier field.
+	group.DefaultMediaRateMultiplier = groupDescMediaRateMultiplier.Default.(float64)
 	// groupDescClaudeCodeOnly is the schema descriptor for claude_code_only field.
-	groupDescClaudeCodeOnly := groupFields[17].Descriptor()
+	groupDescClaudeCodeOnly := groupFields[20].Descriptor()
 	// group.DefaultClaudeCodeOnly holds the default value on creation for the claude_code_only field.
 	group.DefaultClaudeCodeOnly = groupDescClaudeCodeOnly.Default.(bool)
 	// groupDescModelRoutingEnabled is the schema descriptor for model_routing_enabled field.
-	groupDescModelRoutingEnabled := groupFields[21].Descriptor()
+	groupDescModelRoutingEnabled := groupFields[24].Descriptor()
 	// group.DefaultModelRoutingEnabled holds the default value on creation for the model_routing_enabled field.
 	group.DefaultModelRoutingEnabled = groupDescModelRoutingEnabled.Default.(bool)
 	// groupDescMcpXMLInject is the schema descriptor for mcp_xml_inject field.
-	groupDescMcpXMLInject := groupFields[22].Descriptor()
+	groupDescMcpXMLInject := groupFields[25].Descriptor()
 	// group.DefaultMcpXMLInject holds the default value on creation for the mcp_xml_inject field.
 	group.DefaultMcpXMLInject = groupDescMcpXMLInject.Default.(bool)
 	// groupDescSupportedModelScopes is the schema descriptor for supported_model_scopes field.
-	groupDescSupportedModelScopes := groupFields[23].Descriptor()
+	groupDescSupportedModelScopes := groupFields[26].Descriptor()
 	// group.DefaultSupportedModelScopes holds the default value on creation for the supported_model_scopes field.
 	group.DefaultSupportedModelScopes = groupDescSupportedModelScopes.Default.([]string)
 	// groupDescSortOrder is the schema descriptor for sort_order field.
-	groupDescSortOrder := groupFields[24].Descriptor()
+	groupDescSortOrder := groupFields[27].Descriptor()
 	// group.DefaultSortOrder holds the default value on creation for the sort_order field.
 	group.DefaultSortOrder = groupDescSortOrder.Default.(int)
 	// groupDescAllowMessagesDispatch is the schema descriptor for allow_messages_dispatch field.
-	groupDescAllowMessagesDispatch := groupFields[25].Descriptor()
+	groupDescAllowMessagesDispatch := groupFields[28].Descriptor()
 	// group.DefaultAllowMessagesDispatch holds the default value on creation for the allow_messages_dispatch field.
 	group.DefaultAllowMessagesDispatch = groupDescAllowMessagesDispatch.Default.(bool)
 	// groupDescRequireOauthOnly is the schema descriptor for require_oauth_only field.
-	groupDescRequireOauthOnly := groupFields[26].Descriptor()
+	groupDescRequireOauthOnly := groupFields[29].Descriptor()
 	// group.DefaultRequireOauthOnly holds the default value on creation for the require_oauth_only field.
 	group.DefaultRequireOauthOnly = groupDescRequireOauthOnly.Default.(bool)
 	// groupDescRequirePrivacySet is the schema descriptor for require_privacy_set field.
-	groupDescRequirePrivacySet := groupFields[27].Descriptor()
+	groupDescRequirePrivacySet := groupFields[30].Descriptor()
 	// group.DefaultRequirePrivacySet holds the default value on creation for the require_privacy_set field.
 	group.DefaultRequirePrivacySet = groupDescRequirePrivacySet.Default.(bool)
 	// groupDescDefaultMappedModel is the schema descriptor for default_mapped_model field.
-	groupDescDefaultMappedModel := groupFields[28].Descriptor()
+	groupDescDefaultMappedModel := groupFields[31].Descriptor()
 	// group.DefaultDefaultMappedModel holds the default value on creation for the default_mapped_model field.
 	group.DefaultDefaultMappedModel = groupDescDefaultMappedModel.Default.(string)
 	// group.DefaultMappedModelValidator is a validator for the "default_mapped_model" field. It is called by the builders before save.
 	group.DefaultMappedModelValidator = groupDescDefaultMappedModel.Validators[0].(func(string) error)
 	// groupDescMessagesDispatchModelConfig is the schema descriptor for messages_dispatch_model_config field.
-	groupDescMessagesDispatchModelConfig := groupFields[29].Descriptor()
+	groupDescMessagesDispatchModelConfig := groupFields[32].Descriptor()
 	// group.DefaultMessagesDispatchModelConfig holds the default value on creation for the messages_dispatch_model_config field.
 	group.DefaultMessagesDispatchModelConfig = groupDescMessagesDispatchModelConfig.Default.(domain.OpenAIMessagesDispatchModelConfig)
 	// groupDescModelsListConfig is the schema descriptor for models_list_config field.
-	groupDescModelsListConfig := groupFields[30].Descriptor()
+	groupDescModelsListConfig := groupFields[33].Descriptor()
 	// group.DefaultModelsListConfig holds the default value on creation for the models_list_config field.
 	group.DefaultModelsListConfig = groupDescModelsListConfig.Default.(domain.GroupModelsListConfig)
 	// groupDescRpmLimit is the schema descriptor for rpm_limit field.
-	groupDescRpmLimit := groupFields[31].Descriptor()
+	groupDescRpmLimit := groupFields[34].Descriptor()
 	// group.DefaultRpmLimit holds the default value on creation for the rpm_limit field.
 	group.DefaultRpmLimit = groupDescRpmLimit.Default.(int)
 	idempotencyrecordMixin := schema.IdempotencyRecord{}.Mixin()
@@ -1050,6 +1064,132 @@ func init() {
 	identityadoptiondecisionDescDecidedAt := identityadoptiondecisionFields[4].Descriptor()
 	// identityadoptiondecision.DefaultDecidedAt holds the default value on creation for the decided_at field.
 	identityadoptiondecision.DefaultDecidedAt = identityadoptiondecisionDescDecidedAt.Default.(func() time.Time)
+	mediagenerationtaskMixin := schema.MediaGenerationTask{}.Mixin()
+	mediagenerationtaskMixinFields0 := mediagenerationtaskMixin[0].Fields()
+	_ = mediagenerationtaskMixinFields0
+	mediagenerationtaskFields := schema.MediaGenerationTask{}.Fields()
+	_ = mediagenerationtaskFields
+	// mediagenerationtaskDescCreatedAt is the schema descriptor for created_at field.
+	mediagenerationtaskDescCreatedAt := mediagenerationtaskMixinFields0[0].Descriptor()
+	// mediagenerationtask.DefaultCreatedAt holds the default value on creation for the created_at field.
+	mediagenerationtask.DefaultCreatedAt = mediagenerationtaskDescCreatedAt.Default.(func() time.Time)
+	// mediagenerationtaskDescUpdatedAt is the schema descriptor for updated_at field.
+	mediagenerationtaskDescUpdatedAt := mediagenerationtaskMixinFields0[1].Descriptor()
+	// mediagenerationtask.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	mediagenerationtask.DefaultUpdatedAt = mediagenerationtaskDescUpdatedAt.Default.(func() time.Time)
+	// mediagenerationtask.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	mediagenerationtask.UpdateDefaultUpdatedAt = mediagenerationtaskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// mediagenerationtaskDescTaskID is the schema descriptor for task_id field.
+	mediagenerationtaskDescTaskID := mediagenerationtaskFields[0].Descriptor()
+	// mediagenerationtask.TaskIDValidator is a validator for the "task_id" field. It is called by the builders before save.
+	mediagenerationtask.TaskIDValidator = mediagenerationtaskDescTaskID.Validators[0].(func(string) error)
+	// mediagenerationtaskDescUpstreamTaskID is the schema descriptor for upstream_task_id field.
+	mediagenerationtaskDescUpstreamTaskID := mediagenerationtaskFields[1].Descriptor()
+	// mediagenerationtask.UpstreamTaskIDValidator is a validator for the "upstream_task_id" field. It is called by the builders before save.
+	mediagenerationtask.UpstreamTaskIDValidator = mediagenerationtaskDescUpstreamTaskID.Validators[0].(func(string) error)
+	// mediagenerationtaskDescModel is the schema descriptor for model field.
+	mediagenerationtaskDescModel := mediagenerationtaskFields[7].Descriptor()
+	// mediagenerationtask.ModelValidator is a validator for the "model" field. It is called by the builders before save.
+	mediagenerationtask.ModelValidator = mediagenerationtaskDescModel.Validators[0].(func(string) error)
+	// mediagenerationtaskDescMediaType is the schema descriptor for media_type field.
+	mediagenerationtaskDescMediaType := mediagenerationtaskFields[8].Descriptor()
+	// mediagenerationtask.MediaTypeValidator is a validator for the "media_type" field. It is called by the builders before save.
+	mediagenerationtask.MediaTypeValidator = mediagenerationtaskDescMediaType.Validators[0].(func(string) error)
+	// mediagenerationtaskDescStatus is the schema descriptor for status field.
+	mediagenerationtaskDescStatus := mediagenerationtaskFields[9].Descriptor()
+	// mediagenerationtask.DefaultStatus holds the default value on creation for the status field.
+	mediagenerationtask.DefaultStatus = mediagenerationtaskDescStatus.Default.(string)
+	// mediagenerationtask.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	mediagenerationtask.StatusValidator = func() func(string) error {
+		validators := mediagenerationtaskDescStatus.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(status string) error {
+			for _, fn := range fns {
+				if err := fn(status); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// mediagenerationtaskDescBillingMetric is the schema descriptor for billing_metric field.
+	mediagenerationtaskDescBillingMetric := mediagenerationtaskFields[10].Descriptor()
+	// mediagenerationtask.BillingMetricValidator is a validator for the "billing_metric" field. It is called by the builders before save.
+	mediagenerationtask.BillingMetricValidator = mediagenerationtaskDescBillingMetric.Validators[0].(func(string) error)
+	// mediagenerationtaskDescReservedCost is the schema descriptor for reserved_cost field.
+	mediagenerationtaskDescReservedCost := mediagenerationtaskFields[11].Descriptor()
+	// mediagenerationtask.DefaultReservedCost holds the default value on creation for the reserved_cost field.
+	mediagenerationtask.DefaultReservedCost = mediagenerationtaskDescReservedCost.Default.(float64)
+	// mediagenerationtaskDescRateMultiplier is the schema descriptor for rate_multiplier field.
+	mediagenerationtaskDescRateMultiplier := mediagenerationtaskFields[13].Descriptor()
+	// mediagenerationtask.DefaultRateMultiplier holds the default value on creation for the rate_multiplier field.
+	mediagenerationtask.DefaultRateMultiplier = mediagenerationtaskDescRateMultiplier.Default.(float64)
+	// mediagenerationtaskDescBillingCurrency is the schema descriptor for billing_currency field.
+	mediagenerationtaskDescBillingCurrency := mediagenerationtaskFields[14].Descriptor()
+	// mediagenerationtask.DefaultBillingCurrency holds the default value on creation for the billing_currency field.
+	mediagenerationtask.DefaultBillingCurrency = mediagenerationtaskDescBillingCurrency.Default.(string)
+	// mediagenerationtask.BillingCurrencyValidator is a validator for the "billing_currency" field. It is called by the builders before save.
+	mediagenerationtask.BillingCurrencyValidator = mediagenerationtaskDescBillingCurrency.Validators[0].(func(string) error)
+	// mediagenerationtaskDescResultStorageKey is the schema descriptor for result_storage_key field.
+	mediagenerationtaskDescResultStorageKey := mediagenerationtaskFields[18].Descriptor()
+	// mediagenerationtask.ResultStorageKeyValidator is a validator for the "result_storage_key" field. It is called by the builders before save.
+	mediagenerationtask.ResultStorageKeyValidator = mediagenerationtaskDescResultStorageKey.Validators[0].(func(string) error)
+	// mediagenerationtaskDescPollAttempts is the schema descriptor for poll_attempts field.
+	mediagenerationtaskDescPollAttempts := mediagenerationtaskFields[19].Descriptor()
+	// mediagenerationtask.DefaultPollAttempts holds the default value on creation for the poll_attempts field.
+	mediagenerationtask.DefaultPollAttempts = mediagenerationtaskDescPollAttempts.Default.(int)
+	mediaquotaholdMixin := schema.MediaQuotaHold{}.Mixin()
+	mediaquotaholdMixinFields0 := mediaquotaholdMixin[0].Fields()
+	_ = mediaquotaholdMixinFields0
+	mediaquotaholdFields := schema.MediaQuotaHold{}.Fields()
+	_ = mediaquotaholdFields
+	// mediaquotaholdDescCreatedAt is the schema descriptor for created_at field.
+	mediaquotaholdDescCreatedAt := mediaquotaholdMixinFields0[0].Descriptor()
+	// mediaquotahold.DefaultCreatedAt holds the default value on creation for the created_at field.
+	mediaquotahold.DefaultCreatedAt = mediaquotaholdDescCreatedAt.Default.(func() time.Time)
+	// mediaquotaholdDescUpdatedAt is the schema descriptor for updated_at field.
+	mediaquotaholdDescUpdatedAt := mediaquotaholdMixinFields0[1].Descriptor()
+	// mediaquotahold.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	mediaquotahold.DefaultUpdatedAt = mediaquotaholdDescUpdatedAt.Default.(func() time.Time)
+	// mediaquotahold.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	mediaquotahold.UpdateDefaultUpdatedAt = mediaquotaholdDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// mediaquotaholdDescHoldID is the schema descriptor for hold_id field.
+	mediaquotaholdDescHoldID := mediaquotaholdFields[0].Descriptor()
+	// mediaquotahold.HoldIDValidator is a validator for the "hold_id" field. It is called by the builders before save.
+	mediaquotahold.HoldIDValidator = mediaquotaholdDescHoldID.Validators[0].(func(string) error)
+	// mediaquotaholdDescTaskID is the schema descriptor for task_id field.
+	mediaquotaholdDescTaskID := mediaquotaholdFields[1].Descriptor()
+	// mediaquotahold.TaskIDValidator is a validator for the "task_id" field. It is called by the builders before save.
+	mediaquotahold.TaskIDValidator = mediaquotaholdDescTaskID.Validators[0].(func(string) error)
+	// mediaquotaholdDescCurrency is the schema descriptor for currency field.
+	mediaquotaholdDescCurrency := mediaquotaholdFields[4].Descriptor()
+	// mediaquotahold.DefaultCurrency holds the default value on creation for the currency field.
+	mediaquotahold.DefaultCurrency = mediaquotaholdDescCurrency.Default.(string)
+	// mediaquotahold.CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
+	mediaquotahold.CurrencyValidator = mediaquotaholdDescCurrency.Validators[0].(func(string) error)
+	// mediaquotaholdDescStatus is the schema descriptor for status field.
+	mediaquotaholdDescStatus := mediaquotaholdFields[5].Descriptor()
+	// mediaquotahold.DefaultStatus holds the default value on creation for the status field.
+	mediaquotahold.DefaultStatus = mediaquotaholdDescStatus.Default.(string)
+	// mediaquotahold.StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	mediaquotahold.StatusValidator = func() func(string) error {
+		validators := mediaquotaholdDescStatus.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(status string) error {
+			for _, fn := range fns {
+				if err := fn(status); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	paymentauditlogFields := schema.PaymentAuditLog{}.Fields()
 	_ = paymentauditlogFields
 	// paymentauditlogDescOrderID is the schema descriptor for order_id field.

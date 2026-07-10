@@ -405,6 +405,55 @@ func (_u *GroupUpdate) ClearImagePrice4k() *GroupUpdate {
 	return _u
 }
 
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (_u *GroupUpdate) SetAllowMediaGeneration(v bool) *GroupUpdate {
+	_u.mutation.SetAllowMediaGeneration(v)
+	return _u
+}
+
+// SetNillableAllowMediaGeneration sets the "allow_media_generation" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableAllowMediaGeneration(v *bool) *GroupUpdate {
+	if v != nil {
+		_u.SetAllowMediaGeneration(*v)
+	}
+	return _u
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (_u *GroupUpdate) SetMediaRateIndependent(v bool) *GroupUpdate {
+	_u.mutation.SetMediaRateIndependent(v)
+	return _u
+}
+
+// SetNillableMediaRateIndependent sets the "media_rate_independent" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableMediaRateIndependent(v *bool) *GroupUpdate {
+	if v != nil {
+		_u.SetMediaRateIndependent(*v)
+	}
+	return _u
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (_u *GroupUpdate) SetMediaRateMultiplier(v float64) *GroupUpdate {
+	_u.mutation.ResetMediaRateMultiplier()
+	_u.mutation.SetMediaRateMultiplier(v)
+	return _u
+}
+
+// SetNillableMediaRateMultiplier sets the "media_rate_multiplier" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableMediaRateMultiplier(v *float64) *GroupUpdate {
+	if v != nil {
+		_u.SetMediaRateMultiplier(*v)
+	}
+	return _u
+}
+
+// AddMediaRateMultiplier adds value to the "media_rate_multiplier" field.
+func (_u *GroupUpdate) AddMediaRateMultiplier(v float64) *GroupUpdate {
+	_u.mutation.AddMediaRateMultiplier(v)
+	return _u
+}
+
 // SetClaudeCodeOnly sets the "claude_code_only" field.
 func (_u *GroupUpdate) SetClaudeCodeOnly(v bool) *GroupUpdate {
 	_u.mutation.SetClaudeCodeOnly(v)
@@ -1063,6 +1112,18 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ImagePrice4kCleared() {
 		_spec.ClearField(group.FieldImagePrice4k, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.AllowMediaGeneration(); ok {
+		_spec.SetField(group.FieldAllowMediaGeneration, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MediaRateIndependent(); ok {
+		_spec.SetField(group.FieldMediaRateIndependent, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MediaRateMultiplier(); ok {
+		_spec.SetField(group.FieldMediaRateMultiplier, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMediaRateMultiplier(); ok {
+		_spec.AddField(group.FieldMediaRateMultiplier, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.ClaudeCodeOnly(); ok {
 		_spec.SetField(group.FieldClaudeCodeOnly, field.TypeBool, value)
@@ -1818,6 +1879,55 @@ func (_u *GroupUpdateOne) ClearImagePrice4k() *GroupUpdateOne {
 	return _u
 }
 
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (_u *GroupUpdateOne) SetAllowMediaGeneration(v bool) *GroupUpdateOne {
+	_u.mutation.SetAllowMediaGeneration(v)
+	return _u
+}
+
+// SetNillableAllowMediaGeneration sets the "allow_media_generation" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableAllowMediaGeneration(v *bool) *GroupUpdateOne {
+	if v != nil {
+		_u.SetAllowMediaGeneration(*v)
+	}
+	return _u
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (_u *GroupUpdateOne) SetMediaRateIndependent(v bool) *GroupUpdateOne {
+	_u.mutation.SetMediaRateIndependent(v)
+	return _u
+}
+
+// SetNillableMediaRateIndependent sets the "media_rate_independent" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableMediaRateIndependent(v *bool) *GroupUpdateOne {
+	if v != nil {
+		_u.SetMediaRateIndependent(*v)
+	}
+	return _u
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (_u *GroupUpdateOne) SetMediaRateMultiplier(v float64) *GroupUpdateOne {
+	_u.mutation.ResetMediaRateMultiplier()
+	_u.mutation.SetMediaRateMultiplier(v)
+	return _u
+}
+
+// SetNillableMediaRateMultiplier sets the "media_rate_multiplier" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableMediaRateMultiplier(v *float64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetMediaRateMultiplier(*v)
+	}
+	return _u
+}
+
+// AddMediaRateMultiplier adds value to the "media_rate_multiplier" field.
+func (_u *GroupUpdateOne) AddMediaRateMultiplier(v float64) *GroupUpdateOne {
+	_u.mutation.AddMediaRateMultiplier(v)
+	return _u
+}
+
 // SetClaudeCodeOnly sets the "claude_code_only" field.
 func (_u *GroupUpdateOne) SetClaudeCodeOnly(v bool) *GroupUpdateOne {
 	_u.mutation.SetClaudeCodeOnly(v)
@@ -2506,6 +2616,18 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	}
 	if _u.mutation.ImagePrice4kCleared() {
 		_spec.ClearField(group.FieldImagePrice4k, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.AllowMediaGeneration(); ok {
+		_spec.SetField(group.FieldAllowMediaGeneration, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MediaRateIndependent(); ok {
+		_spec.SetField(group.FieldMediaRateIndependent, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MediaRateMultiplier(); ok {
+		_spec.SetField(group.FieldMediaRateMultiplier, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedMediaRateMultiplier(); ok {
+		_spec.AddField(group.FieldMediaRateMultiplier, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.ClaudeCodeOnly(); ok {
 		_spec.SetField(group.FieldClaudeCodeOnly, field.TypeBool, value)

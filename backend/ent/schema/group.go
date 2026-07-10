@@ -97,6 +97,18 @@ func (Group) Fields() []ent.Field {
 			Nillable().
 			SchemaType(map[string]string{dialect.Postgres: "decimal(20,8)"}),
 
+		// 多模态异步生成计费配置（volcengine / openrouter 平台使用）
+		field.Bool("allow_media_generation").
+			Default(false).
+			Comment("是否允许该分组使用多模态异步生成（/v1/video/generations）"),
+		field.Bool("media_rate_independent").
+			Default(false).
+			Comment("多模态是否使用独立倍率；false 表示共享分组有效倍率"),
+		field.Float("media_rate_multiplier").
+			SchemaType(map[string]string{dialect.Postgres: "decimal(10,4)"}).
+			Default(1.0).
+			Comment("多模态独立倍率，仅 media_rate_independent=true 时生效"),
+
 		// Claude Code 客户端限制 (added by migration 029)
 		field.Bool("claude_code_only").
 			Default(false).

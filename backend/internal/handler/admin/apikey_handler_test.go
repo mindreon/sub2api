@@ -390,6 +390,7 @@ func (r *adminCreateAPIKeyRepo) GetByKeyForAuth(context.Context, string) (*servi
 
 func (r *adminCreateAPIKeyRepo) Update(context.Context, *service.APIKey) error { return nil }
 func (r *adminCreateAPIKeyRepo) Delete(context.Context, int64) error           { return nil }
+func (r *adminCreateAPIKeyRepo) DeleteWithAudit(context.Context, int64) error  { return nil }
 
 func (r *adminCreateAPIKeyRepo) ListByUserID(context.Context, int64, pagination.PaginationParams, service.APIKeyListFilters) ([]service.APIKey, *pagination.PaginationResult, error) {
 	return nil, nil, nil
@@ -464,6 +465,10 @@ func (r *adminCreateAPIKeyUserRepo) GetByID(_ context.Context, id int64) (*servi
 		}
 	}
 	return nil, service.ErrUserNotFound
+}
+
+func (r *adminCreateAPIKeyUserRepo) GetByIDIncludeDeleted(ctx context.Context, id int64) (*service.User, error) {
+	return r.GetByID(ctx, id)
 }
 
 func (r *adminCreateAPIKeyUserRepo) GetByEmail(context.Context, string) (*service.User, error) {

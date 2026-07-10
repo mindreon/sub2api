@@ -155,6 +155,21 @@ func ImagePrice4k(v float64) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldImagePrice4k, v))
 }
 
+// AllowMediaGeneration applies equality check predicate on the "allow_media_generation" field. It's identical to AllowMediaGenerationEQ.
+func AllowMediaGeneration(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldAllowMediaGeneration, v))
+}
+
+// MediaRateIndependent applies equality check predicate on the "media_rate_independent" field. It's identical to MediaRateIndependentEQ.
+func MediaRateIndependent(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldMediaRateIndependent, v))
+}
+
+// MediaRateMultiplier applies equality check predicate on the "media_rate_multiplier" field. It's identical to MediaRateMultiplierEQ.
+func MediaRateMultiplier(v float64) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldMediaRateMultiplier, v))
+}
+
 // ClaudeCodeOnly applies equality check predicate on the "claude_code_only" field. It's identical to ClaudeCodeOnlyEQ.
 func ClaudeCodeOnly(v bool) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldClaudeCodeOnly, v))
@@ -1123,6 +1138,66 @@ func ImagePrice4kIsNil() predicate.Group {
 // ImagePrice4kNotNil applies the NotNil predicate on the "image_price_4k" field.
 func ImagePrice4kNotNil() predicate.Group {
 	return predicate.Group(sql.FieldNotNull(FieldImagePrice4k))
+}
+
+// AllowMediaGenerationEQ applies the EQ predicate on the "allow_media_generation" field.
+func AllowMediaGenerationEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldAllowMediaGeneration, v))
+}
+
+// AllowMediaGenerationNEQ applies the NEQ predicate on the "allow_media_generation" field.
+func AllowMediaGenerationNEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldAllowMediaGeneration, v))
+}
+
+// MediaRateIndependentEQ applies the EQ predicate on the "media_rate_independent" field.
+func MediaRateIndependentEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldMediaRateIndependent, v))
+}
+
+// MediaRateIndependentNEQ applies the NEQ predicate on the "media_rate_independent" field.
+func MediaRateIndependentNEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldMediaRateIndependent, v))
+}
+
+// MediaRateMultiplierEQ applies the EQ predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierEQ(v float64) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldMediaRateMultiplier, v))
+}
+
+// MediaRateMultiplierNEQ applies the NEQ predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierNEQ(v float64) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldMediaRateMultiplier, v))
+}
+
+// MediaRateMultiplierIn applies the In predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierIn(vs ...float64) predicate.Group {
+	return predicate.Group(sql.FieldIn(FieldMediaRateMultiplier, vs...))
+}
+
+// MediaRateMultiplierNotIn applies the NotIn predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierNotIn(vs ...float64) predicate.Group {
+	return predicate.Group(sql.FieldNotIn(FieldMediaRateMultiplier, vs...))
+}
+
+// MediaRateMultiplierGT applies the GT predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierGT(v float64) predicate.Group {
+	return predicate.Group(sql.FieldGT(FieldMediaRateMultiplier, v))
+}
+
+// MediaRateMultiplierGTE applies the GTE predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierGTE(v float64) predicate.Group {
+	return predicate.Group(sql.FieldGTE(FieldMediaRateMultiplier, v))
+}
+
+// MediaRateMultiplierLT applies the LT predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierLT(v float64) predicate.Group {
+	return predicate.Group(sql.FieldLT(FieldMediaRateMultiplier, v))
+}
+
+// MediaRateMultiplierLTE applies the LTE predicate on the "media_rate_multiplier" field.
+func MediaRateMultiplierLTE(v float64) predicate.Group {
+	return predicate.Group(sql.FieldLTE(FieldMediaRateMultiplier, v))
 }
 
 // ClaudeCodeOnlyEQ applies the EQ predicate on the "claude_code_only" field.

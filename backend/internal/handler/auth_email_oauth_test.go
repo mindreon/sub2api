@@ -167,7 +167,7 @@ func TestEmailOAuthCallbackExistingEmailLogsInWhenInvitationEnabled(t *testing.T
 	_ = user
 }
 
-func TestEmailOAuthCallbackAutoRegistersNewEmailWithAffiliate(t *testing.T) {
+func TestEmailOAuthCallbackCreatesPendingRegistrationWithAffiliate(t *testing.T) {
 	affiliateRepo := newOAuthEmailAffiliateRepoStub(map[string]int64{"AFF123": 1001})
 	handler, client := newOAuthPendingFlowTestHandlerWithDependencies(t, oauthPendingFlowTestHandlerOptions{
 		settingValues: map[string]string{
@@ -200,17 +200,30 @@ func TestEmailOAuthCallbackAutoRegistersNewEmailWithAffiliate(t *testing.T) {
 
 	require.Equal(t, http.StatusFound, recorder.Code)
 	location := recorder.Header().Get("Location")
-	require.Contains(t, location, "access_token=")
-	require.Contains(t, location, "redirect=%252Fdashboard")
+	require.Contains(t, location, "/auth/oauth/callback")
+	require.NotContains(t, location, "access_token=")
 
 	userCount, err := client.User.Query().Where(dbuser.EmailEQ("aff-user@example.com")).Count(ctx)
 	require.NoError(t, err)
-	require.Equal(t, 1, userCount)
-	require.NotEmpty(t, affiliateRepo.bindCalls)
+	require.Zero(t, userCount)
+	require.Empty(t, affiliateRepo.bindCalls)
 
-	sessionCount, err := client.PendingAuthSession.Query().Count(ctx)
+	session, err := client.PendingAuthSession.Query().Only(ctx)
 	require.NoError(t, err)
-	require.Zero(t, sessionCount)
+	require.Equal(t, "github", session.ProviderType)
+	require.Equal(t, "github-aff-user", session.ProviderSubject)
+	require.Equal(t, "aff-user@example.com", session.ResolvedEmail)
+	require.Equal(t, "AFF123", pendingSessionStringValue(session.UpstreamIdentityClaims, "aff_code"))
+
+	completion, ok := readCompletionResponse(session.LocalFlowState)
+	require.True(t, ok)
+	require.Equal(t, oauthPendingChoiceStep, completion["step"])
+	require.Equal(t, "registration_completion_required", completion["error"])
+	require.Equal(t, "aff-user@example.com", completion["resolved_email"])
+	require.Equal(t, "/dashboard", completion["redirect"])
+
+	require.NotEmpty(t, findSetCookieValue(recorder.Result().Cookies(), oauthPendingSessionCookieName))
+	require.NotEmpty(t, findSetCookieValue(recorder.Result().Cookies(), oauthPendingBrowserCookieName))
 }
 
 func TestEmailOAuthStartPreservesPromoCodeInPendingSession(t *testing.T) {

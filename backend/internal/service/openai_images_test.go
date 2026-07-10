@@ -334,6 +334,26 @@ func TestOpenAIGatewayServiceParseOpenAIImagesRequest_RejectsNonImageModel(t *te
 	require.ErrorContains(t, err, `images endpoint requires an image model, got "gpt-5.4"`)
 }
 
+func TestOpenAIGatewayServiceParseOpenAIImagesRequest_AcceptsSeedreamModel(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	body := []byte(`{"model":"seedream-5-0-260128","prompt":"draw a cat","n":1,"size":"2560x1440"}`)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/images/generations", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = req
+
+	svc := &OpenAIGatewayService{}
+	parsed, err := svc.ParseOpenAIImagesRequest(c, body)
+	require.NoError(t, err)
+	require.NotNil(t, parsed)
+	require.Equal(t, "seedream-5-0-260128", parsed.Model)
+	require.Equal(t, "draw a cat", parsed.Prompt)
+	require.Equal(t, 1, parsed.N)
+	require.Equal(t, "2560x1440", parsed.Size)
+}
+
 func TestOpenAIGatewayServiceParseOpenAIImagesRequest_JSONEditURLs(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	body := []byte(`{

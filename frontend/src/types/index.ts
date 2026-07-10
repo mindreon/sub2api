@@ -487,7 +487,7 @@ export interface PaginationConfig {
 
 // ==================== API Key & Group Types ====================
 
-export type GroupPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok'
+export type GroupPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'volcengine' | 'openrouter'
 
 export type SubscriptionType = 'standard' | 'subscription'
 
@@ -518,6 +518,10 @@ export interface Group {
   image_price_1k: number | null
   image_price_2k: number | null
   image_price_4k: number | null
+  // 多模态异步生成计费配置
+  allow_media_generation: boolean
+  media_rate_independent: boolean
+  media_rate_multiplier: number
   // Claude Code 客户端限制
   claude_code_only: boolean
   fallback_group_id: number | null
@@ -690,7 +694,7 @@ export interface UpdateGroupRequest {
 
 // ==================== Account & Proxy Types ====================
 
-export type AccountPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok'
+export type AccountPlatform = 'anthropic' | 'openai' | 'gemini' | 'antigravity' | 'grok' | 'volcengine' | 'openrouter'
 export type AccountType = 'oauth' | 'setup-token' | 'apikey' | 'upstream' | 'bedrock' | 'service_account'
 export type OAuthAddMethod = 'oauth' | 'setup-token'
 export type ProxyProtocol = 'http' | 'https' | 'socks5' | 'socks5h'

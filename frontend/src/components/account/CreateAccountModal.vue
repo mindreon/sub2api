@@ -160,6 +160,58 @@
             <PlatformIcon platform="grok" size="sm" />
             Grok
           </button>
+          <button
+            type="button"
+            @click="form.platform = 'volcengine'; form.type = 'apikey'; accountCategory = 'apikey'"
+            :class="[
+              'flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all',
+              form.platform === 'volcengine'
+                ? 'bg-white text-red-600 shadow-sm dark:bg-dark-600 dark:text-red-400'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            ]"
+          >
+            <PlatformIcon platform="volcengine" size="sm" />
+            Volcengine
+          </button>
+          <button
+            type="button"
+            @click="form.platform = 'openrouter'; form.type = 'apikey'; accountCategory = 'apikey'"
+            :class="[
+              'flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all',
+              form.platform === 'openrouter'
+                ? 'bg-white text-indigo-600 shadow-sm dark:bg-dark-600 dark:text-indigo-400'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            ]"
+          >
+            <PlatformIcon platform="openrouter" size="sm" />
+            OpenRouter
+          </button>
+        </div>
+      </div>
+
+      <!-- 多模态平台账号（API Key） -->
+      <div
+        v-if="form.platform === 'volcengine' || form.platform === 'openrouter'"
+        class="space-y-4"
+      >
+        <div>
+          <label class="input-label">{{ t('admin.accounts.baseUrl') }}</label>
+          <input
+            v-model="apiKeyBaseUrl"
+            type="text"
+            class="input"
+            :placeholder="form.platform === 'volcengine' ? 'https://ark.cn-beijing.volces.com' : 'https://openrouter.ai/api'"
+          />
+        </div>
+        <div>
+          <label class="input-label">{{ t('admin.accounts.apiKeyRequired') }}</label>
+          <input
+            v-model="apiKeyValue"
+            type="password"
+            required
+            class="input font-mono"
+            placeholder="sk-..."
+          />
         </div>
       </div>
 
@@ -4579,6 +4631,26 @@ const handleSubmit = async () => {
       return
     }
     step.value = 2
+    return
+  }
+
+  if (form.platform === 'volcengine' || form.platform === 'openrouter') {
+    if (!form.name.trim()) {
+      appStore.showError(t('admin.accounts.pleaseEnterAccountName'))
+      return
+    }
+    if (!apiKeyValue.value.trim()) {
+      appStore.showError(t('admin.accounts.pleaseEnterApiKey'))
+      return
+    }
+    const credentials: Record<string, unknown> = {
+      api_key: apiKeyValue.value.trim()
+    }
+    const extra: Record<string, unknown> = {}
+    if (apiKeyBaseUrl.value.trim()) {
+      extra.base_url = apiKeyBaseUrl.value.trim()
+    }
+    await createAccountAndFinish(form.platform, 'apikey', credentials, extra)
     return
   }
 

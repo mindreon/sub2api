@@ -56,6 +56,12 @@ const (
 	FieldImagePrice2k = "image_price_2k"
 	// FieldImagePrice4k holds the string denoting the image_price_4k field in the database.
 	FieldImagePrice4k = "image_price_4k"
+	// FieldAllowMediaGeneration holds the string denoting the allow_media_generation field in the database.
+	FieldAllowMediaGeneration = "allow_media_generation"
+	// FieldMediaRateIndependent holds the string denoting the media_rate_independent field in the database.
+	FieldMediaRateIndependent = "media_rate_independent"
+	// FieldMediaRateMultiplier holds the string denoting the media_rate_multiplier field in the database.
+	FieldMediaRateMultiplier = "media_rate_multiplier"
 	// FieldClaudeCodeOnly holds the string denoting the claude_code_only field in the database.
 	FieldClaudeCodeOnly = "claude_code_only"
 	// FieldFallbackGroupID holds the string denoting the fallback_group_id field in the database.
@@ -181,6 +187,9 @@ var Columns = []string{
 	FieldImagePrice1k,
 	FieldImagePrice2k,
 	FieldImagePrice4k,
+	FieldAllowMediaGeneration,
+	FieldMediaRateIndependent,
+	FieldMediaRateMultiplier,
 	FieldClaudeCodeOnly,
 	FieldFallbackGroupID,
 	FieldFallbackGroupIDOnInvalidRequest,
@@ -257,6 +266,12 @@ var (
 	DefaultImageRateIndependent bool
 	// DefaultImageRateMultiplier holds the default value on creation for the "image_rate_multiplier" field.
 	DefaultImageRateMultiplier float64
+	// DefaultAllowMediaGeneration holds the default value on creation for the "allow_media_generation" field.
+	DefaultAllowMediaGeneration bool
+	// DefaultMediaRateIndependent holds the default value on creation for the "media_rate_independent" field.
+	DefaultMediaRateIndependent bool
+	// DefaultMediaRateMultiplier holds the default value on creation for the "media_rate_multiplier" field.
+	DefaultMediaRateMultiplier float64
 	// DefaultClaudeCodeOnly holds the default value on creation for the "claude_code_only" field.
 	DefaultClaudeCodeOnly bool
 	// DefaultModelRoutingEnabled holds the default value on creation for the "model_routing_enabled" field.
@@ -391,6 +406,21 @@ func ByImagePrice2k(opts ...sql.OrderTermOption) OrderOption {
 // ByImagePrice4k orders the results by the image_price_4k field.
 func ByImagePrice4k(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldImagePrice4k, opts...).ToFunc()
+}
+
+// ByAllowMediaGeneration orders the results by the allow_media_generation field.
+func ByAllowMediaGeneration(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAllowMediaGeneration, opts...).ToFunc()
+}
+
+// ByMediaRateIndependent orders the results by the media_rate_independent field.
+func ByMediaRateIndependent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMediaRateIndependent, opts...).ToFunc()
+}
+
+// ByMediaRateMultiplier orders the results by the media_rate_multiplier field.
+func ByMediaRateMultiplier(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMediaRateMultiplier, opts...).ToFunc()
 }
 
 // ByClaudeCodeOnly orders the results by the claude_code_only field.

@@ -31,6 +31,8 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
 	"github.com/Wei-Shaw/sub2api/ent/identityadoptiondecision"
+	"github.com/Wei-Shaw/sub2api/ent/mediagenerationtask"
+	"github.com/Wei-Shaw/sub2api/ent/mediaquotahold"
 	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
 	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
@@ -97,6 +99,10 @@ type Client struct {
 	IdempotencyRecord *IdempotencyRecordClient
 	// IdentityAdoptionDecision is the client for interacting with the IdentityAdoptionDecision builders.
 	IdentityAdoptionDecision *IdentityAdoptionDecisionClient
+	// MediaGenerationTask is the client for interacting with the MediaGenerationTask builders.
+	MediaGenerationTask *MediaGenerationTaskClient
+	// MediaQuotaHold is the client for interacting with the MediaQuotaHold builders.
+	MediaQuotaHold *MediaQuotaHoldClient
 	// PaymentAuditLog is the client for interacting with the PaymentAuditLog builders.
 	PaymentAuditLog *PaymentAuditLogClient
 	// PaymentOrder is the client for interacting with the PaymentOrder builders.
@@ -174,6 +180,8 @@ func (c *Client) init() {
 	c.Group = NewGroupClient(c.config)
 	c.IdempotencyRecord = NewIdempotencyRecordClient(c.config)
 	c.IdentityAdoptionDecision = NewIdentityAdoptionDecisionClient(c.config)
+	c.MediaGenerationTask = NewMediaGenerationTaskClient(c.config)
+	c.MediaQuotaHold = NewMediaQuotaHoldClient(c.config)
 	c.PaymentAuditLog = NewPaymentAuditLogClient(c.config)
 	c.PaymentOrder = NewPaymentOrderClient(c.config)
 	c.PaymentProviderInstance = NewPaymentProviderInstanceClient(c.config)
@@ -307,6 +315,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Group:                         NewGroupClient(cfg),
 		IdempotencyRecord:             NewIdempotencyRecordClient(cfg),
 		IdentityAdoptionDecision:      NewIdentityAdoptionDecisionClient(cfg),
+		MediaGenerationTask:           NewMediaGenerationTaskClient(cfg),
+		MediaQuotaHold:                NewMediaQuotaHoldClient(cfg),
 		PaymentAuditLog:               NewPaymentAuditLogClient(cfg),
 		PaymentOrder:                  NewPaymentOrderClient(cfg),
 		PaymentProviderInstance:       NewPaymentProviderInstanceClient(cfg),
@@ -367,6 +377,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Group:                         NewGroupClient(cfg),
 		IdempotencyRecord:             NewIdempotencyRecordClient(cfg),
 		IdentityAdoptionDecision:      NewIdentityAdoptionDecisionClient(cfg),
+		MediaGenerationTask:           NewMediaGenerationTaskClient(cfg),
+		MediaQuotaHold:                NewMediaQuotaHoldClient(cfg),
 		PaymentAuditLog:               NewPaymentAuditLogClient(cfg),
 		PaymentOrder:                  NewPaymentOrderClient(cfg),
 		PaymentProviderInstance:       NewPaymentProviderInstanceClient(cfg),
@@ -425,13 +437,14 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AuthIdentity, c.AuthIdentityChannel, c.CatalogModel, c.ChannelMonitor,
 		c.ChannelMonitorDailyRollup, c.ChannelMonitorHistory,
 		c.ChannelMonitorRequestTemplate, c.ErrorPassthroughRule, c.Group,
-		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.PaymentAuditLog,
-		c.PaymentOrder, c.PaymentProviderInstance, c.PendingAuthSession, c.PromoCode,
-		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
-		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
-		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder,
-		c.VoucherOrder, c.VoucherPinDelivery, c.VoucherProduct,
+		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.MediaGenerationTask,
+		c.MediaQuotaHold, c.PaymentAuditLog, c.PaymentOrder, c.PaymentProviderInstance,
+		c.PendingAuthSession, c.PromoCode, c.PromoCodeUsage, c.Proxy, c.RedeemCode,
+		c.SecuritySecret, c.Setting, c.SubscriptionPlan, c.TLSFingerprintProfile,
+		c.UsageCleanupTask, c.UsageLog, c.User, c.UserAllowedGroup,
+		c.UserAttributeDefinition, c.UserAttributeValue, c.UserPlatformQuota,
+		c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder, c.VoucherOrder,
+		c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Use(hooks...)
 	}
@@ -445,13 +458,14 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AuthIdentity, c.AuthIdentityChannel, c.CatalogModel, c.ChannelMonitor,
 		c.ChannelMonitorDailyRollup, c.ChannelMonitorHistory,
 		c.ChannelMonitorRequestTemplate, c.ErrorPassthroughRule, c.Group,
-		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.PaymentAuditLog,
-		c.PaymentOrder, c.PaymentProviderInstance, c.PendingAuthSession, c.PromoCode,
-		c.PromoCodeUsage, c.Proxy, c.RedeemCode, c.SecuritySecret, c.Setting,
-		c.SubscriptionPlan, c.TLSFingerprintProfile, c.UsageCleanupTask, c.UsageLog,
-		c.User, c.UserAllowedGroup, c.UserAttributeDefinition, c.UserAttributeValue,
-		c.UserPlatformQuota, c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder,
-		c.VoucherOrder, c.VoucherPinDelivery, c.VoucherProduct,
+		c.IdempotencyRecord, c.IdentityAdoptionDecision, c.MediaGenerationTask,
+		c.MediaQuotaHold, c.PaymentAuditLog, c.PaymentOrder, c.PaymentProviderInstance,
+		c.PendingAuthSession, c.PromoCode, c.PromoCodeUsage, c.Proxy, c.RedeemCode,
+		c.SecuritySecret, c.Setting, c.SubscriptionPlan, c.TLSFingerprintProfile,
+		c.UsageCleanupTask, c.UsageLog, c.User, c.UserAllowedGroup,
+		c.UserAttributeDefinition, c.UserAttributeValue, c.UserPlatformQuota,
+		c.UserSubscription, c.VoucherAuditLog, c.VoucherB2BOrder, c.VoucherOrder,
+		c.VoucherPinDelivery, c.VoucherProduct,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -492,6 +506,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IdempotencyRecord.mutate(ctx, m)
 	case *IdentityAdoptionDecisionMutation:
 		return c.IdentityAdoptionDecision.mutate(ctx, m)
+	case *MediaGenerationTaskMutation:
+		return c.MediaGenerationTask.mutate(ctx, m)
+	case *MediaQuotaHoldMutation:
+		return c.MediaQuotaHold.mutate(ctx, m)
 	case *PaymentAuditLogMutation:
 		return c.PaymentAuditLog.mutate(ctx, m)
 	case *PaymentOrderMutation:
@@ -3173,6 +3191,272 @@ func (c *IdentityAdoptionDecisionClient) mutate(ctx context.Context, m *Identity
 		return (&IdentityAdoptionDecisionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IdentityAdoptionDecision mutation op: %q", m.Op())
+	}
+}
+
+// MediaGenerationTaskClient is a client for the MediaGenerationTask schema.
+type MediaGenerationTaskClient struct {
+	config
+}
+
+// NewMediaGenerationTaskClient returns a client for the MediaGenerationTask from the given config.
+func NewMediaGenerationTaskClient(c config) *MediaGenerationTaskClient {
+	return &MediaGenerationTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mediagenerationtask.Hooks(f(g(h())))`.
+func (c *MediaGenerationTaskClient) Use(hooks ...Hook) {
+	c.hooks.MediaGenerationTask = append(c.hooks.MediaGenerationTask, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `mediagenerationtask.Intercept(f(g(h())))`.
+func (c *MediaGenerationTaskClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MediaGenerationTask = append(c.inters.MediaGenerationTask, interceptors...)
+}
+
+// Create returns a builder for creating a MediaGenerationTask entity.
+func (c *MediaGenerationTaskClient) Create() *MediaGenerationTaskCreate {
+	mutation := newMediaGenerationTaskMutation(c.config, OpCreate)
+	return &MediaGenerationTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MediaGenerationTask entities.
+func (c *MediaGenerationTaskClient) CreateBulk(builders ...*MediaGenerationTaskCreate) *MediaGenerationTaskCreateBulk {
+	return &MediaGenerationTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MediaGenerationTaskClient) MapCreateBulk(slice any, setFunc func(*MediaGenerationTaskCreate, int)) *MediaGenerationTaskCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MediaGenerationTaskCreateBulk{err: fmt.Errorf("calling to MediaGenerationTaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MediaGenerationTaskCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MediaGenerationTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MediaGenerationTask.
+func (c *MediaGenerationTaskClient) Update() *MediaGenerationTaskUpdate {
+	mutation := newMediaGenerationTaskMutation(c.config, OpUpdate)
+	return &MediaGenerationTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MediaGenerationTaskClient) UpdateOne(_m *MediaGenerationTask) *MediaGenerationTaskUpdateOne {
+	mutation := newMediaGenerationTaskMutation(c.config, OpUpdateOne, withMediaGenerationTask(_m))
+	return &MediaGenerationTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MediaGenerationTaskClient) UpdateOneID(id int64) *MediaGenerationTaskUpdateOne {
+	mutation := newMediaGenerationTaskMutation(c.config, OpUpdateOne, withMediaGenerationTaskID(id))
+	return &MediaGenerationTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MediaGenerationTask.
+func (c *MediaGenerationTaskClient) Delete() *MediaGenerationTaskDelete {
+	mutation := newMediaGenerationTaskMutation(c.config, OpDelete)
+	return &MediaGenerationTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MediaGenerationTaskClient) DeleteOne(_m *MediaGenerationTask) *MediaGenerationTaskDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MediaGenerationTaskClient) DeleteOneID(id int64) *MediaGenerationTaskDeleteOne {
+	builder := c.Delete().Where(mediagenerationtask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MediaGenerationTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for MediaGenerationTask.
+func (c *MediaGenerationTaskClient) Query() *MediaGenerationTaskQuery {
+	return &MediaGenerationTaskQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMediaGenerationTask},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MediaGenerationTask entity by its id.
+func (c *MediaGenerationTaskClient) Get(ctx context.Context, id int64) (*MediaGenerationTask, error) {
+	return c.Query().Where(mediagenerationtask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MediaGenerationTaskClient) GetX(ctx context.Context, id int64) *MediaGenerationTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MediaGenerationTaskClient) Hooks() []Hook {
+	return c.hooks.MediaGenerationTask
+}
+
+// Interceptors returns the client interceptors.
+func (c *MediaGenerationTaskClient) Interceptors() []Interceptor {
+	return c.inters.MediaGenerationTask
+}
+
+func (c *MediaGenerationTaskClient) mutate(ctx context.Context, m *MediaGenerationTaskMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MediaGenerationTaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MediaGenerationTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MediaGenerationTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MediaGenerationTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MediaGenerationTask mutation op: %q", m.Op())
+	}
+}
+
+// MediaQuotaHoldClient is a client for the MediaQuotaHold schema.
+type MediaQuotaHoldClient struct {
+	config
+}
+
+// NewMediaQuotaHoldClient returns a client for the MediaQuotaHold from the given config.
+func NewMediaQuotaHoldClient(c config) *MediaQuotaHoldClient {
+	return &MediaQuotaHoldClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mediaquotahold.Hooks(f(g(h())))`.
+func (c *MediaQuotaHoldClient) Use(hooks ...Hook) {
+	c.hooks.MediaQuotaHold = append(c.hooks.MediaQuotaHold, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `mediaquotahold.Intercept(f(g(h())))`.
+func (c *MediaQuotaHoldClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MediaQuotaHold = append(c.inters.MediaQuotaHold, interceptors...)
+}
+
+// Create returns a builder for creating a MediaQuotaHold entity.
+func (c *MediaQuotaHoldClient) Create() *MediaQuotaHoldCreate {
+	mutation := newMediaQuotaHoldMutation(c.config, OpCreate)
+	return &MediaQuotaHoldCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MediaQuotaHold entities.
+func (c *MediaQuotaHoldClient) CreateBulk(builders ...*MediaQuotaHoldCreate) *MediaQuotaHoldCreateBulk {
+	return &MediaQuotaHoldCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MediaQuotaHoldClient) MapCreateBulk(slice any, setFunc func(*MediaQuotaHoldCreate, int)) *MediaQuotaHoldCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MediaQuotaHoldCreateBulk{err: fmt.Errorf("calling to MediaQuotaHoldClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MediaQuotaHoldCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MediaQuotaHoldCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MediaQuotaHold.
+func (c *MediaQuotaHoldClient) Update() *MediaQuotaHoldUpdate {
+	mutation := newMediaQuotaHoldMutation(c.config, OpUpdate)
+	return &MediaQuotaHoldUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MediaQuotaHoldClient) UpdateOne(_m *MediaQuotaHold) *MediaQuotaHoldUpdateOne {
+	mutation := newMediaQuotaHoldMutation(c.config, OpUpdateOne, withMediaQuotaHold(_m))
+	return &MediaQuotaHoldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MediaQuotaHoldClient) UpdateOneID(id int64) *MediaQuotaHoldUpdateOne {
+	mutation := newMediaQuotaHoldMutation(c.config, OpUpdateOne, withMediaQuotaHoldID(id))
+	return &MediaQuotaHoldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MediaQuotaHold.
+func (c *MediaQuotaHoldClient) Delete() *MediaQuotaHoldDelete {
+	mutation := newMediaQuotaHoldMutation(c.config, OpDelete)
+	return &MediaQuotaHoldDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MediaQuotaHoldClient) DeleteOne(_m *MediaQuotaHold) *MediaQuotaHoldDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MediaQuotaHoldClient) DeleteOneID(id int64) *MediaQuotaHoldDeleteOne {
+	builder := c.Delete().Where(mediaquotahold.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MediaQuotaHoldDeleteOne{builder}
+}
+
+// Query returns a query builder for MediaQuotaHold.
+func (c *MediaQuotaHoldClient) Query() *MediaQuotaHoldQuery {
+	return &MediaQuotaHoldQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMediaQuotaHold},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MediaQuotaHold entity by its id.
+func (c *MediaQuotaHoldClient) Get(ctx context.Context, id int64) (*MediaQuotaHold, error) {
+	return c.Query().Where(mediaquotahold.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MediaQuotaHoldClient) GetX(ctx context.Context, id int64) *MediaQuotaHold {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MediaQuotaHoldClient) Hooks() []Hook {
+	return c.hooks.MediaQuotaHold
+}
+
+// Interceptors returns the client interceptors.
+func (c *MediaQuotaHoldClient) Interceptors() []Interceptor {
+	return c.inters.MediaQuotaHold
+}
+
+func (c *MediaQuotaHoldClient) mutate(ctx context.Context, m *MediaQuotaHoldMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MediaQuotaHoldCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MediaQuotaHoldUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MediaQuotaHoldUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MediaQuotaHoldDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MediaQuotaHold mutation op: %q", m.Op())
 	}
 }
 
@@ -7124,25 +7408,26 @@ type (
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
 		AuthIdentityChannel, CatalogModel, ChannelMonitor, ChannelMonitorDailyRollup,
 		ChannelMonitorHistory, ChannelMonitorRequestTemplate, ErrorPassthroughRule,
-		Group, IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog,
-		PaymentOrder, PaymentProviderInstance, PendingAuthSession, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription, VoucherAuditLog, VoucherB2BOrder, VoucherOrder,
-		VoucherPinDelivery, VoucherProduct []ent.Hook
+		Group, IdempotencyRecord, IdentityAdoptionDecision, MediaGenerationTask,
+		MediaQuotaHold, PaymentAuditLog, PaymentOrder, PaymentProviderInstance,
+		PendingAuthSession, PromoCode, PromoCodeUsage, Proxy, RedeemCode,
+		SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
+		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
+		UserAttributeValue, UserPlatformQuota, UserSubscription, VoucherAuditLog,
+		VoucherB2BOrder, VoucherOrder, VoucherPinDelivery, VoucherProduct []ent.Hook
 	}
 	inters struct {
 		APIKey, Account, AccountGroup, Announcement, AnnouncementRead, AuthIdentity,
 		AuthIdentityChannel, CatalogModel, ChannelMonitor, ChannelMonitorDailyRollup,
 		ChannelMonitorHistory, ChannelMonitorRequestTemplate, ErrorPassthroughRule,
-		Group, IdempotencyRecord, IdentityAdoptionDecision, PaymentAuditLog,
-		PaymentOrder, PaymentProviderInstance, PendingAuthSession, PromoCode,
-		PromoCodeUsage, Proxy, RedeemCode, SecuritySecret, Setting, SubscriptionPlan,
-		TLSFingerprintProfile, UsageCleanupTask, UsageLog, User, UserAllowedGroup,
-		UserAttributeDefinition, UserAttributeValue, UserPlatformQuota,
-		UserSubscription, VoucherAuditLog, VoucherB2BOrder, VoucherOrder,
-		VoucherPinDelivery, VoucherProduct []ent.Interceptor
+		Group, IdempotencyRecord, IdentityAdoptionDecision, MediaGenerationTask,
+		MediaQuotaHold, PaymentAuditLog, PaymentOrder, PaymentProviderInstance,
+		PendingAuthSession, PromoCode, PromoCodeUsage, Proxy, RedeemCode,
+		SecuritySecret, Setting, SubscriptionPlan, TLSFingerprintProfile,
+		UsageCleanupTask, UsageLog, User, UserAllowedGroup, UserAttributeDefinition,
+		UserAttributeValue, UserPlatformQuota, UserSubscription, VoucherAuditLog,
+		VoucherB2BOrder, VoucherOrder, VoucherPinDelivery,
+		VoucherProduct []ent.Interceptor
 	}
 )
 

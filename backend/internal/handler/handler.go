@@ -41,6 +41,7 @@ type AdminHandlers struct {
 	CatalogModel           *admin.CatalogModelHandler
 	Voucher                *admin.VoucherHandler
 	Compliance             *admin.ComplianceHandler
+	Media                  *admin.MediaHandler
 }
 
 // Handlers contains all HTTP handlers
@@ -64,6 +65,7 @@ type Handlers struct {
 	Voucher          *VoucherHandler
 	AvailableChannel *AvailableChannelHandler
 	PublicCatalog    *PublicCatalogHandler
+	Media            *MediaHandler
 }
 
 // BuildInfo contains build-time information

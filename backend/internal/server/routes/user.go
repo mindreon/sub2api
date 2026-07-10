@@ -144,5 +144,11 @@ func RegisterUserRoutes(
 			monitors.GET("", h.ChannelMonitor.List)
 			monitors.GET("/:id/status", h.ChannelMonitor.GetStatus)
 		}
+
+		// 多模态异步任务（控制台列表，JWT）
+		mediaTasks := authenticated.Group("/media")
+		{
+			mediaTasks.GET("/tasks", h.Media.ListTasks)
+		}
 	}
 }

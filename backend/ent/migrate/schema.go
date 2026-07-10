@@ -724,6 +724,9 @@ var (
 		{Name: "image_price_1k", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "image_price_2k", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
 		{Name: "image_price_4k", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,8)"}},
+		{Name: "allow_media_generation", Type: field.TypeBool, Default: false},
+		{Name: "media_rate_independent", Type: field.TypeBool, Default: false},
+		{Name: "media_rate_multiplier", Type: field.TypeFloat64, Default: 1, SchemaType: map[string]string{"postgres": "decimal(10,4)"}},
 		{Name: "claude_code_only", Type: field.TypeBool, Default: false},
 		{Name: "fallback_group_id", Type: field.TypeInt64, Nullable: true},
 		{Name: "fallback_group_id_on_invalid_request", Type: field.TypeInt64, Nullable: true},
@@ -774,7 +777,7 @@ var (
 			{
 				Name:    "group_sort_order",
 				Unique:  false,
-				Columns: []*schema.Column{GroupsColumns[28]},
+				Columns: []*schema.Column{GroupsColumns[31]},
 			},
 		},
 	}
@@ -856,6 +859,93 @@ var (
 				Name:    "identityadoptiondecision_identity_id",
 				Unique:  false,
 				Columns: []*schema.Column{IdentityAdoptionDecisionsColumns[6]},
+			},
+		},
+	}
+	// MediaGenerationTasksColumns holds the columns for the "media_generation_tasks" table.
+	MediaGenerationTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "task_id", Type: field.TypeString, Unique: true, Size: 64},
+		{Name: "upstream_task_id", Type: field.TypeString, Nullable: true, Size: 128},
+		{Name: "user_id", Type: field.TypeInt64},
+		{Name: "api_key_id", Type: field.TypeInt64},
+		{Name: "account_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "group_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "subscription_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "model", Type: field.TypeString, Size: 100},
+		{Name: "media_type", Type: field.TypeString, Size: 16},
+		{Name: "status", Type: field.TypeString, Size: 20, Default: "pending"},
+		{Name: "billing_metric", Type: field.TypeString, Nullable: true, Size: 32},
+		{Name: "reserved_cost", Type: field.TypeFloat64, Default: 0, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
+		{Name: "actual_cost", Type: field.TypeFloat64, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
+		{Name: "rate_multiplier", Type: field.TypeFloat64, Default: 1, SchemaType: map[string]string{"postgres": "decimal(10,4)"}},
+		{Name: "billing_currency", Type: field.TypeString, Size: 8, Default: "USD"},
+		{Name: "request_params", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "upstream_usage", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "result_url", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "result_storage_key", Type: field.TypeString, Nullable: true, Size: 255},
+		{Name: "poll_attempts", Type: field.TypeInt, Default: 0},
+		{Name: "expires_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "settled_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "error_message", Type: field.TypeString, Nullable: true},
+	}
+	// MediaGenerationTasksTable holds the schema information for the "media_generation_tasks" table.
+	MediaGenerationTasksTable = &schema.Table{
+		Name:       "media_generation_tasks",
+		Columns:    MediaGenerationTasksColumns,
+		PrimaryKey: []*schema.Column{MediaGenerationTasksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mediagenerationtask_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{MediaGenerationTasksColumns[5], MediaGenerationTasksColumns[12]},
+			},
+			{
+				Name:    "mediagenerationtask_subscription_id",
+				Unique:  false,
+				Columns: []*schema.Column{MediaGenerationTasksColumns[9]},
+			},
+			{
+				Name:    "mediagenerationtask_status_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{MediaGenerationTasksColumns[12], MediaGenerationTasksColumns[23]},
+			},
+			{
+				Name:    "mediagenerationtask_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MediaGenerationTasksColumns[1]},
+			},
+		},
+	}
+	// MediaQuotaHoldsColumns holds the columns for the "media_quota_holds" table.
+	MediaQuotaHoldsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "hold_id", Type: field.TypeString, Unique: true, Size: 64},
+		{Name: "task_id", Type: field.TypeString, Size: 64},
+		{Name: "user_id", Type: field.TypeInt64},
+		{Name: "amount", Type: field.TypeFloat64, SchemaType: map[string]string{"postgres": "decimal(20,10)"}},
+		{Name: "currency", Type: field.TypeString, Size: 8, Default: "USD"},
+		{Name: "status", Type: field.TypeString, Size: 16, Default: "held"},
+	}
+	// MediaQuotaHoldsTable holds the schema information for the "media_quota_holds" table.
+	MediaQuotaHoldsTable = &schema.Table{
+		Name:       "media_quota_holds",
+		Columns:    MediaQuotaHoldsColumns,
+		PrimaryKey: []*schema.Column{MediaQuotaHoldsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "mediaquotahold_task_id",
+				Unique:  true,
+				Columns: []*schema.Column{MediaQuotaHoldsColumns[4]},
+			},
+			{
+				Name:    "mediaquotahold_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{MediaQuotaHoldsColumns[5], MediaQuotaHoldsColumns[8]},
 			},
 		},
 	}
@@ -2079,6 +2169,8 @@ var (
 		GroupsTable,
 		IdempotencyRecordsTable,
 		IdentityAdoptionDecisionsTable,
+		MediaGenerationTasksTable,
+		MediaQuotaHoldsTable,
 		PaymentAuditLogsTable,
 		PaymentOrdersTable,
 		PaymentProviderInstancesTable,
@@ -2170,6 +2262,12 @@ func init() {
 	IdentityAdoptionDecisionsTable.ForeignKeys[1].RefTable = PendingAuthSessionsTable
 	IdentityAdoptionDecisionsTable.Annotation = &entsql.Annotation{
 		Table: "identity_adoption_decisions",
+	}
+	MediaGenerationTasksTable.Annotation = &entsql.Annotation{
+		Table: "media_generation_tasks",
+	}
+	MediaQuotaHoldsTable.Annotation = &entsql.Annotation{
+		Table: "media_quota_holds",
 	}
 	PaymentAuditLogsTable.Annotation = &entsql.Annotation{
 		Table: "payment_audit_logs",

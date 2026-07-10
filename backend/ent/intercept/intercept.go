@@ -24,6 +24,8 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/idempotencyrecord"
 	"github.com/Wei-Shaw/sub2api/ent/identityadoptiondecision"
+	"github.com/Wei-Shaw/sub2api/ent/mediagenerationtask"
+	"github.com/Wei-Shaw/sub2api/ent/mediaquotahold"
 	"github.com/Wei-Shaw/sub2api/ent/paymentauditlog"
 	"github.com/Wei-Shaw/sub2api/ent/paymentorder"
 	"github.com/Wei-Shaw/sub2api/ent/paymentproviderinstance"
@@ -538,6 +540,60 @@ func (f TraverseIdentityAdoptionDecision) Traverse(ctx context.Context, q ent.Qu
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IdentityAdoptionDecisionQuery", q)
+}
+
+// The MediaGenerationTaskFunc type is an adapter to allow the use of ordinary function as a Querier.
+type MediaGenerationTaskFunc func(context.Context, *ent.MediaGenerationTaskQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f MediaGenerationTaskFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.MediaGenerationTaskQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.MediaGenerationTaskQuery", q)
+}
+
+// The TraverseMediaGenerationTask type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseMediaGenerationTask func(context.Context, *ent.MediaGenerationTaskQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseMediaGenerationTask) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseMediaGenerationTask) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.MediaGenerationTaskQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.MediaGenerationTaskQuery", q)
+}
+
+// The MediaQuotaHoldFunc type is an adapter to allow the use of ordinary function as a Querier.
+type MediaQuotaHoldFunc func(context.Context, *ent.MediaQuotaHoldQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f MediaQuotaHoldFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.MediaQuotaHoldQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.MediaQuotaHoldQuery", q)
+}
+
+// The TraverseMediaQuotaHold type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseMediaQuotaHold func(context.Context, *ent.MediaQuotaHoldQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseMediaQuotaHold) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseMediaQuotaHold) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.MediaQuotaHoldQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.MediaQuotaHoldQuery", q)
 }
 
 // The PaymentAuditLogFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1250,6 +1306,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IdempotencyRecordQuery, predicate.IdempotencyRecord, idempotencyrecord.OrderOption]{typ: ent.TypeIdempotencyRecord, tq: q}, nil
 	case *ent.IdentityAdoptionDecisionQuery:
 		return &query[*ent.IdentityAdoptionDecisionQuery, predicate.IdentityAdoptionDecision, identityadoptiondecision.OrderOption]{typ: ent.TypeIdentityAdoptionDecision, tq: q}, nil
+	case *ent.MediaGenerationTaskQuery:
+		return &query[*ent.MediaGenerationTaskQuery, predicate.MediaGenerationTask, mediagenerationtask.OrderOption]{typ: ent.TypeMediaGenerationTask, tq: q}, nil
+	case *ent.MediaQuotaHoldQuery:
+		return &query[*ent.MediaQuotaHoldQuery, predicate.MediaQuotaHold, mediaquotahold.OrderOption]{typ: ent.TypeMediaQuotaHold, tq: q}, nil
 	case *ent.PaymentAuditLogQuery:
 		return &query[*ent.PaymentAuditLogQuery, predicate.PaymentAuditLog, paymentauditlog.OrderOption]{typ: ent.TypePaymentAuditLog, tq: q}, nil
 	case *ent.PaymentOrderQuery:

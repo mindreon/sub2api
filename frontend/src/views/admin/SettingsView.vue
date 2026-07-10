@@ -7172,12 +7172,16 @@
         <!-- /Tab: Email -->
 
         <!-- Tab: Backup -->
+        <div v-show="activeTab === 'media'" class="space-y-6">
+          <MediaBillingSettingsPanel />
+        </div>
+
         <div v-show="activeTab === 'backup'">
           <BackupSettings />
         </div>
 
         <!-- Save Button -->
-        <div v-show="activeTab !== 'backup'" class="flex justify-end">
+        <div v-show="activeTab !== 'backup' && activeTab !== 'media'" class="flex justify-end">
           <button
             type="submit"
             :disabled="saving || loadFailed"
@@ -7294,6 +7298,7 @@ import Toggle from "@/components/common/Toggle.vue";
 import ProxySelector from "@/components/common/ProxySelector.vue";
 import ImageUpload from "@/components/common/ImageUpload.vue";
 import BackupSettings from "@/views/admin/BackupView.vue";
+import MediaBillingSettingsPanel from "@/components/admin/settings/MediaBillingSettingsPanel.vue";
 import EmailTemplateEditor from "@/views/admin/settings/EmailTemplateEditor.vue";
 import { useClipboard } from "@/composables/useClipboard";
 import { affiliatesAPI, type AffiliateAdminEntry, type SimpleUser as AffiliateSimpleUser } from "@/api/admin/affiliates";
@@ -7345,7 +7350,8 @@ type SettingsTab =
   | "gateway"
   | "payment"
   | "email"
-  | "backup";
+  | "backup"
+  | "media";
 const activeTab = ref<SettingsTab>("general");
 const route = useRoute();
 const settingsTabs = [
@@ -7357,6 +7363,7 @@ const settingsTabs = [
   { key: "gateway" as SettingsTab, icon: "server" as const },
   { key: "payment" as SettingsTab, icon: "creditCard" as const },
   { key: "email" as SettingsTab, icon: "mail" as const },
+  { key: "media" as SettingsTab, icon: "bolt" as const },
   { key: "backup" as SettingsTab, icon: "database" as const },
 ];
 

@@ -224,6 +224,30 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/video-generation',
+    name: 'VideoGeneration',
+    component: () => import('@/views/user/VideoGenerationView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Video Generation',
+      titleKey: 'videoGeneration.title',
+      descriptionKey: 'videoGeneration.description'
+    }
+  },
+  {
+    path: '/media-tasks',
+    name: 'MediaTasks',
+    component: () => import('@/views/user/MediaTasksView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Media Tasks',
+      titleKey: 'mediaTasks.title',
+      descriptionKey: 'mediaTasks.description'
+    }
+  },
+  {
     path: '/redeem',
     name: 'Redeem',
     component: () => import('@/views/user/RedeemView.vue'),

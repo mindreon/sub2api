@@ -301,6 +301,48 @@ func (_c *GroupCreate) SetNillableImagePrice4k(v *float64) *GroupCreate {
 	return _c
 }
 
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (_c *GroupCreate) SetAllowMediaGeneration(v bool) *GroupCreate {
+	_c.mutation.SetAllowMediaGeneration(v)
+	return _c
+}
+
+// SetNillableAllowMediaGeneration sets the "allow_media_generation" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableAllowMediaGeneration(v *bool) *GroupCreate {
+	if v != nil {
+		_c.SetAllowMediaGeneration(*v)
+	}
+	return _c
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (_c *GroupCreate) SetMediaRateIndependent(v bool) *GroupCreate {
+	_c.mutation.SetMediaRateIndependent(v)
+	return _c
+}
+
+// SetNillableMediaRateIndependent sets the "media_rate_independent" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableMediaRateIndependent(v *bool) *GroupCreate {
+	if v != nil {
+		_c.SetMediaRateIndependent(*v)
+	}
+	return _c
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (_c *GroupCreate) SetMediaRateMultiplier(v float64) *GroupCreate {
+	_c.mutation.SetMediaRateMultiplier(v)
+	return _c
+}
+
+// SetNillableMediaRateMultiplier sets the "media_rate_multiplier" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableMediaRateMultiplier(v *float64) *GroupCreate {
+	if v != nil {
+		_c.SetMediaRateMultiplier(*v)
+	}
+	return _c
+}
+
 // SetClaudeCodeOnly sets the "claude_code_only" field.
 func (_c *GroupCreate) SetClaudeCodeOnly(v bool) *GroupCreate {
 	_c.mutation.SetClaudeCodeOnly(v)
@@ -672,6 +714,18 @@ func (_c *GroupCreate) defaults() error {
 		v := group.DefaultImageRateMultiplier
 		_c.mutation.SetImageRateMultiplier(v)
 	}
+	if _, ok := _c.mutation.AllowMediaGeneration(); !ok {
+		v := group.DefaultAllowMediaGeneration
+		_c.mutation.SetAllowMediaGeneration(v)
+	}
+	if _, ok := _c.mutation.MediaRateIndependent(); !ok {
+		v := group.DefaultMediaRateIndependent
+		_c.mutation.SetMediaRateIndependent(v)
+	}
+	if _, ok := _c.mutation.MediaRateMultiplier(); !ok {
+		v := group.DefaultMediaRateMultiplier
+		_c.mutation.SetMediaRateMultiplier(v)
+	}
 	if _, ok := _c.mutation.ClaudeCodeOnly(); !ok {
 		v := group.DefaultClaudeCodeOnly
 		_c.mutation.SetClaudeCodeOnly(v)
@@ -780,6 +834,15 @@ func (_c *GroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.ImageRateMultiplier(); !ok {
 		return &ValidationError{Name: "image_rate_multiplier", err: errors.New(`ent: missing required field "Group.image_rate_multiplier"`)}
+	}
+	if _, ok := _c.mutation.AllowMediaGeneration(); !ok {
+		return &ValidationError{Name: "allow_media_generation", err: errors.New(`ent: missing required field "Group.allow_media_generation"`)}
+	}
+	if _, ok := _c.mutation.MediaRateIndependent(); !ok {
+		return &ValidationError{Name: "media_rate_independent", err: errors.New(`ent: missing required field "Group.media_rate_independent"`)}
+	}
+	if _, ok := _c.mutation.MediaRateMultiplier(); !ok {
+		return &ValidationError{Name: "media_rate_multiplier", err: errors.New(`ent: missing required field "Group.media_rate_multiplier"`)}
 	}
 	if _, ok := _c.mutation.ClaudeCodeOnly(); !ok {
 		return &ValidationError{Name: "claude_code_only", err: errors.New(`ent: missing required field "Group.claude_code_only"`)}
@@ -928,6 +991,18 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ImagePrice4k(); ok {
 		_spec.SetField(group.FieldImagePrice4k, field.TypeFloat64, value)
 		_node.ImagePrice4k = &value
+	}
+	if value, ok := _c.mutation.AllowMediaGeneration(); ok {
+		_spec.SetField(group.FieldAllowMediaGeneration, field.TypeBool, value)
+		_node.AllowMediaGeneration = value
+	}
+	if value, ok := _c.mutation.MediaRateIndependent(); ok {
+		_spec.SetField(group.FieldMediaRateIndependent, field.TypeBool, value)
+		_node.MediaRateIndependent = value
+	}
+	if value, ok := _c.mutation.MediaRateMultiplier(); ok {
+		_spec.SetField(group.FieldMediaRateMultiplier, field.TypeFloat64, value)
+		_node.MediaRateMultiplier = value
 	}
 	if value, ok := _c.mutation.ClaudeCodeOnly(); ok {
 		_spec.SetField(group.FieldClaudeCodeOnly, field.TypeBool, value)
@@ -1472,6 +1547,48 @@ func (u *GroupUpsert) AddImagePrice4k(v float64) *GroupUpsert {
 // ClearImagePrice4k clears the value of the "image_price_4k" field.
 func (u *GroupUpsert) ClearImagePrice4k() *GroupUpsert {
 	u.SetNull(group.FieldImagePrice4k)
+	return u
+}
+
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (u *GroupUpsert) SetAllowMediaGeneration(v bool) *GroupUpsert {
+	u.Set(group.FieldAllowMediaGeneration, v)
+	return u
+}
+
+// UpdateAllowMediaGeneration sets the "allow_media_generation" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateAllowMediaGeneration() *GroupUpsert {
+	u.SetExcluded(group.FieldAllowMediaGeneration)
+	return u
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (u *GroupUpsert) SetMediaRateIndependent(v bool) *GroupUpsert {
+	u.Set(group.FieldMediaRateIndependent, v)
+	return u
+}
+
+// UpdateMediaRateIndependent sets the "media_rate_independent" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateMediaRateIndependent() *GroupUpsert {
+	u.SetExcluded(group.FieldMediaRateIndependent)
+	return u
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (u *GroupUpsert) SetMediaRateMultiplier(v float64) *GroupUpsert {
+	u.Set(group.FieldMediaRateMultiplier, v)
+	return u
+}
+
+// UpdateMediaRateMultiplier sets the "media_rate_multiplier" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateMediaRateMultiplier() *GroupUpsert {
+	u.SetExcluded(group.FieldMediaRateMultiplier)
+	return u
+}
+
+// AddMediaRateMultiplier adds v to the "media_rate_multiplier" field.
+func (u *GroupUpsert) AddMediaRateMultiplier(v float64) *GroupUpsert {
+	u.Add(group.FieldMediaRateMultiplier, v)
 	return u
 }
 
@@ -2124,6 +2241,55 @@ func (u *GroupUpsertOne) UpdateImagePrice4k() *GroupUpsertOne {
 func (u *GroupUpsertOne) ClearImagePrice4k() *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearImagePrice4k()
+	})
+}
+
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (u *GroupUpsertOne) SetAllowMediaGeneration(v bool) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetAllowMediaGeneration(v)
+	})
+}
+
+// UpdateAllowMediaGeneration sets the "allow_media_generation" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateAllowMediaGeneration() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateAllowMediaGeneration()
+	})
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (u *GroupUpsertOne) SetMediaRateIndependent(v bool) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetMediaRateIndependent(v)
+	})
+}
+
+// UpdateMediaRateIndependent sets the "media_rate_independent" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateMediaRateIndependent() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateMediaRateIndependent()
+	})
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (u *GroupUpsertOne) SetMediaRateMultiplier(v float64) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetMediaRateMultiplier(v)
+	})
+}
+
+// AddMediaRateMultiplier adds v to the "media_rate_multiplier" field.
+func (u *GroupUpsertOne) AddMediaRateMultiplier(v float64) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.AddMediaRateMultiplier(v)
+	})
+}
+
+// UpdateMediaRateMultiplier sets the "media_rate_multiplier" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateMediaRateMultiplier() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateMediaRateMultiplier()
 	})
 }
 
@@ -2979,6 +3145,55 @@ func (u *GroupUpsertBulk) UpdateImagePrice4k() *GroupUpsertBulk {
 func (u *GroupUpsertBulk) ClearImagePrice4k() *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearImagePrice4k()
+	})
+}
+
+// SetAllowMediaGeneration sets the "allow_media_generation" field.
+func (u *GroupUpsertBulk) SetAllowMediaGeneration(v bool) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetAllowMediaGeneration(v)
+	})
+}
+
+// UpdateAllowMediaGeneration sets the "allow_media_generation" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateAllowMediaGeneration() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateAllowMediaGeneration()
+	})
+}
+
+// SetMediaRateIndependent sets the "media_rate_independent" field.
+func (u *GroupUpsertBulk) SetMediaRateIndependent(v bool) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetMediaRateIndependent(v)
+	})
+}
+
+// UpdateMediaRateIndependent sets the "media_rate_independent" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateMediaRateIndependent() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateMediaRateIndependent()
+	})
+}
+
+// SetMediaRateMultiplier sets the "media_rate_multiplier" field.
+func (u *GroupUpsertBulk) SetMediaRateMultiplier(v float64) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetMediaRateMultiplier(v)
+	})
+}
+
+// AddMediaRateMultiplier adds v to the "media_rate_multiplier" field.
+func (u *GroupUpsertBulk) AddMediaRateMultiplier(v float64) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.AddMediaRateMultiplier(v)
+	})
+}
+
+// UpdateMediaRateMultiplier sets the "media_rate_multiplier" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateMediaRateMultiplier() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateMediaRateMultiplier()
 	})
 }
 

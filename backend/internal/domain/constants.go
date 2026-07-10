@@ -23,6 +23,8 @@ const (
 	PlatformGemini      = "gemini"
 	PlatformAntigravity = "antigravity"
 	PlatformGrok        = "grok"
+	PlatformVolcengine  = "volcengine"
+	PlatformOpenRouter  = "openrouter"
 )
 
 // Account type constants

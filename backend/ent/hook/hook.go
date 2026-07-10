@@ -201,6 +201,30 @@ func (f IdentityAdoptionDecisionFunc) Mutate(ctx context.Context, m ent.Mutation
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IdentityAdoptionDecisionMutation", m)
 }
 
+// The MediaGenerationTaskFunc type is an adapter to allow the use of ordinary
+// function as MediaGenerationTask mutator.
+type MediaGenerationTaskFunc func(context.Context, *ent.MediaGenerationTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MediaGenerationTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MediaGenerationTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MediaGenerationTaskMutation", m)
+}
+
+// The MediaQuotaHoldFunc type is an adapter to allow the use of ordinary
+// function as MediaQuotaHold mutator.
+type MediaQuotaHoldFunc func(context.Context, *ent.MediaQuotaHoldMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MediaQuotaHoldFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MediaQuotaHoldMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MediaQuotaHoldMutation", m)
+}
+
 // The PaymentAuditLogFunc type is an adapter to allow the use of ordinary
 // function as PaymentAuditLog mutator.
 type PaymentAuditLogFunc func(context.Context, *ent.PaymentAuditLogMutation) (ent.Value, error)
