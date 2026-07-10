@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import en from '@/i18n/locales/en'
+import zh from '@/i18n/locales/zh'
 
 function flattenKeys(obj: Record<string, any>, prefix = ''): string[] {
   const keys: string[] = []
@@ -35,4 +36,31 @@ describe('groups locale key completeness', () => {
     const enKeys = flattenKeys(en)
     expect(enKeys).toContain('admin.groups.failedToSave')
   })
+})
+
+describe('gas merge locale key completeness', () => {
+  const requiredKeys = [
+    'nav.workspaceSwitcherLabel',
+    'nav.workspaceAdminDistribution',
+    'redeem.balanceAddedDistribution',
+    'payment.tabVoucher',
+    'voucher.account',
+    'distribution.title',
+    'distribution.overview.title',
+    'distributionLevels.add',
+    'admin.distribution.title',
+    'admin.distribution.actions.createOrganization',
+    'admin.settings.features.distribution.title',
+    'admin.settings.voucher.title',
+    'admin.voucher.replenishmentTitle',
+  ]
+
+  for (const [locale, messages] of Object.entries({ en, zh })) {
+    it(`${locale} locale keeps gas merge namespaces`, () => {
+      const keys = flattenKeys(messages)
+      for (const key of requiredKeys) {
+        expect(keys, `${locale} missing ${key}`).toContain(key)
+      }
+    })
+  }
 })
