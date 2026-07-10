@@ -455,13 +455,24 @@ func applyOpenAIImagesDefaults(req *OpenAIImagesRequest) {
 }
 
 func isOpenAIImageGenerationModel(model string) bool {
-	m := strings.ToLower(strings.TrimSpace(model))
-	if strings.HasPrefix(m, "gpt-image-") {
-		return true
-	}
-	m = strings.TrimPrefix(m, "volcengine/")
-	m = strings.TrimPrefix(m, "doubao-")
-	return strings.HasPrefix(m, "seedream-")
+	model = strings.ToLower(strings.TrimSpace(model))
+	return strings.HasPrefix(model, "gpt-image-") ||
+		isGrokImageGenerationModel(model) ||
+		isSeedreamImageGenerationModel(model)
+}
+
+func isGrokImageGenerationModel(model string) bool {
+	model = strings.ToLower(strings.TrimSpace(model))
+	return model == "grok-imagine" ||
+		model == "grok-imagine-edit" ||
+		strings.HasPrefix(model, "grok-imagine-image")
+}
+
+func isSeedreamImageGenerationModel(model string) bool {
+	model = strings.ToLower(strings.TrimSpace(model))
+	model = strings.TrimPrefix(model, "volcengine/")
+	model = strings.TrimPrefix(model, "doubao-")
+	return strings.HasPrefix(model, "seedream-")
 }
 
 func validateOpenAIImagesModel(model string) error {
@@ -766,6 +777,8 @@ func (s *OpenAIGatewayService) buildOpenAIImagesRequest(
 	if strings.TrimSpace(contentType) != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
+	// 账号级请求头覆写（仅 openai api_key 账号启用时生效；OAuth 路径 no-op）
+	account.ApplyHeaderOverrides(req.Header)
 	return req, nil
 }
 

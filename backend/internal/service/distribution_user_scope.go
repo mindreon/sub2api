@@ -11,7 +11,7 @@ type distributionUserChannelMemberRepository interface {
 	ListByUserID(ctx context.Context, userID int64) ([]DistributionMemberView, error)
 }
 
-type distributionUserChannelOrganizationRepository interface {
+type DistributionUserChannelOrganizationRepository interface {
 	GetByOwnerUserID(ctx context.Context, userID int64) (*DistributionOrganization, error)
 }
 
@@ -23,7 +23,7 @@ func resolveDistributionUserChannelOrgID(
 	ctx context.Context,
 	userID int64,
 	memberRepo distributionUserChannelMemberRepository,
-	organizationRepo distributionUserChannelOrganizationRepository,
+	organizationRepo DistributionUserChannelOrganizationRepository,
 	attributionRepo distributionUserChannelAttributionRepository,
 ) (int64, error) {
 	if userID <= 0 {

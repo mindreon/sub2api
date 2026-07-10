@@ -96,7 +96,7 @@ type DistributionScopeService struct {
 	walletRepo            DistributionWalletSummaryRepository
 	walletTransactionRepo DistributionWalletTransactionListRepository
 	statsRepo             DistributionStatsSummaryRepository
-	organizationRepo      distributionUserChannelOrganizationRepository
+	organizationRepo      DistributionUserChannelOrganizationRepository
 }
 
 func NewDistributionScopeService(
@@ -115,7 +115,7 @@ func NewDistributionScopeService(
 	}
 }
 
-func (s *DistributionScopeService) SetOrganizationRepository(repo distributionUserChannelOrganizationRepository) {
+func (s *DistributionScopeService) SetOrganizationRepository(repo DistributionUserChannelOrganizationRepository) {
 	if s == nil {
 		return
 	}

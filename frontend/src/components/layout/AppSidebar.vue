@@ -7,19 +7,27 @@
     ]"
   >
     <!-- Logo/Brand -->
-    <a href="/" class="sidebar-header" :class="{ 'sidebar-header-collapsed': sidebarCollapsed }">
+    <div class="sidebar-header" :class="{ 'sidebar-header-collapsed': sidebarCollapsed }">
       <!-- Custom Logo or Default Logo -->
-      <div class="sidebar-logo flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-glow">
+      <router-link
+        :to="homePath"
+        class="sidebar-logo flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-glow transition-opacity hover:opacity-80"
+        @click="handleMenuItemClick(homePath)"
+      >
         <img v-if="settingsLoaded" :src="siteLogo || '/logo.png'" alt="Logo" class="h-full w-full object-contain" />
-      </div>
+      </router-link>
       <div class="sidebar-brand" :class="{ 'sidebar-brand-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
-        <span class="sidebar-brand-title text-lg font-bold text-gray-900 dark:text-white">
+        <router-link
+          :to="homePath"
+          class="sidebar-brand-title text-lg font-bold text-gray-900 transition-colors hover:text-primary-600 dark:text-white dark:hover:text-primary-400"
+          @click="handleMenuItemClick(homePath)"
+        >
           {{ siteName }}
-        </span>
+        </router-link>
         <!-- Version Badge -->
         <VersionBadge :version="siteVersion" />
       </div>
-    </a>
+    </div>
 
     <NavWorkspaceSwitcher
       v-if="showAdminWorkspaceSwitcher"
@@ -33,7 +41,7 @@
     />
 
     <!-- Navigation -->
-    <nav class="sidebar-nav scrollbar-hide">
+    <nav ref="sidebarNavRef" class="sidebar-nav scrollbar-hide">
       <!-- Admin View: Admin menu first, then personal menu -->
       <template v-if="isAdmin">
         <!-- Admin Section -->
@@ -45,7 +53,7 @@
                 type="button"
                 class="sidebar-link mb-1 w-full"
                 :class="{
-                  'sidebar-link-active': route.path === item.path || (sidebarCollapsed && isGroupActive(item)),
+                  'sidebar-link-active': isGroupActive(item) && !isGroupExpanded(item),
                   'sidebar-link-collapsed': sidebarCollapsed
                 }"
                 :title="sidebarCollapsed ? item.label : undefined"
@@ -66,34 +74,17 @@
               </button>
               <!-- Children -->
               <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
-                <template v-for="child in item.children" :key="child.path">
-                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
-                    <div class="sidebar-subsection-title">
-                      {{ child.label }}
-                    </div>
-                    <router-link
-                      v-for="grandchild in child.children"
-                      :key="grandchild.path"
-                      :to="grandchild.path"
-                      class="sidebar-link mb-0.5 py-1.5 text-sm"
-                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
-                      @click="handleMenuItemClick(grandchild.path)"
-                    >
-                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
-                      <span>{{ grandchild.label }}</span>
-                    </router-link>
-                  </div>
-                  <router-link
-                    v-else
-                    :to="child.path"
-                    class="sidebar-link mb-0.5 py-1.5 text-sm"
-                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
-                    @click="handleMenuItemClick(child.path)"
-                  >
-                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
-                    <span>{{ child.label }}</span>
-                  </router-link>
-                </template>
+                <router-link
+                  v-for="child in item.children"
+                  :key="child.path"
+                  :to="child.path"
+                  class="sidebar-link mb-0.5 py-1.5 text-sm"
+                  :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                  @click="handleMenuItemClick(child.path)"
+                >
+                  <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                  <span>{{ child.label }}</span>
+                </router-link>
               </div>
             </template>
             <!-- Normal item (no children) -->
@@ -161,34 +152,17 @@
                 </span>
               </button>
               <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
-                <template v-for="child in item.children" :key="child.path">
-                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
-                    <div class="sidebar-subsection-title">
-                      {{ child.label }}
-                    </div>
-                    <router-link
-                      v-for="grandchild in child.children"
-                      :key="grandchild.path"
-                      :to="grandchild.path"
-                      class="sidebar-link mb-0.5 py-1.5 text-sm"
-                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
-                      @click="handleMenuItemClick(grandchild.path)"
-                    >
-                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
-                      <span>{{ grandchild.label }}</span>
-                    </router-link>
-                  </div>
-                  <router-link
-                    v-else
-                    :to="child.path"
-                    class="sidebar-link mb-0.5 py-1.5 text-sm"
-                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
-                    @click="handleMenuItemClick(child.path)"
-                  >
-                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
-                    <span>{{ child.label }}</span>
-                  </router-link>
-                </template>
+                <router-link
+                  v-for="child in item.children"
+                  :key="child.path"
+                  :to="child.path"
+                  class="sidebar-link mb-0.5 py-1.5 text-sm"
+                  :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                  @click="handleMenuItemClick(child.path)"
+                >
+                  <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                  <span>{{ child.label }}</span>
+                </router-link>
               </div>
             </template>
             <router-link
@@ -237,34 +211,17 @@
                 </span>
               </button>
               <div v-if="!sidebarCollapsed && isGroupExpanded(item)" class="mb-1 ml-4 border-l border-gray-200 pl-2 dark:border-dark-600">
-                <template v-for="child in item.children" :key="child.path">
-                  <div v-if="child.children?.length" class="mb-2 last:mb-0">
-                    <div class="sidebar-subsection-title">
-                      {{ child.label }}
-                    </div>
-                    <router-link
-                      v-for="grandchild in child.children"
-                      :key="grandchild.path"
-                      :to="grandchild.path"
-                      class="sidebar-link mb-0.5 py-1.5 text-sm"
-                      :class="{ 'sidebar-link-active': isTargetActive(grandchild.path) }"
-                      @click="handleMenuItemClick(grandchild.path)"
-                    >
-                      <component :is="grandchild.icon" class="h-4 w-4 flex-shrink-0" />
-                      <span>{{ grandchild.label }}</span>
-                    </router-link>
-                  </div>
-                  <router-link
-                    v-else
-                    :to="child.path"
-                    class="sidebar-link mb-0.5 py-1.5 text-sm"
-                    :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
-                    @click="handleMenuItemClick(child.path)"
-                  >
-                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
-                    <span>{{ child.label }}</span>
-                  </router-link>
-                </template>
+                <router-link
+                  v-for="child in item.children"
+                  :key="child.path"
+                  :to="child.path"
+                  class="sidebar-link mb-0.5 py-1.5 text-sm"
+                  :class="{ 'sidebar-link-active': isTargetActive(child.path) }"
+                  @click="handleMenuItemClick(child.path)"
+                >
+                  <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                  <span>{{ child.label }}</span>
+                </router-link>
               </div>
             </template>
             <router-link
@@ -326,12 +283,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, ref, watch } from 'vue'
+import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
 import VersionBadge from '@/components/common/VersionBadge.vue'
 import NavWorkspaceSwitcher from '@/components/layout/NavWorkspaceSwitcher.vue'
+import { useBatchImageAccess } from '@/composables/useBatchImageAccess'
 import { useDistributionNavAccess } from '@/composables/useDistributionNavAccess'
 import { useNavWorkspace } from '@/composables/useNavWorkspace'
 import { buildAdminDistributionNavItems } from '@/nav/adminDistributionNav'
@@ -339,6 +297,7 @@ import { buildUserDistributionNavItems } from '@/nav/distributionNav'
 import { isSidebarGroupExpanded, toggleSidebarGroup } from '@/nav/sidebarGroupExpand'
 import type { NavItem } from '@/nav/types'
 import { sanitizeSvg } from '@/utils/sanitize'
+import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, makeSidebarFlag } from '@/utils/featureFlags'
 
 // applyFeatureFlags 递归过滤掉 featureFlag() === false 的节点（含子节点）。
@@ -364,11 +323,7 @@ const appStore = useAppStore()
 const authStore = useAuthStore()
 const onboardingStore = useOnboardingStore()
 const adminSettingsStore = useAdminSettingsStore()
-
-const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
-const mobileOpen = computed(() => appStore.mobileOpen)
-const isAdmin = computed(() => authStore.isAdmin)
-const isDark = ref(document.documentElement.classList.contains('dark'))
+const { canUseBatchImage, refreshBatchImageAccess } = useBatchImageAccess()
 const {
   hasDistributionAccess,
   hasPersonalDistributionAccess,
@@ -380,13 +335,21 @@ const {
 } = useDistributionNavAccess()
 const { syncAllWorkspacesFromRoute } = useNavWorkspace()
 
-// Track which parent nav groups are expanded or explicitly collapsed by the user.
+const sidebarCollapsed = computed(() => appStore.sidebarCollapsed)
+const mobileOpen = computed(() => appStore.mobileOpen)
+const isAdmin = computed(() => authStore.isAdmin)
+const sidebarNavRef = ref<HTMLElement | null>(null)
+const isDark = ref(document.documentElement.classList.contains('dark'))
+
+const homePath = computed(() => (isAdmin.value ? '/admin/dashboard' : '/dashboard'))
+
+// Track which parent nav groups are expanded
 const expandedGroups = ref<Set<string>>(new Set())
 const collapsedGroups = ref<Set<string>>(new Set())
 
 // Site settings from appStore (cached, no flicker)
 const siteName = computed(() => appStore.siteName)
-const siteLogo = computed(() => appStore.siteLogo)
+const siteLogo = computed(() => sanitizeUrl(appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
 const siteVersion = computed(() => appStore.siteVersion)
 const settingsLoaded = computed(() => appStore.publicSettingsLoaded)
 
@@ -416,6 +379,26 @@ const KeyIcon = {
           'stroke-linecap': 'round',
           'stroke-linejoin': 'round',
           d: 'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z'
+        })
+      ]
+    )
+}
+
+const BatchImageIcon = {
+  render: () =>
+    h(
+      'svg',
+      { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '1.5' },
+      [
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          d: 'M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.25 2.25 0 00-1.906-1.059H9.554a2.25 2.25 0 00-1.906 1.059l-.821 1.316z'
+        }),
+        h('path', {
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
+          d: 'M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z'
         })
       ]
     )
@@ -832,6 +815,7 @@ const flagRiskControl = makeSidebarFlag(FeatureFlags.riskControl)
 const flagOpsMonitoring = () => adminSettingsStore.opsMonitoringEnabled
 const flagAdminPayment = () => adminSettingsStore.paymentEnabled
 const flagVoucherAdmin = () => adminSettingsStore.voucherEnabled
+const flagBatchImageAccess = () => canUseBatchImage.value
 
 // buildSelfNavItems 构造用户自己的导航项（用户端主菜单和管理员的"我的账户"子菜单共享这组声明）。
 // withDashboard=true 时包含仪表盘（用户端），false 时不含（管理员的个人区已经有独立仪表盘入口）。
@@ -845,6 +829,7 @@ function buildSelfNavItems(withDashboard: boolean): NavItem[] {
   }
   items.push(
     { path: '/keys', label: t('nav.apiKeys'), icon: KeyIcon },
+    { path: '/batch-image', label: t('nav.batchImage'), icon: BatchImageIcon, hideInSimpleMode: true, featureFlag: flagBatchImageAccess },
     { path: '/video-generation', label: t('nav.videoGeneration'), icon: VideoIcon, hideInSimpleMode: true },
     { path: '/usage', label: t('nav.usage'), icon: ChartIcon, hideInSimpleMode: true },
     { path: '/media-tasks', label: t('nav.mediaTasks'), icon: OrderListIcon, hideInSimpleMode: true },
@@ -959,7 +944,7 @@ const adminNavItems = computed((): NavItem[] => {
     { path: '/admin/subscriptions', label: t('nav.subscriptions'), icon: CreditCardIcon, hideInSimpleMode: true },
     { path: '/admin/accounts', label: t('nav.accounts'), icon: GlobeIcon },
     { path: '/admin/announcements', label: t('nav.announcements'), icon: BellIcon },
-    { path: '/admin/catalog', label: '模型目录', icon: TagIcon },
+    { path: '/admin/catalog', label: t('nav.modelCatalog'), icon: TagIcon },
     { path: '/admin/proxies', label: t('nav.proxies'), icon: ServerIcon },
     { path: '/admin/risk-control', label: t('nav.riskControl'), icon: ShieldIcon, hideInSimpleMode: true, featureFlag: flagRiskControl },
     { path: '/admin/redeem', label: t('nav.redeemCodes'), icon: TicketIcon, hideInSimpleMode: true },
@@ -1235,8 +1220,23 @@ watch(
 )
 
 onMounted(() => {
+  void refreshBatchImageAccess()
   if (isAdmin.value) {
     adminSettingsStore.fetch()
+  }
+  // Restore sidebar scroll position after route change re-mounts the component
+  if (appStore.sidebarScrollTop > 0 && sidebarNavRef.value) {
+    void nextTick(() => {
+      if (sidebarNavRef.value) {
+        sidebarNavRef.value.scrollTop = appStore.sidebarScrollTop
+      }
+    })
+  }
+})
+
+onBeforeUnmount(() => {
+  if (sidebarNavRef.value) {
+    appStore.sidebarScrollTop = sidebarNavRef.value.scrollTop
   }
 })
 </script>
@@ -1356,20 +1356,6 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(-4px);
   pointer-events: none;
-}
-
-.sidebar-subsection-title {
-  padding: 0.5rem 1rem 0.375rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  line-height: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgb(107 114 128);
-}
-
-.dark .sidebar-subsection-title {
-  color: rgb(156 163 175);
 }
 
 /* Custom SVG icon in sidebar: constrain size without overriding uploaded SVG colors */

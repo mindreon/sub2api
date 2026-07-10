@@ -77,6 +77,7 @@ var ProviderSet = wire.NewSet(
 	NewAnnouncementReadRepository,
 	NewUsageLogRepository,
 	NewUsageBillingRepository,
+	NewBatchImageRepository,
 	NewIdempotencyRepository,
 	NewUsageCleanupRepository,
 	NewDashboardAggregationRepository,
@@ -100,10 +101,54 @@ var ProviderSet = wire.NewSet(
 	NewDistributionWalletRepository,
 	NewDistributionWalletRequestRepository,
 	NewDistributionAlertEventRepository,
+	NewDistributionConsumptionRepository,
+	NewDistributionAnalyticsRepository,
 	NewAffiliateRepository,
 	NewCatalogModelRepository,
 	NewUserPlatformQuotaRepository,     // T14: user × platform quota
 	NewUserPlatformQuotaServiceAdapter, // T14: adapter → service.UserPlatformQuotaRepository
+
+	wire.Bind(new(service.DistributionAttributionLookupRepository), new(*distributionAttributionRepository)),
+	wire.Bind(new(service.DistributionAttributionListRepository), new(*distributionAttributionRepository)),
+	wire.Bind(new(service.DistributionAttributionAdminListRepository), new(*distributionAttributionRepository)),
+	wire.Bind(new(service.DistributionPromotionAttributionRepository), new(*distributionAttributionRepository)),
+	wire.Bind(new(service.DistributionAttributionRepository), new(*distributionAttributionRepository)),
+
+	wire.Bind(new(service.DistributionOrganizationLookupRepository), new(*distributionOrganizationRepository)),
+	wire.Bind(new(service.DistributionOrganizationListRepository), new(*distributionOrganizationRepository)),
+	wire.Bind(new(service.DistributionOrganizationRepository), new(*distributionOrganizationRepository)),
+	wire.Bind(new(service.DistributionUserManageOrganizationRepository), new(*distributionOrganizationRepository)),
+	wire.Bind(new(service.DistributionUserChannelOrganizationRepository), new(*distributionOrganizationRepository)),
+
+	wire.Bind(new(service.DistributionPromotionLinkRepository), new(*distributionPromotionRepository)),
+	wire.Bind(new(service.DistributionPromotionRepository), new(*distributionPromotionRepository)),
+
+	wire.Bind(new(service.DistributionMemberListRepository), new(*distributionMemberRepository)),
+	wire.Bind(new(service.DistributionMemberAdminListRepository), new(*distributionMemberRepository)),
+	wire.Bind(new(service.DistributionPromotionMemberRepository), new(*distributionMemberRepository)),
+	wire.Bind(new(service.DistributionMemberCreateRepository), new(*distributionMemberRepository)),
+	wire.Bind(new(service.DistributionMemberLookupRepository), new(*distributionMemberRepository)),
+	wire.Bind(new(service.DistributionUserManageMemberRepository), new(*distributionMemberRepository)),
+
+	wire.Bind(new(service.DistributionCommissionListRepository), new(*distributionCommissionRepository)),
+	wire.Bind(new(service.DistributionCommissionAdminListRepository), new(*distributionCommissionRepository)),
+	wire.Bind(new(service.DistributionCommissionRepository), new(*distributionCommissionRepository)),
+	wire.Bind(new(service.DistributionCommissionHistoryRepository), new(*distributionCommissionRepository)),
+	wire.Bind(new(service.DistributionCommissionSettlementRepository), new(*distributionCommissionRepository)),
+	wire.Bind(new(service.DistributionAutoSettlementRepository), new(*distributionCommissionRepository)),
+
+	wire.Bind(new(service.DistributionChannelBillingWalletRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionWalletSummaryRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionWalletAdminListRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionStatsSummaryRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionWalletTransactionListRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionStatsAdminRepository), new(*distributionWalletRepository)),
+	wire.Bind(new(service.DistributionWalletMutationRepository), new(*distributionWalletRepository)),
+
+	wire.Bind(new(service.DistributionWalletRequestRepository), new(*distributionWalletRequestRepository)),
+	wire.Bind(new(service.DistributionAlertEventRepository), new(*distributionAlertEventRepository)),
+	wire.Bind(new(service.DistributionConsumptionRepository), new(*distributionConsumptionRepository)),
+	wire.Bind(new(service.DistributionAnalyticsRepository), new(*distributionAnalyticsRepository)),
 
 	// Cache implementations
 	NewGatewayCache,
@@ -124,6 +169,8 @@ var ProviderSet = wire.NewSet(
 	NewRedeemCache,
 	NewUpdateCache,
 	NewGeminiTokenCache,
+	NewBatchImageQueue,
+	NewBatchImageDownloadLimiter,
 	NewLeaderLockCache,
 	ProvideSchedulerCache,
 	NewSchedulerOutboxRepository,

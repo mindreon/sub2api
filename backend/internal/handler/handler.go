@@ -64,6 +64,7 @@ type Handlers struct {
 	PaymentWebhook   *PaymentWebhookHandler
 	Voucher          *VoucherHandler
 	AvailableChannel *AvailableChannelHandler
+	BatchImage       *BatchImageHandler
 	PublicCatalog    *PublicCatalogHandler
 	Media            *MediaHandler
 }

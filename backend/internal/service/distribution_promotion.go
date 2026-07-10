@@ -39,7 +39,7 @@ type DistributionPromotionService struct {
 	repo             DistributionPromotionLinkRepository
 	memberRepo       DistributionPromotionMemberRepository
 	attributionRepo  DistributionPromotionAttributionRepository
-	organizationRepo distributionUserChannelOrganizationRepository
+	organizationRepo DistributionUserChannelOrganizationRepository
 }
 
 func NewDistributionPromotionService(
@@ -54,7 +54,7 @@ func NewDistributionPromotionService(
 	}
 }
 
-func (s *DistributionPromotionService) SetOrganizationRepository(repo distributionUserChannelOrganizationRepository) {
+func (s *DistributionPromotionService) SetOrganizationRepository(repo DistributionUserChannelOrganizationRepository) {
 	if s == nil {
 		return
 	}
@@ -251,7 +251,7 @@ func distributionCanManageChannelWithPromotionRepos(
 	userID int64,
 	channelOrgID int64,
 	memberRepo DistributionPromotionMemberRepository,
-	organizationRepo distributionUserChannelOrganizationRepository,
+	organizationRepo DistributionUserChannelOrganizationRepository,
 ) (bool, error) {
 	if organizationRepo != nil {
 		org, err := organizationRepo.GetByOwnerUserID(ctx, userID)

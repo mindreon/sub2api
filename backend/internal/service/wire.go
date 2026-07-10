@@ -45,6 +45,16 @@ func ProvideOAuthRefreshAPI(accountRepo AccountRepository, tokenCache GeminiToke
 	return NewOAuthRefreshAPI(accountRepo, tokenCache)
 }
 
+func ProvideBatchImageModelPricingResolver(resolver *ModelPricingResolver) *BatchImageModelPricingResolver {
+	return &BatchImageModelPricingResolver{Resolver: resolver}
+}
+
+func ProvideBatchImageCleanupService(repo BatchImageRepository, accountRepo AccountRepository, cfg *config.Config) *BatchImageCleanupService {
+	svc := NewBatchImageCleanupService(repo, accountRepo, cfg)
+	svc.Start()
+	return svc
+}
+
 // ProvideOpenAIOAuthService creates OpenAIOAuthService with privacy/account enrichment support.
 func ProvideOpenAIOAuthService(
 	proxyRepo ProxyRepository,
@@ -538,10 +548,12 @@ func ProvideAPIKeyService(
 	cfg *config.Config,
 	billingCacheService *BillingCacheService,
 	distributionChannelBillingService *DistributionChannelBillingService,
+	concurrencyService *ConcurrencyService,
 ) *APIKeyService {
 	svc := NewAPIKeyService(apiKeyRepo, userRepo, groupRepo, userSubRepo, userGroupRateRepo, cache, cfg)
 	svc.SetRateLimitCacheInvalidator(billingCacheService)
 	svc.SetDistributionAccessChecker(distributionChannelBillingService)
+	svc.SetConcurrencyService(concurrencyService)
 	return svc
 }
 
@@ -559,12 +571,23 @@ func ProvideDistributionScopeService(
 	commissionRepo DistributionCommissionListRepository,
 	walletRepo DistributionWalletSummaryRepository,
 	statsRepo DistributionStatsSummaryRepository,
-	organizationRepo distributionUserChannelOrganizationRepository,
+	organizationRepo DistributionUserChannelOrganizationRepository,
 	walletTransactionRepo DistributionWalletTransactionListRepository,
 ) *DistributionScopeService {
 	svc := NewDistributionScopeService(attributionRepo, memberRepo, commissionRepo, walletRepo, statsRepo)
 	svc.SetOrganizationRepository(organizationRepo)
 	svc.SetWalletTransactionRepository(walletTransactionRepo)
+	return svc
+}
+
+func ProvideDistributionPromotionService(
+	repo DistributionPromotionLinkRepository,
+	memberRepo DistributionPromotionMemberRepository,
+	attributionRepo DistributionPromotionAttributionRepository,
+	organizationRepo DistributionUserChannelOrganizationRepository,
+) *DistributionPromotionService {
+	svc := NewDistributionPromotionService(repo, memberRepo, attributionRepo)
+	svc.SetOrganizationRepository(organizationRepo)
 	return svc
 }
 
@@ -627,6 +650,126 @@ func ProvideCatalogModelService(repo CatalogModelRepository) (*CatalogModelServi
 	return svc, nil
 }
 
+func ProvideGatewayService(
+	accountRepo AccountRepository,
+	groupRepo GroupRepository,
+	usageLogRepo UsageLogRepository,
+	usageBillingRepo UsageBillingRepository,
+	userRepo UserRepository,
+	userSubRepo UserSubscriptionRepository,
+	userGroupRateRepo UserGroupRateRepository,
+	cache GatewayCache,
+	cfg *config.Config,
+	schedulerSnapshot *SchedulerSnapshotService,
+	concurrencyService *ConcurrencyService,
+	billingService *BillingService,
+	rateLimitService *RateLimitService,
+	billingCacheService *BillingCacheService,
+	identityService *IdentityService,
+	httpUpstream HTTPUpstream,
+	deferredService *DeferredService,
+	claudeTokenProvider *ClaudeTokenProvider,
+	sessionLimitCache SessionLimitCache,
+	rpmCache RPMCache,
+	digestStore *DigestSessionStore,
+	settingService *SettingService,
+	tlsFPProfileService *TLSFingerprintProfileService,
+	channelService *ChannelService,
+	resolver *ModelPricingResolver,
+	balanceNotifyService *BalanceNotifyService,
+	userPlatformQuotaRepo UserPlatformQuotaRepository,
+	distributionCommissionService *DistributionCommissionService,
+	distributionChannelBillingService *DistributionChannelBillingService,
+) *GatewayService {
+	svc := NewGatewayService(
+		accountRepo,
+		groupRepo,
+		usageLogRepo,
+		usageBillingRepo,
+		userRepo,
+		userSubRepo,
+		userGroupRateRepo,
+		cache,
+		cfg,
+		schedulerSnapshot,
+		concurrencyService,
+		billingService,
+		rateLimitService,
+		billingCacheService,
+		identityService,
+		httpUpstream,
+		deferredService,
+		claudeTokenProvider,
+		sessionLimitCache,
+		rpmCache,
+		digestStore,
+		settingService,
+		tlsFPProfileService,
+		channelService,
+		resolver,
+		balanceNotifyService,
+		userPlatformQuotaRepo,
+	)
+	svc.SetDistributionCommissionService(distributionCommissionService)
+	svc.SetDistributionChannelBillingService(distributionChannelBillingService)
+	return svc
+}
+
+func ProvideOpenAIGatewayService(
+	accountRepo AccountRepository,
+	usageLogRepo UsageLogRepository,
+	usageBillingRepo UsageBillingRepository,
+	userRepo UserRepository,
+	userSubRepo UserSubscriptionRepository,
+	userGroupRateRepo UserGroupRateRepository,
+	cache GatewayCache,
+	cfg *config.Config,
+	schedulerSnapshot *SchedulerSnapshotService,
+	concurrencyService *ConcurrencyService,
+	billingService *BillingService,
+	rateLimitService *RateLimitService,
+	billingCacheService *BillingCacheService,
+	httpUpstream HTTPUpstream,
+	deferredService *DeferredService,
+	openAITokenProvider *OpenAITokenProvider,
+	grokTokenProvider *GrokTokenProvider,
+	resolver *ModelPricingResolver,
+	channelService *ChannelService,
+	balanceNotifyService *BalanceNotifyService,
+	settingService *SettingService,
+	userPlatformQuotaRepo UserPlatformQuotaRepository,
+	distributionCommissionService *DistributionCommissionService,
+	distributionChannelBillingService *DistributionChannelBillingService,
+) *OpenAIGatewayService {
+	svc := NewOpenAIGatewayService(
+		accountRepo,
+		usageLogRepo,
+		usageBillingRepo,
+		userRepo,
+		userSubRepo,
+		userGroupRateRepo,
+		cache,
+		cfg,
+		schedulerSnapshot,
+		concurrencyService,
+		billingService,
+		rateLimitService,
+		billingCacheService,
+		httpUpstream,
+		deferredService,
+		openAITokenProvider,
+		grokTokenProvider,
+		resolver,
+		channelService,
+		balanceNotifyService,
+		settingService,
+		userPlatformQuotaRepo,
+	)
+	svc.SetDistributionCommissionService(distributionCommissionService)
+	svc.SetDistributionChannelBillingService(distributionChannelBillingService)
+	return svc
+}
+
 // ProviderSet is the Wire provider set for all services
 var ProviderSet = wire.NewSet(
 	// Core services
@@ -642,13 +785,19 @@ var ProviderSet = wire.NewSet(
 	NewUsageService,
 	NewDashboardService,
 	ProvidePricingService,
+	wire.Bind(new(DistributionWholesalePricingCatalog), new(*PricingService)),
 	NewBillingService,
 	ProvideBillingCacheService,
 	NewAnnouncementService,
 	ProvideCatalogModelService,
 	NewAdminService,
-	NewGatewayService,
-	NewOpenAIGatewayService,
+	ProvideGatewayService,
+	ProvideOpenAIGatewayService,
+	ProvideBatchImageModelPricingResolver,
+	NewBatchImagePublicService,
+	NewBatchImageDownloadService,
+	ProvideBatchImageCleanupService,
+	ProvideBatchImageWorkerRuntime,
 	wire.Bind(new(AccountRuntimeBlocker), new(*OpenAIGatewayService)),
 	NewOAuthService,
 	ProvideOpenAIOAuthService,
@@ -724,7 +873,9 @@ var ProviderSet = wire.NewSet(
 	ProvideDistributionAdminService,
 	NewDistributionOrganizationService,
 	NewDistributionMemberService,
-	NewDistributionPromotionService,
+	ProvideDistributionPromotionService,
+	NewDistributionUserManageService,
+	NewDistributionAnalyticsService,
 	ProvideDistributionChannelBillingService,
 	ProvideDistributionCommissionService,
 	ProvideDistributionAutoSettlementService,
