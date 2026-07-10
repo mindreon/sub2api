@@ -140,6 +140,67 @@ func (s *SettingService) GetAffiliateRebatePerInviteeCap(ctx context.Context) fl
 	return cap
 }
 
+// GetDistributionFreezeHours 返回分销冻结期（小时）。
+func (s *SettingService) GetDistributionFreezeHours(ctx context.Context) int {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionFreezeHours)
+	if err != nil {
+		return DistributionFreezeHoursDefault
+	}
+	hours, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || hours < 0 {
+		return DistributionFreezeHoursDefault
+	}
+	if hours > DistributionFreezeHoursMax {
+		return DistributionFreezeHoursMax
+	}
+	return hours
+}
+
+// GetDistributionKol2Rate 返回 2 级 KOL 全局佣金比例。
+func (s *SettingService) GetDistributionKol2Rate(ctx context.Context) float64 {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionKol2Rate)
+	if err != nil {
+		return DistributionKol2RateDefault
+	}
+	rate, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
+	if err != nil || math.IsNaN(rate) || math.IsInf(rate, 0) || rate < 0 {
+		return DistributionKol2RateDefault
+	}
+	if rate > 100 {
+		return DistributionKol2RateDefault
+	}
+	return rate
+}
+
+// GetDistributionCommissionUpperRatio 返回分销单笔总佣金比例上限。
+func (s *SettingService) GetDistributionCommissionUpperRatio(ctx context.Context) float64 {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionCommissionUpperRatio)
+	if err != nil {
+		return DistributionCommissionUpperRatioDefault
+	}
+	ratio, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
+	if err != nil || math.IsNaN(ratio) || math.IsInf(ratio, 0) || ratio < 0 {
+		return DistributionCommissionUpperRatioDefault
+	}
+	if ratio > 100 {
+		return DistributionCommissionUpperRatioDefault
+	}
+	return ratio
+}
+
+// GetDistributionGlobalLevels returns the global agent level configuration.
+func (s *SettingService) GetDistributionGlobalLevels(ctx context.Context) []DistributionLevelConfig {
+	raw, err := s.settingRepo.GetValue(ctx, SettingKeyDistributionGlobalLevels)
+	if err != nil || strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	var levels []DistributionLevelConfig
+	if err := json.Unmarshal([]byte(raw), &levels); err != nil {
+		return nil
+	}
+	return normalizeDistributionLevelConfigs(levels)
+}
+
 // IsPasswordResetEnabled 检查是否启用密码重置功能
 // 要求：必须同时开启邮件验证
 func (s *SettingService) IsPasswordResetEnabled(ctx context.Context) bool {

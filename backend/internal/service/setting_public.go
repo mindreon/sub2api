@@ -280,7 +280,7 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		balanceLowNotifyThreshold = v
 	}
 
-	return &PublicSettings{
+	out := &PublicSettings{
 		RegistrationEnabled:              settings[SettingKeyRegistrationEnabled] == "true",
 		EmailVerifyEnabled:               emailVerifyEnabled,
 		ForceEmailOnThirdPartySignup:     settings[SettingKeyForceEmailOnThirdPartySignup] == "true",
@@ -337,7 +337,43 @@ func (s *SettingService) GetPublicSettings(ctx context.Context) (*PublicSettings
 		RiskControlEnabled: settings[SettingKeyRiskControlEnabled] == "true",
 
 		AllowUserViewErrorRequests: settings[SettingKeyAllowUserViewErrorRequests] == "true",
-	}, nil
+	}
+	if err := s.applyDistributionBrandingOverride(ctx, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (s *SettingService) applyDistributionBrandingOverride(ctx context.Context, settings *PublicSettings) error {
+	if s == nil || settings == nil || s.brandingResolver == nil {
+		return nil
+	}
+
+	requestMeta := publicSettingsRequestMetaFromContext(ctx)
+	if requestMeta.Host == "" {
+		return nil
+	}
+
+	org, err := s.brandingResolver.GetByBrandHost(ctx, requestMeta.Host)
+	if err != nil {
+		return err
+	}
+	if org == nil {
+		return nil
+	}
+
+	if siteName := strings.TrimSpace(org.Name); siteName != "" {
+		settings.SiteName = siteName
+	}
+	if logoURL := distributionBrandString(org.BrandConfig, "logo_url"); logoURL != "" {
+		settings.SiteLogo = logoURL
+	}
+	if apiURL := ResolveDistributionBrandURL(distributionBrandString(org.BrandConfig, "api_domain"), requestMeta.Scheme); apiURL != "" {
+		settings.APIBaseURL = apiURL
+	} else {
+		settings.APIBaseURL = requestMeta.Scheme + "://" + requestMeta.Host
+	}
+	return nil
 }
 
 // channelMonitorIntervalMin / channelMonitorIntervalMax bound the default interval

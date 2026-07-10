@@ -119,6 +119,7 @@ var ProviderSet = wire.NewSet(
 	wire.Bind(new(service.DistributionOrganizationRepository), new(*distributionOrganizationRepository)),
 	wire.Bind(new(service.DistributionUserManageOrganizationRepository), new(*distributionOrganizationRepository)),
 	wire.Bind(new(service.DistributionUserChannelOrganizationRepository), new(*distributionOrganizationRepository)),
+	wire.Bind(new(service.DistributionBrandingResolver), new(*distributionOrganizationRepository)),
 
 	wire.Bind(new(service.DistributionPromotionLinkRepository), new(*distributionPromotionRepository)),
 	wire.Bind(new(service.DistributionPromotionRepository), new(*distributionPromotionRepository)),
