@@ -30,6 +30,8 @@ export interface MediaTaskListParams {
   status?: string
   media_type?: string
   model?: string
+  created_from?: string
+  created_to?: string
   sort_by?: string
   sort_order?: 'asc' | 'desc'
 }

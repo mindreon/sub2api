@@ -639,13 +639,31 @@ export default {
   mediaTasks: {
     title: 'Media Tasks',
     description: 'View reserved and settled costs for async video/image/audio generation tasks.',
+    total: '{count} tasks',
     empty: 'No media generation tasks yet',
     loadFailed: 'Failed to load media tasks',
+    pendingSettlement: 'Pending settlement',
+    reservedCost: 'Reserved {amount}',
     filters: {
       allStatus: 'All statuses',
       allTypes: 'All types',
+      allTime: 'All time',
+    },
+    statuses: {
+      pending: 'Pending',
+      in_progress: 'In progress',
+      completed: 'Completed',
+      failed: 'Failed',
+      expired: 'Expired',
+    },
+    types: {
+      video: 'Video',
+      image: 'Image',
+      audio: 'Audio',
     },
     columns: {
+      task: 'Task',
+      cost: 'Cost',
       taskId: 'Task ID',
       model: 'Model',
       type: 'Type',

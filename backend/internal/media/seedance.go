@@ -35,6 +35,9 @@ func SeedancePricingRules(model string) []MediaPricingRule {
 	m = strings.TrimPrefix(m, "doubao-")
 	m = strings.TrimPrefix(m, "dreamina-")
 	m = strings.TrimPrefix(m, "bytedance/")
+	if strings.HasPrefix(m, "seedance2.0") {
+		m = "seedance-2.0" + strings.TrimPrefix(m, "seedance2.0")
+	}
 
 	switch {
 	case strings.HasPrefix(m, "seedance-2.0-fast"), strings.HasPrefix(m, "seedance-2-0-fast"):

@@ -34,17 +34,9 @@
             v-model="editBaseUrl"
             type="text"
             class="input"
-            :placeholder="
-              account.platform === 'openai'
-                ? 'https://api.openai.com'
-                : account.platform === 'gemini'
-                  ? 'https://generativelanguage.googleapis.com'
-                  : account.platform === 'antigravity'
-                    ? 'https://cloudcode-pa.googleapis.com'
-                    : 'https://api.anthropic.com'
-            "
+            :placeholder="getDefaultAPIKeyBaseURL(account.platform)"
           />
-          <p class="input-hint">{{ baseUrlHint }}</p>
+          <p v-if="!isMediaAccountPlatform(account.platform)" class="input-hint">{{ baseUrlHint }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.apiKey') }}</label>
@@ -61,7 +53,7 @@
                 ? 'sk-proj-...'
                 : account.platform === 'gemini'
                   ? 'AIza...'
-                  : account.platform === 'antigravity'
+                  : account.platform === 'antigravity' || isMediaAccountPlatform(account.platform)
                     ? 'sk-...'
                     : 'sk-ant-...'
             "
@@ -2519,6 +2511,7 @@ import { adminAPI } from '@/api/admin'
 import { useQuotaNotifyState } from '@/composables/useQuotaNotifyState'
 import type {
   Account,
+  AccountPlatform,
   Proxy,
   AdminGroup,
   CheckMixedChannelResponse,
@@ -2596,6 +2589,18 @@ const baseUrlHint = computed(() => {
   if (props.account.platform === 'gemini') return t('admin.accounts.gemini.baseUrlHint')
   return t('admin.accounts.baseUrlHint')
 })
+
+const mediaAccountPlatforms = new Set<AccountPlatform>(['volcengine'])
+
+const isMediaAccountPlatform = (platform: AccountPlatform) => mediaAccountPlatforms.has(platform)
+
+const getDefaultAPIKeyBaseURL = (platform: AccountPlatform) => {
+  if (platform === 'openai') return 'https://api.openai.com'
+  if (platform === 'gemini') return 'https://generativelanguage.googleapis.com'
+  if (platform === 'antigravity') return 'https://cloudcode-pa.googleapis.com'
+  if (platform === 'volcengine') return 'https://ark.cn-beijing.volces.com'
+  return 'https://api.anthropic.com'
+}
 
 const antigravityPresetMappings = computed(() => getPresetMappingsByPlatform('antigravity'))
 const bedrockPresets = computed(() => getPresetMappingsByPlatform('bedrock'))
@@ -3041,9 +3046,9 @@ const tempUnschedPresets = computed(() => [
 
 // Computed: default base URL based on platform
 const defaultBaseUrl = computed(() => {
-  if (props.account?.platform === 'openai') return 'https://api.openai.com'
-  if (props.account?.platform === 'gemini') return 'https://generativelanguage.googleapis.com'
-  return 'https://api.anthropic.com'
+  return props.account
+    ? getDefaultAPIKeyBaseURL(props.account.platform)
+    : 'https://api.anthropic.com'
 })
 
 const mixedChannelWarningMessageText = computed(() => {
@@ -3330,13 +3335,10 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   // Initialize API Key fields for apikey type
   if (newAccount.type === 'apikey' && newAccount.credentials) {
     const credentials = newAccount.credentials as Record<string, unknown>
-    const platformDefaultUrl =
-      newAccount.platform === 'openai'
-        ? 'https://api.openai.com'
-        : newAccount.platform === 'gemini'
-          ? 'https://generativelanguage.googleapis.com'
-          : 'https://api.anthropic.com'
-    editBaseUrl.value = (credentials.base_url as string) || platformDefaultUrl
+    const mediaBaseURL = isMediaAccountPlatform(newAccount.platform)
+      ? (extra?.base_url as string)
+      : undefined
+    editBaseUrl.value = mediaBaseURL || (credentials.base_url as string) || getDefaultAPIKeyBaseURL(newAccount.platform)
 
     // Load model mappings and detect mode
     loadModelRestrictionFromMapping(credentials.model_mapping as Record<string, unknown> | undefined)
@@ -3406,13 +3408,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
     // Load model mappings for service_account
     loadModelRestrictionFromMapping(credentials.model_mapping as Record<string, unknown> | undefined)
   } else {
-    const platformDefaultUrl =
-      newAccount.platform === 'openai'
-        ? 'https://api.openai.com'
-        : newAccount.platform === 'gemini'
-          ? 'https://generativelanguage.googleapis.com'
-          : 'https://api.anthropic.com'
-    editBaseUrl.value = platformDefaultUrl
+    editBaseUrl.value = getDefaultAPIKeyBaseURL(newAccount.platform)
 
     // Load model mappings for OpenAI/Grok OAuth accounts
     if ((newAccount.platform === 'openai' || newAccount.platform === 'grok') && newAccount.credentials) {
@@ -3931,12 +3927,15 @@ const handleSubmit = async () => {
     if (props.account.type === 'apikey') {
       const currentCredentials = (props.account.credentials as Record<string, unknown>) || {}
       const newBaseUrl = editBaseUrl.value.trim() || defaultBaseUrl.value
+      const isMediaAccount = isMediaAccountPlatform(props.account.platform)
       const shouldApplyModelMapping = !(props.account.platform === 'openai' && openaiPassthroughEnabled.value)
 
       // Always update credentials for apikey type to handle model mapping changes
       const newCredentials: Record<string, unknown> = {
-        ...currentCredentials,
-        base_url: newBaseUrl
+        ...currentCredentials
+      }
+      if (!isMediaAccount) {
+        newCredentials.base_url = newBaseUrl
       }
 
       // Handle API key
@@ -4018,6 +4017,13 @@ const handleSubmit = async () => {
       }
 
       updatePayload.credentials = newCredentials
+      if (isMediaAccount) {
+        const currentExtra = (props.account.extra as Record<string, unknown>) || {}
+        updatePayload.extra = {
+          ...currentExtra,
+          base_url: newBaseUrl
+        }
+      }
     } else if (props.account.type === 'upstream') {
       const currentCredentials = (props.account.credentials as Record<string, unknown>) || {}
       const newCredentials: Record<string, unknown> = { ...currentCredentials }

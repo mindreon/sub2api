@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Wei-Shaw/sub2api/internal/media"
 )
 
 type httpDoer interface {
@@ -35,16 +37,16 @@ func doJSON(ctx context.Context, client httpDoer, method, url, apiKey string, bo
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %v", media.ErrUpstreamRequest, err)
 	}
 	defer resp.Body.Close()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: read response: %v", media.ErrUpstreamRequest, err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("upstream http %d: %s", resp.StatusCode, truncateBody(raw))
+		return fmt.Errorf("%w: upstream http %d: %s", media.ErrUpstreamRequest, resp.StatusCode, truncateBody(raw))
 	}
 	if out == nil {
 		return nil
@@ -52,7 +54,10 @@ func doJSON(ctx context.Context, client httpDoer, method, url, apiKey string, bo
 	if len(raw) == 0 {
 		return nil
 	}
-	return json.Unmarshal(raw, out)
+	if err := json.Unmarshal(raw, out); err != nil {
+		return fmt.Errorf("%w: decode response: %v", media.ErrUpstreamRequest, err)
+	}
+	return nil
 }
 
 func truncateBody(raw []byte) string {

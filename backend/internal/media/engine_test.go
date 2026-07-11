@@ -234,6 +234,33 @@ func TestSeedancePricingRules_DreaminaAliasesResolve(t *testing.T) {
 	}
 }
 
+func TestSeedancePricingRules_UpstreamAliasesResolve(t *testing.T) {
+	tests := []struct {
+		model             string
+		wantCNYPerMillion float64
+	}{
+		{model: "seedance2.0-fast", wantCNYPerMillion: 37},
+		{model: "seedance2.0-fast-p5", wantCNYPerMillion: 37},
+		{model: "seedance2.0-mini", wantCNYPerMillion: 23},
+		{model: "seedance2.0-mini-p5", wantCNYPerMillion: 23},
+		{model: "seedance2.0-pro", wantCNYPerMillion: 46},
+		{model: "seedance2.0-pro-p5", wantCNYPerMillion: 46},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.model, func(t *testing.T) {
+			rule := selectRule(SeedancePricingRules(tt.model), BillingUsage{
+				Resolution:    "720p",
+				HasVideoInput: false,
+			})
+			wantUnitPrice, _ := PerMillion(tt.wantCNYPerMillion, CurrencyCNY)
+			if rule == nil || !approxEqual(rule.UnitPrice, wantUnitPrice) {
+				t.Fatalf("unexpected pricing rule: %+v", rule)
+			}
+		})
+	}
+}
+
 // 1.5-pro 按有声/无声区分单价。
 func TestCalculateMediaCost_Seedance15Pro_Audio(t *testing.T) {
 	rules := SeedancePricingRules("doubao-seedance-1.5-pro")

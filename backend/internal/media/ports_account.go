@@ -15,6 +15,7 @@ type AccountSelection struct {
 	Platform  string
 	APIKey    string
 	BaseURL   string
+	APIStyle  string
 }
 
 // AccountSelector 按分组与模型选择上游账号（复用 Gateway 调度逻辑）。

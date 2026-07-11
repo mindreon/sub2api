@@ -68,6 +68,9 @@ func accountToMediaSelection(account *service.Account) media.AccountSelection {
 		if u, ok := account.Extra["base_url"].(string); ok {
 			sel.BaseURL = strings.TrimSpace(u)
 		}
+		if style, ok := account.Extra["media_api_style"].(string); ok {
+			sel.APIStyle = strings.TrimSpace(style)
+		}
 	}
 	return sel
 }

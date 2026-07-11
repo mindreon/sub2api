@@ -2386,6 +2386,34 @@ func (h *AccountHandler) GetAvailableModels(c *gin.Context) {
 		return
 	}
 
+	// Handle media generation accounts without falling through to Claude defaults.
+	if account.Platform == service.PlatformVolcengine {
+		mapping := account.GetModelMapping()
+		modelIDs := make([]string, 0, len(mapping))
+		if len(mapping) > 0 {
+			for requestedModel := range mapping {
+				modelIDs = append(modelIDs, requestedModel)
+			}
+		} else {
+			modelIDs = append(modelIDs,
+				"dreamina-seedance-2-0-260128",
+				"dreamina-seedance-2-0-fast-260128",
+			)
+		}
+		sort.Strings(modelIDs)
+
+		models := make([]claude.Model, 0, len(modelIDs))
+		for _, modelID := range modelIDs {
+			models = append(models, claude.Model{
+				ID:          modelID,
+				Type:        "model",
+				DisplayName: modelID,
+			})
+		}
+		response.Success(c, models)
+		return
+	}
+
 	// Handle Claude/Anthropic accounts
 	// For OAuth and Setup-Token accounts: return default models
 	if account.IsOAuth() {

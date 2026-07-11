@@ -119,6 +119,9 @@ func (s *EntTaskStore) Update(ctx context.Context, task *Task) error {
 	if task.UpstreamTaskID != "" {
 		upd.SetUpstreamTaskID(task.UpstreamTaskID)
 	}
+	if task.AccountID != nil {
+		upd.SetAccountID(*task.AccountID)
+	}
 	if task.ActualCost != nil {
 		upd.SetActualCost(*task.ActualCost)
 	}
@@ -195,6 +198,12 @@ func (s *EntTaskStore) List(ctx context.Context, q TaskListQuery) (*TaskListResu
 	}
 	if model := strings.TrimSpace(q.Model); model != "" {
 		query = query.Where(mediagenerationtask.ModelEQ(model))
+	}
+	if q.CreatedFrom != nil {
+		query = query.Where(mediagenerationtask.CreatedAtGTE(*q.CreatedFrom))
+	}
+	if q.CreatedTo != nil {
+		query = query.Where(mediagenerationtask.CreatedAtLTE(*q.CreatedTo))
 	}
 	total, err := query.Clone().Count(ctx)
 	if err != nil {

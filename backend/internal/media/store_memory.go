@@ -9,9 +9,9 @@ import (
 
 // MemoryStore 是 TaskStore + HoldStore 的内存实现，供单测与本地开发使用。
 type MemoryStore struct {
-	mu    sync.Mutex
-	tasks map[string]*Task
-	holds map[string]*Hold // keyed by task_id
+	mu       sync.Mutex
+	tasks    map[string]*Task
+	holds    map[string]*Hold // keyed by task_id
 	byHoldID map[string]*Hold
 }
 
@@ -107,6 +107,12 @@ func (s *MemoryStore) List(ctx context.Context, q TaskListQuery) (*TaskListResul
 			continue
 		}
 		if q.Model != "" && t.Model != q.Model {
+			continue
+		}
+		if q.CreatedFrom != nil && t.CreatedAt.Before(*q.CreatedFrom) {
+			continue
+		}
+		if q.CreatedTo != nil && t.CreatedAt.After(*q.CreatedTo) {
 			continue
 		}
 		cp := *t

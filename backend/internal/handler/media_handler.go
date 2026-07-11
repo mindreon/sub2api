@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/media"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/server/middleware"
 	"github.com/Wei-Shaw/sub2api/internal/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // MediaHandler 提供中转站风格的视频异步生成 API：提交任务、查询状态。
@@ -129,7 +131,11 @@ func writeCommonStyleTaskError(c *gin.Context, err error) {
 		writeCommonStyleMediaError(c, http.StatusBadRequest, "model_not_found", "model is not supported for media generation")
 	case errors.Is(err, media.ErrCurrencyRateMissing):
 		writeCommonStyleMediaError(c, http.StatusInternalServerError, "billing_error", "billing currency configuration error")
+	case errors.Is(err, media.ErrUpstreamRequest):
+		logger.FromContext(c.Request.Context()).Error("media upstream request failed", zap.Error(err))
+		writeCommonStyleMediaError(c, http.StatusBadGateway, "upstream_error", "upstream request failed")
 	default:
+		logger.FromContext(c.Request.Context()).Error("media task request failed", zap.Error(err))
 		writeCommonStyleMediaError(c, http.StatusInternalServerError, "internal_error", "internal error")
 	}
 }

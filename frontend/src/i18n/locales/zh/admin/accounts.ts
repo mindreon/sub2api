@@ -223,6 +223,7 @@ export default {
         gemini: 'Gemini',
         antigravity: 'Antigravity',
         grok: 'Grok',
+        volcengine: '火山引擎',
       },
       types: {
         oauth: 'OAuth',

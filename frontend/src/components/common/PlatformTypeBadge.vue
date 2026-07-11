@@ -75,9 +75,11 @@ const props = defineProps<Props>()
 const platformLabel = computed(() => {
   if (props.platform === 'anthropic') return 'Anthropic'
   if (props.platform === 'openai') return 'OpenAI'
+  if (props.platform === 'gemini') return 'Gemini'
   if (props.platform === 'antigravity') return 'Antigravity'
   if (props.platform === 'grok') return 'Grok'
-  return 'Gemini'
+  if (props.platform === 'volcengine') return 'Volcengine'
+  return props.platform
 })
 
 const typeLabel = computed(() => {
@@ -130,6 +132,9 @@ const platformClass = computed(() => {
   if (props.platform === 'grok') {
     return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
   }
+  if (props.platform === 'volcengine') {
+    return 'bg-cyan-100 text-blue-700 dark:bg-cyan-900/30 dark:text-cyan-300'
+  }
   return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
 })
 
@@ -145,6 +150,9 @@ const typeClass = computed(() => {
   }
   if (props.platform === 'grok') {
     return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
+  }
+  if (props.platform === 'volcengine') {
+    return 'bg-cyan-100 text-blue-600 dark:bg-cyan-900/30 dark:text-cyan-300'
   }
   return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
 })

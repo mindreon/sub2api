@@ -71,6 +71,73 @@ func TestVolcengineProvider_SubmitAndQuerySucceeded(t *testing.T) {
 	}
 }
 
+func TestCommonStyleVideoProvider_SubmitAndQuerySucceeded(t *testing.T) {
+	var createBody map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/video/generations":
+			_ = json.NewDecoder(r.Body).Decode(&createBody)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":      "upstream-task-1",
+				"task_id": "upstream-task-1",
+				"status":  "queued",
+			})
+		case r.Method == http.MethodGet && r.URL.Path == "/v1/video/generations/upstream-task-1":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"code": "success",
+				"data": map[string]any{
+					"status":     "SUCCESS",
+					"result_url": "https://example.com/generated.mp4",
+					"data": map[string]any{
+						"usage": map[string]any{"completion_tokens": 108900},
+					},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	p := NewCommonStyleVideoProvider(CommonStyleVideoConfig{
+		APIKey:  "test-key",
+		BaseURL: srv.URL,
+	}, srv.Client())
+	task := &media.Task{
+		Model: "seedance2.0-fast-p5",
+		RequestParams: map[string]any{
+			"prompt":     "a hippo drinking coffee",
+			"duration":   5,
+			"resolution": "480p",
+			"ratio":      "16:9",
+		},
+	}
+
+	id, err := p.Submit(context.Background(), task)
+	if err != nil || id != "upstream-task-1" {
+		t.Fatalf("submit: id=%q err=%v", id, err)
+	}
+	if createBody["model"] != task.Model || createBody["prompt"] != task.RequestParams["prompt"] {
+		t.Fatalf("unexpected submit body: %#v", createBody)
+	}
+	metadata, ok := createBody["metadata"].(map[string]any)
+	if !ok || metadata["resolution"] != "480p" || metadata["duration"] != float64(5) {
+		t.Fatalf("unexpected metadata: %#v", createBody["metadata"])
+	}
+
+	task.UpstreamTaskID = id
+	status, err := p.QueryStatus(context.Background(), task)
+	if err != nil {
+		t.Fatalf("query: %v", err)
+	}
+	if status.State != media.ProviderSucceeded || status.Usage.VideoTokens != 108900 {
+		t.Fatalf("unexpected status: %+v", status)
+	}
+	if status.ResultURL != "https://example.com/generated.mp4" {
+		t.Fatalf("unexpected result URL: %q", status.ResultURL)
+	}
+}
+
 func TestBuildVolcengineSubmitBodyMergesPromptIntoExistingContent(t *testing.T) {
 	body := buildVolcengineSubmitBody(&media.Task{
 		Model: "dreamina-seedance-2-0-260128",

@@ -39,8 +39,12 @@ type Provider interface {
 	QueryStatus(ctx context.Context, task *Task) (*ProviderStatus, error)
 }
 
-// ErrProviderNotFound 表示没有为该模型注册厂商适配器。
-var ErrProviderNotFound = errors.New("media: no provider registered for model")
+var (
+	// ErrProviderNotFound 表示没有为该模型注册厂商适配器。
+	ErrProviderNotFound = errors.New("media: no provider registered for model")
+	// ErrUpstreamRequest 表示请求上游或解析上游响应失败。
+	ErrUpstreamRequest = errors.New("media: upstream request failed")
+)
 
 // ProviderRegistry 按模型名解析出对应的厂商适配器。
 type ProviderRegistry interface {

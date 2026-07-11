@@ -662,13 +662,31 @@ export default {
   mediaTasks: {
     title: '媒体任务',
     description: '查看视频/图片/音频异步生成任务的预扣与实际扣费记录。',
+    total: '共 {count} 条',
     empty: '暂无媒体生成任务',
     loadFailed: '加载媒体任务失败',
+    pendingSettlement: '待结算',
+    reservedCost: '预扣 {amount}',
     filters: {
       allStatus: '全部状态',
       allTypes: '全部类型',
+      allTime: '全部时间',
+    },
+    statuses: {
+      pending: '等待中',
+      in_progress: '处理中',
+      completed: '已完成',
+      failed: '失败',
+      expired: '已过期',
+    },
+    types: {
+      video: '视频',
+      image: '图片',
+      audio: '音频',
     },
     columns: {
+      task: '任务',
+      cost: '费用',
       taskId: '任务 ID',
       model: '模型',
       type: '类型',

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -26,6 +27,12 @@ func (f *accountMediaProviderFactory) NewProvider(sel media.AccountSelection, mo
 	client := &http.Client{Timeout: 120 * time.Second}
 	switch sel.Platform {
 	case service.PlatformVolcengine:
+		if useCommonStyleVideoAPI(sel) {
+			return providers.NewCommonStyleVideoProvider(providers.CommonStyleVideoConfig{
+				APIKey:  sel.APIKey,
+				BaseURL: sel.BaseURL,
+			}, client), nil
+		}
 		return providers.NewVolcengineProvider(providers.VolcengineConfig{
 			APIKey:  sel.APIKey,
 			BaseURL: sel.BaseURL,
@@ -42,6 +49,31 @@ func (f *accountMediaProviderFactory) NewProvider(sel media.AccountSelection, mo
 		}
 		return nil, fmt.Errorf("media: account platform %q does not match model backend %q", sel.Platform, backend)
 	}
+}
+
+func useCommonStyleVideoAPI(sel media.AccountSelection) bool {
+	switch strings.ToLower(strings.TrimSpace(sel.APIStyle)) {
+	case "common", "common_style":
+		return true
+	case "native", "volcengine":
+		return false
+	}
+	rawBaseURL := strings.TrimSpace(sel.BaseURL)
+	if rawBaseURL == "" {
+		return false
+	}
+	parsed, err := url.Parse(rawBaseURL)
+	if err != nil {
+		return true
+	}
+	host := strings.ToLower(parsed.Hostname())
+	return host == "" || !isNativeVolcengineHost(host)
+}
+
+func isNativeVolcengineHost(host string) bool {
+	return host == "volces.com" || strings.HasSuffix(host, ".volces.com") ||
+		host == "bytepluses.com" || strings.HasSuffix(host, ".bytepluses.com") ||
+		host == "volcengineapi.com" || strings.HasSuffix(host, ".volcengineapi.com")
 }
 
 // envFallbackMediaProviderFactory 在账号凭证缺失时回退环境变量（过渡期兼容）。

@@ -823,6 +823,7 @@ export default {
         gemini: 'Gemini',
         antigravity: 'Antigravity',
         grok: 'Grok',
+        volcengine: '火山引擎',
       },
       saving: '保存中...',
       noGroups: '暂无分组',

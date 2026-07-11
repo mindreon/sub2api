@@ -120,6 +120,9 @@ func (s *AccountTestService) FetchUpstreamSupportedModels(ctx context.Context, a
 	if err != nil {
 		return nil, newUpstreamModelSyncUpstreamError("Upstream model list response was not valid JSON", err)
 	}
+	if isMediaUpstreamModelPlatform(account.Platform) {
+		models = filterSupportedMediaModelIDs(models)
+	}
 	if len(models) == 0 {
 		return nil, newUpstreamModelSyncUpstreamError("Upstream returned no supported models", nil)
 	}
@@ -131,6 +134,8 @@ func (s *AccountTestService) buildUpstreamModelsRequest(ctx context.Context, acc
 	switch {
 	case account.Platform == PlatformAntigravity:
 		return s.buildAntigravityAPIKeyModelsRequest(ctx, account)
+	case isMediaUpstreamModelPlatform(account.Platform):
+		return s.buildMediaUpstreamModelsRequest(ctx, account)
 	case account.IsOpenAI():
 		return s.buildOpenAIUpstreamModelsRequest(ctx, account)
 	case account.IsGemini():
@@ -142,6 +147,67 @@ func (s *AccountTestService) buildUpstreamModelsRequest(ctx context.Context, acc
 			fmt.Sprintf("Unsupported platform for upstream model sync: %s", account.Platform), nil,
 		)
 	}
+}
+
+func (s *AccountTestService) buildMediaUpstreamModelsRequest(ctx context.Context, account *Account) (*http.Request, error) {
+	if account.Type != AccountTypeAPIKey {
+		return nil, newUpstreamModelSyncUnsupportedError(
+			fmt.Sprintf("Unsupported %s account type for upstream model sync: %s", account.Platform, account.Type), nil,
+		)
+	}
+
+	apiKey := strings.TrimSpace(account.GetCredential("api_key"))
+	if apiKey == "" {
+		return nil, newUpstreamModelSyncConfigError(fmt.Sprintf("No %s API key is available", account.Platform), nil)
+	}
+
+	baseURL := strings.TrimSpace(account.GetExtraString("base_url"))
+	if baseURL == "" {
+		baseURL = strings.TrimSpace(account.GetCredential("base_url"))
+	}
+	modelListPath := ""
+	switch account.Platform {
+	case PlatformVolcengine:
+		if baseURL == "" {
+			baseURL = "https://ark.cn-beijing.volces.com"
+		}
+		modelListPath = "/v1/models"
+	default:
+		return nil, newUpstreamModelSyncUnsupportedError(
+			fmt.Sprintf("Unsupported platform for upstream model sync: %s", account.Platform), nil,
+		)
+	}
+
+	normalizedBaseURL, err := s.validateUpstreamBaseURL(baseURL)
+	if err != nil {
+		return nil, newUpstreamModelSyncConfigError(fmt.Sprintf("Invalid %s base URL", account.Platform), err)
+	}
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		strings.TrimRight(normalizedBaseURL, "/")+modelListPath,
+		nil,
+	)
+	if err != nil {
+		return nil, newUpstreamModelSyncConfigError(fmt.Sprintf("Invalid %s model list URL", account.Platform), err)
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	return req, nil
+}
+
+func isMediaUpstreamModelPlatform(platform string) bool {
+	return platform == PlatformVolcengine
+}
+
+func filterSupportedMediaModelIDs(models []string) []string {
+	filtered := make([]string, 0, len(models))
+	for _, model := range models {
+		if strings.Contains(strings.ToLower(strings.TrimSpace(model)), "seedance") {
+			filtered = append(filtered, model)
+		}
+	}
+	return dedupeAndSortModelIDs(filtered)
 }
 
 func (s *AccountTestService) buildAnthropicUpstreamModelsRequest(ctx context.Context, account *Account) (*http.Request, error) {

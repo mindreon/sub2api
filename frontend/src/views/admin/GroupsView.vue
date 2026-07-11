@@ -1061,7 +1061,7 @@
           </div>
         </div>
 
-        <!-- 多模态异步生成计费配置（Volcengine / OpenRouter） -->
+        <!-- 多模态异步生成计费配置（Volcengine） -->
         <div
           v-if="supportsMediaPricingPlatform(createForm.platform)"
           class="border-t pt-4"
@@ -2585,7 +2585,7 @@
           </div>
         </div>
 
-        <!-- 多模态异步生成计费配置（Volcengine / OpenRouter） -->
+        <!-- 多模态异步生成计费配置（Volcengine） -->
         <div
           v-if="supportsMediaPricingPlatform(editForm.platform)"
           class="border-t pt-4"
@@ -3764,7 +3764,6 @@ const platformOptions = computed(() => [
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
   { value: "volcengine", label: "Volcengine" },
-  { value: "openrouter", label: "OpenRouter" },
 ]);
 
 const platformFilterOptions = computed(() => [
@@ -3775,7 +3774,6 @@ const platformFilterOptions = computed(() => [
   { value: "antigravity", label: "Antigravity" },
   { value: "grok", label: "Grok" },
   { value: "volcengine", label: "Volcengine" },
-  { value: "openrouter", label: "OpenRouter" },
 ]);
 
 const editStatusOptions = computed(() => [
@@ -3789,7 +3787,7 @@ const subscriptionTypeOptions = computed(() => [
 ]);
 
 const supportsMediaPricingPlatform = (platform: GroupPlatform) =>
-  platform === "volcengine" || platform === "openrouter";
+  platform === "volcengine";
 
 // 降级分组选项（创建时）- 仅包含 anthropic 平台且未启用 claude_code_only 的分组
 const fallbackGroupOptions = computed(() => {

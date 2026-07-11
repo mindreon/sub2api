@@ -30,6 +30,12 @@ type VolcengineConfig struct {
 	BaseURL string
 }
 
+// CommonStyleVideoConfig 中转站风格异步视频接口参数。
+type CommonStyleVideoConfig struct {
+	APIKey  string
+	BaseURL string
+}
+
 // OpenRouterConfig OpenRouter 异步视频接入参数。
 type OpenRouterConfig struct {
 	APIKey  string
@@ -51,7 +57,10 @@ func ConfigFromEnv() Config {
 	}
 }
 
-func (c VolcengineConfig) enabled() bool  { return strings.TrimSpace(c.APIKey) != "" }
+func (c VolcengineConfig) enabled() bool { return strings.TrimSpace(c.APIKey) != "" }
+func (c CommonStyleVideoConfig) enabled() bool {
+	return strings.TrimSpace(c.APIKey) != "" && strings.TrimSpace(c.BaseURL) != ""
+}
 func (c OpenRouterConfig) enabled() bool { return strings.TrimSpace(c.APIKey) != "" }
 
 func (c VolcengineConfig) baseURL() string {
@@ -66,4 +75,8 @@ func (c OpenRouterConfig) baseURL() string {
 		return u
 	}
 	return defaultOpenRouterBaseURL
+}
+
+func (c CommonStyleVideoConfig) baseURL() string {
+	return strings.TrimRight(strings.TrimSpace(c.BaseURL), "/")
 }

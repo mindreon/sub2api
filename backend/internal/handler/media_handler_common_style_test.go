@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,6 +16,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
+
+func TestWriteCommonStyleTaskErrorMapsUpstreamFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	rec := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/video/generations", nil)
+
+	writeCommonStyleTaskError(c, fmt.Errorf("%w: upstream http 404", media.ErrUpstreamRequest))
+
+	require.Equal(t, http.StatusBadGateway, rec.Code)
+	var resp map[string]map[string]any
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	require.Equal(t, "upstream_error", resp["error"]["code"])
+	require.Equal(t, "upstream request failed", resp["error"]["message"])
+}
 
 type mediaHandlerTestProvider struct {
 	lastTask   *media.Task

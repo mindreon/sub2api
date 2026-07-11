@@ -173,45 +173,6 @@
             <PlatformIcon platform="volcengine" size="sm" />
             Volcengine
           </button>
-          <button
-            type="button"
-            @click="form.platform = 'openrouter'; form.type = 'apikey'; accountCategory = 'apikey'"
-            :class="[
-              'flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all',
-              form.platform === 'openrouter'
-                ? 'bg-white text-indigo-600 shadow-sm dark:bg-dark-600 dark:text-indigo-400'
-                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
-            ]"
-          >
-            <PlatformIcon platform="openrouter" size="sm" />
-            OpenRouter
-          </button>
-        </div>
-      </div>
-
-      <!-- 多模态平台账号（API Key） -->
-      <div
-        v-if="form.platform === 'volcengine' || form.platform === 'openrouter'"
-        class="space-y-4"
-      >
-        <div>
-          <label class="input-label">{{ t('admin.accounts.baseUrl') }}</label>
-          <input
-            v-model="apiKeyBaseUrl"
-            type="text"
-            class="input"
-            :placeholder="form.platform === 'volcengine' ? 'https://ark.cn-beijing.volces.com' : 'https://openrouter.ai/api'"
-          />
-        </div>
-        <div>
-          <label class="input-label">{{ t('admin.accounts.apiKeyRequired') }}</label>
-          <input
-            v-model="apiKeyValue"
-            type="password"
-            required
-            class="input font-mono"
-            placeholder="sk-..."
-          />
         </div>
       </div>
 
@@ -1134,15 +1095,9 @@
             v-model="apiKeyBaseUrl"
             type="text"
             class="input"
-            :placeholder="
-              form.platform === 'openai'
-                ? 'https://api.openai.com'
-                : form.platform === 'gemini'
-                  ? 'https://generativelanguage.googleapis.com'
-                  : 'https://api.anthropic.com'
-            "
+            :placeholder="getDefaultAPIKeyBaseURL(form.platform)"
           />
-          <p class="input-hint">{{ baseUrlHint }}</p>
+          <p v-if="!isMediaAccountPlatform(form.platform)" class="input-hint">{{ baseUrlHint }}</p>
         </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.apiKeyRequired') }}</label>
@@ -1156,10 +1111,12 @@
                 ? 'sk-proj-...'
                 : form.platform === 'gemini'
                   ? 'AIza...'
-                  : 'sk-ant-...'
+                  : isMediaAccountPlatform(form.platform)
+                    ? 'sk-...'
+                    : 'sk-ant-...'
             "
           />
-          <p class="input-hint">{{ apiKeyHint }}</p>
+          <p v-if="!isMediaAccountPlatform(form.platform)" class="input-hint">{{ apiKeyHint }}</p>
         </div>
 
         <!-- Gemini API Key tier selection -->
@@ -3546,6 +3503,18 @@ const apiKeyHint = computed(() => {
   return t('admin.accounts.apiKeyHint')
 })
 
+const mediaAccountPlatforms = new Set<AccountPlatform>(['volcengine'])
+
+const isMediaAccountPlatform = (platform: AccountPlatform) => mediaAccountPlatforms.has(platform)
+
+const getDefaultAPIKeyBaseURL = (platform: AccountPlatform) => {
+  if (platform === 'openai') return 'https://api.openai.com'
+  if (platform === 'gemini') return 'https://generativelanguage.googleapis.com'
+  if (platform === 'grok') return 'https://api.x.ai/v1'
+  if (platform === 'volcengine') return 'https://ark.cn-beijing.volces.com'
+  return 'https://api.anthropic.com'
+}
+
 interface Props {
   show: boolean
   proxies: Proxy[]
@@ -4087,14 +4056,7 @@ watch(
   () => form.platform,
   (newPlatform) => {
     // Reset base URL based on platform
-    apiKeyBaseUrl.value =
-      (newPlatform === 'openai')
-        ? 'https://api.openai.com'
-        : newPlatform === 'gemini'
-          ? 'https://generativelanguage.googleapis.com'
-          : newPlatform === 'grok'
-            ? 'https://api.x.ai/v1'
-            : 'https://api.anthropic.com'
+    apiKeyBaseUrl.value = getDefaultAPIKeyBaseURL(newPlatform)
     // Clear model-related settings
     allowedModels.value = []
     modelMappings.value = []
@@ -4804,7 +4766,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (form.platform === 'volcengine' || form.platform === 'openrouter') {
+  if (isMediaAccountPlatform(form.platform)) {
     if (!form.name.trim()) {
       appStore.showError(t('admin.accounts.pleaseEnterAccountName'))
       return
@@ -4815,6 +4777,14 @@ const handleSubmit = async () => {
     }
     const credentials: Record<string, unknown> = {
       api_key: apiKeyValue.value.trim()
+    }
+    const modelMapping = buildModelMappingObject(
+      modelRestrictionMode.value,
+      allowedModels.value,
+      modelMappings.value
+    )
+    if (modelMapping) {
+      credentials.model_mapping = modelMapping
     }
     const extra: Record<string, unknown> = {}
     if (apiKeyBaseUrl.value.trim()) {

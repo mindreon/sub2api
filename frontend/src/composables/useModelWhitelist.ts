@@ -159,6 +159,12 @@ const xaiModels = [
   'grok-imagine-video-1.5'
 ]
 
+// Media generation
+const volcengineMediaModels = [
+  'dreamina-seedance-2-0-260128',
+  'dreamina-seedance-2-0-fast-260128'
+]
+
 // Cohere
 const cohereModels = [
   'command-a-03-2025',
@@ -239,6 +245,7 @@ const allModelsList: string[] = [
   ...mistralModels,
   ...metaModels,
   ...xaiModels,
+  ...volcengineMediaModels,
   ...cohereModels,
   ...yiModels,
   ...moonshotModels,
@@ -420,6 +427,7 @@ export function getModelsByPlatform(platform: string): string[] {
     case 'meta': return metaModels
     case 'xai':
     case 'grok': return xaiModels
+    case 'volcengine': return volcengineMediaModels
     case 'cohere': return cohereModels
     case 'yi': return yiModels
     case 'moonshot': return moonshotModels
@@ -440,6 +448,7 @@ export function getPresetMappingsByPlatform(platform: string) {
   if (platform === 'grok' || platform === 'xai') return grokPresetMappings
   if (platform === 'antigravity') return antigravityPresetMappings
   if (platform === 'bedrock') return bedrockPresetMappings
+  if (platform === 'volcengine') return []
   return anthropicPresetMappings
 }
 
